@@ -17,8 +17,9 @@ import (
 )
 
 const (
-	DefaultEndpoint = "https://5sim.net"
-	ProviderKey     = "5sim"
+	DefaultEndpoint  = "https://5sim.net"
+	ProviderKey      = "5sim"
+	maxResponseBytes = 16 << 20
 )
 
 type Config struct {
@@ -237,7 +238,7 @@ func (c *Client) getJSON(ctx context.Context, path string, params url.Values, au
 		return core.NewError(core.CodeSupplyUnavailable, err.Error(), true)
 	}
 	defer resp.Body.Close()
-	body, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, maxResponseBytes))
 	if err != nil {
 		return core.NewError(core.CodeSupplyUnavailable, err.Error(), true)
 	}
