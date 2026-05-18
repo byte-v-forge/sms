@@ -23,6 +23,8 @@ type Client struct {
 	userAgent  string
 }
 
+const maxResponseBytes = 16 << 20
+
 func New(endpoint, apiKey string, httpClient HTTPDoer) (*Client, error) {
 	if strings.TrimSpace(endpoint) == "" {
 		return nil, core.NewError(core.CodeValidationFailed, "handler api endpoint is required", false)
@@ -68,7 +70,7 @@ func (c *Client) Do(ctx context.Context, action string, params url.Values) (stri
 		return "", core.NewError(core.CodeSupplyUnavailable, err.Error(), true)
 	}
 	defer resp.Body.Close()
-	body, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, maxResponseBytes))
 	if err != nil {
 		return "", core.NewError(core.CodeSupplyUnavailable, err.Error(), true)
 	}
