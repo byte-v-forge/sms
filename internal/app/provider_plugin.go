@@ -98,7 +98,7 @@ func fiveSimPlugin() smsProviderPlugin {
 		},
 		policy: core.ProviderPolicy{ActivationTTL: 20 * time.Minute, PollInterval: 5 * time.Second},
 		configFields: commonConfigFields(
-			configField("labels.currency_code", "Currency", smsinternalv1.SmsConfigFieldKind_SMS_CONFIG_FIELD_KIND_TEXT, false, true, "USD"),
+			labelConfigField("currency_code", "Currency", smsinternalv1.SmsConfigFieldKind_SMS_CONFIG_FIELD_KIND_TEXT, false, true, "USD"),
 		),
 		routeFields: []*smsinternalv1.SmsProviderRouteField{
 			routeField("upstream_service_key", "Product", smsinternalv1.SmsRouteFieldScope_SMS_ROUTE_FIELD_SCOPE_ROUTE, smsinternalv1.SmsRouteOptionSource_SMS_ROUTE_OPTION_SOURCE_SERVICES, false, ""),
@@ -146,8 +146,8 @@ func smsBowerPlugin() smsProviderPlugin {
 		capabilities: baseCapabilities(true),
 		policy:       core.ProviderPolicy{ActivationTTL: 25 * time.Minute, PollInterval: 5 * time.Second, EarlyCancelRetryAfter: 2 * time.Minute},
 		configFields: commonConfigFields(
-			configField("labels.ref", "Ref", smsinternalv1.SmsConfigFieldKind_SMS_CONFIG_FIELD_KIND_TEXT, false, true, ""),
-			configField("labels.user_id", "User ID", smsinternalv1.SmsConfigFieldKind_SMS_CONFIG_FIELD_KIND_TEXT, false, true, ""),
+			labelConfigField("ref", "Ref", smsinternalv1.SmsConfigFieldKind_SMS_CONFIG_FIELD_KIND_TEXT, false, true, ""),
+			labelConfigField("user_id", "User ID", smsinternalv1.SmsConfigFieldKind_SMS_CONFIG_FIELD_KIND_TEXT, false, true, ""),
 		),
 		routeFields: []*smsinternalv1.SmsProviderRouteField{
 			routeField("upstream_service_key", "Service", smsinternalv1.SmsRouteFieldScope_SMS_ROUTE_FIELD_SCOPE_ROUTE, smsinternalv1.SmsRouteOptionSource_SMS_ROUTE_OPTION_SOURCE_SERVICES, false, ""),
@@ -173,9 +173,9 @@ func smsBowerPlugin() smsProviderPlugin {
 
 func commonConfigFields(extra ...*smsinternalv1.SmsProviderConfigField) []*smsinternalv1.SmsProviderConfigField {
 	fields := []*smsinternalv1.SmsProviderConfigField{
-		configField("credential_secret", "API Key", smsinternalv1.SmsConfigFieldKind_SMS_CONFIG_FIELD_KIND_SECRET, true, false, ""),
-		configField("api_endpoint", "API Endpoint", smsinternalv1.SmsConfigFieldKind_SMS_CONFIG_FIELD_KIND_URL, false, true, "provider default"),
-		configField("http_proxy", "HTTP Proxy", smsinternalv1.SmsConfigFieldKind_SMS_CONFIG_FIELD_KIND_URL, false, true, "optional"),
+		configField(smsinternalv1.SmsConfigFieldTarget_SMS_CONFIG_FIELD_TARGET_CREDENTIAL_SECRET, "credential_secret", "API Key", smsinternalv1.SmsConfigFieldKind_SMS_CONFIG_FIELD_KIND_SECRET, true, false, ""),
+		configField(smsinternalv1.SmsConfigFieldTarget_SMS_CONFIG_FIELD_TARGET_API_ENDPOINT, "api_endpoint", "API Endpoint", smsinternalv1.SmsConfigFieldKind_SMS_CONFIG_FIELD_KIND_URL, false, true, "provider default"),
+		configField(smsinternalv1.SmsConfigFieldTarget_SMS_CONFIG_FIELD_TARGET_HTTP_PROXY, "http_proxy", "HTTP Proxy", smsinternalv1.SmsConfigFieldKind_SMS_CONFIG_FIELD_KIND_URL, false, true, "optional"),
 	}
 	return append(fields, extra...)
 }
@@ -190,8 +190,12 @@ func baseCapabilities(catalog bool) *smsinternalv1.SmsProviderCapabilities {
 	}
 }
 
-func configField(key, label string, kind smsinternalv1.SmsConfigFieldKind, required, advanced bool, placeholder string) *smsinternalv1.SmsProviderConfigField {
-	return &smsinternalv1.SmsProviderConfigField{FieldKey: key, Label: label, Kind: kind, Required: required, Advanced: advanced, Placeholder: placeholder}
+func labelConfigField(key, label string, kind smsinternalv1.SmsConfigFieldKind, required, advanced bool, placeholder string) *smsinternalv1.SmsProviderConfigField {
+	return configField(smsinternalv1.SmsConfigFieldTarget_SMS_CONFIG_FIELD_TARGET_LABEL, key, label, kind, required, advanced, placeholder)
+}
+
+func configField(target smsinternalv1.SmsConfigFieldTarget, key, label string, kind smsinternalv1.SmsConfigFieldKind, required, advanced bool, placeholder string) *smsinternalv1.SmsProviderConfigField {
+	return &smsinternalv1.SmsProviderConfigField{FieldKey: key, Label: label, Kind: kind, Required: required, Advanced: advanced, Placeholder: placeholder, Target: target}
 }
 
 func routeField(key, label string, scope smsinternalv1.SmsRouteFieldScope, options smsinternalv1.SmsRouteOptionSource, advanced bool, placeholder string) *smsinternalv1.SmsProviderRouteField {

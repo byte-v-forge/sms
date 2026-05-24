@@ -4,6 +4,7 @@ import { ChevronDown, ChevronRight, Save, Trash2 } from 'lucide-react';
 import { Button, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/dashboard/module-kit';
 import {
   SmsConfigFieldKind,
+  SmsConfigFieldTarget,
   type SmsProviderConfig,
   type SmsProviderConfigField,
   type SmsProviderPluginDescriptor
@@ -37,7 +38,7 @@ export function ProviderConfigForm({ config, plugins, saving, deleting, onSave, 
   }
 
   function patchField(field: SmsProviderConfigField, value: string) {
-    setDraft((current) => writeConfigField(current, field.field_key, value));
+    setDraft((current) => writeConfigField(current, field, value));
   }
 
   function patchPolicy(field: keyof NonNullable<SmsProviderConfig['policy']>, seconds: number) {
@@ -120,7 +121,7 @@ function ProviderField({ field, draft, onChange }: {
   const placeholder = field.kind === SmsConfigFieldKind.SMS_CONFIG_FIELD_KIND_SECRET && draft.credential_secret_set ? '留空则保留现有密钥' : field.placeholder;
   return (
     <Field label={`${field.label}${field.required ? ' *' : ''}`}>
-      <Input type={type} placeholder={placeholder} value={readConfigField(draft, field.field_key)} onChange={(e) => onChange(e.target.value)} />
+      <Input type={type} placeholder={placeholder} value={readConfigField(draft, field)} onChange={(e) => onChange(e.target.value)} />
     </Field>
   );
 }
@@ -129,20 +130,20 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   return <div className="grid gap-1"><Label>{label}</Label>{children}</div>;
 }
 
-function readConfigField(config: SmsProviderConfig, key: string) {
-  if (key === 'credential_secret') return config.credential_secret || '';
-  if (key === 'api_endpoint') return config.api_endpoint || '';
-  if (key === 'http_proxy') return config.http_proxy || '';
-  if (key.startsWith('labels.')) return config.labels?.[key.slice('labels.'.length)] || '';
+function readConfigField(config: SmsProviderConfig, field: SmsProviderConfigField) {
+  if (field.target === SmsConfigFieldTarget.SMS_CONFIG_FIELD_TARGET_CREDENTIAL_SECRET) return config.credential_secret || '';
+  if (field.target === SmsConfigFieldTarget.SMS_CONFIG_FIELD_TARGET_API_ENDPOINT) return config.api_endpoint || '';
+  if (field.target === SmsConfigFieldTarget.SMS_CONFIG_FIELD_TARGET_HTTP_PROXY) return config.http_proxy || '';
+  if (field.target === SmsConfigFieldTarget.SMS_CONFIG_FIELD_TARGET_LABEL) return config.labels?.[field.field_key] || '';
   return '';
 }
 
-function writeConfigField(config: SmsProviderConfig, key: string, value: string): SmsProviderConfig {
-  if (key === 'credential_secret') return { ...config, credential_secret: value };
-  if (key === 'api_endpoint') return { ...config, api_endpoint: value };
-  if (key === 'http_proxy') return { ...config, http_proxy: value };
-  if (key.startsWith('labels.')) {
-    return { ...config, labels: { ...(config.labels || {}), [key.slice('labels.'.length)]: value } };
+function writeConfigField(config: SmsProviderConfig, field: SmsProviderConfigField, value: string): SmsProviderConfig {
+  if (field.target === SmsConfigFieldTarget.SMS_CONFIG_FIELD_TARGET_CREDENTIAL_SECRET) return { ...config, credential_secret: value };
+  if (field.target === SmsConfigFieldTarget.SMS_CONFIG_FIELD_TARGET_API_ENDPOINT) return { ...config, api_endpoint: value };
+  if (field.target === SmsConfigFieldTarget.SMS_CONFIG_FIELD_TARGET_HTTP_PROXY) return { ...config, http_proxy: value };
+  if (field.target === SmsConfigFieldTarget.SMS_CONFIG_FIELD_TARGET_LABEL) {
+    return { ...config, labels: { ...(config.labels || {}), [field.field_key]: value } };
   }
   return config;
 }

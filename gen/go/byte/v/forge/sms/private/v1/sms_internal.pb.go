@@ -83,6 +83,61 @@ func (SmsConfigFieldKind) EnumDescriptor() ([]byte, []int) {
 	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{0}
 }
 
+type SmsConfigFieldTarget int32
+
+const (
+	SmsConfigFieldTarget_SMS_CONFIG_FIELD_TARGET_UNSPECIFIED       SmsConfigFieldTarget = 0
+	SmsConfigFieldTarget_SMS_CONFIG_FIELD_TARGET_CREDENTIAL_SECRET SmsConfigFieldTarget = 1
+	SmsConfigFieldTarget_SMS_CONFIG_FIELD_TARGET_API_ENDPOINT      SmsConfigFieldTarget = 2
+	SmsConfigFieldTarget_SMS_CONFIG_FIELD_TARGET_HTTP_PROXY        SmsConfigFieldTarget = 3
+	SmsConfigFieldTarget_SMS_CONFIG_FIELD_TARGET_LABEL             SmsConfigFieldTarget = 4
+)
+
+// Enum value maps for SmsConfigFieldTarget.
+var (
+	SmsConfigFieldTarget_name = map[int32]string{
+		0: "SMS_CONFIG_FIELD_TARGET_UNSPECIFIED",
+		1: "SMS_CONFIG_FIELD_TARGET_CREDENTIAL_SECRET",
+		2: "SMS_CONFIG_FIELD_TARGET_API_ENDPOINT",
+		3: "SMS_CONFIG_FIELD_TARGET_HTTP_PROXY",
+		4: "SMS_CONFIG_FIELD_TARGET_LABEL",
+	}
+	SmsConfigFieldTarget_value = map[string]int32{
+		"SMS_CONFIG_FIELD_TARGET_UNSPECIFIED":       0,
+		"SMS_CONFIG_FIELD_TARGET_CREDENTIAL_SECRET": 1,
+		"SMS_CONFIG_FIELD_TARGET_API_ENDPOINT":      2,
+		"SMS_CONFIG_FIELD_TARGET_HTTP_PROXY":        3,
+		"SMS_CONFIG_FIELD_TARGET_LABEL":             4,
+	}
+)
+
+func (x SmsConfigFieldTarget) Enum() *SmsConfigFieldTarget {
+	p := new(SmsConfigFieldTarget)
+	*p = x
+	return p
+}
+
+func (x SmsConfigFieldTarget) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (SmsConfigFieldTarget) Descriptor() protoreflect.EnumDescriptor {
+	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_enumTypes[1].Descriptor()
+}
+
+func (SmsConfigFieldTarget) Type() protoreflect.EnumType {
+	return &file_byte_v_forge_sms_internal_v1_sms_internal_proto_enumTypes[1]
+}
+
+func (x SmsConfigFieldTarget) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use SmsConfigFieldTarget.Descriptor instead.
+func (SmsConfigFieldTarget) EnumDescriptor() ([]byte, []int) {
+	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{1}
+}
+
 type SmsRouteFieldScope int32
 
 const (
@@ -122,11 +177,11 @@ func (x SmsRouteFieldScope) String() string {
 }
 
 func (SmsRouteFieldScope) Descriptor() protoreflect.EnumDescriptor {
-	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_enumTypes[1].Descriptor()
+	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_enumTypes[2].Descriptor()
 }
 
 func (SmsRouteFieldScope) Type() protoreflect.EnumType {
-	return &file_byte_v_forge_sms_internal_v1_sms_internal_proto_enumTypes[1]
+	return &file_byte_v_forge_sms_internal_v1_sms_internal_proto_enumTypes[2]
 }
 
 func (x SmsRouteFieldScope) Number() protoreflect.EnumNumber {
@@ -135,7 +190,7 @@ func (x SmsRouteFieldScope) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use SmsRouteFieldScope.Descriptor instead.
 func (SmsRouteFieldScope) EnumDescriptor() ([]byte, []int) {
-	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{1}
+	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{2}
 }
 
 type SmsRouteOptionSource int32
@@ -177,11 +232,11 @@ func (x SmsRouteOptionSource) String() string {
 }
 
 func (SmsRouteOptionSource) Descriptor() protoreflect.EnumDescriptor {
-	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_enumTypes[2].Descriptor()
+	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_enumTypes[3].Descriptor()
 }
 
 func (SmsRouteOptionSource) Type() protoreflect.EnumType {
-	return &file_byte_v_forge_sms_internal_v1_sms_internal_proto_enumTypes[2]
+	return &file_byte_v_forge_sms_internal_v1_sms_internal_proto_enumTypes[3]
 }
 
 func (x SmsRouteOptionSource) Number() protoreflect.EnumNumber {
@@ -190,7 +245,7 @@ func (x SmsRouteOptionSource) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use SmsRouteOptionSource.Descriptor instead.
 func (SmsRouteOptionSource) EnumDescriptor() ([]byte, []int) {
-	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{2}
+	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{3}
 }
 
 type SmsRouteSelectionStrategy int32
@@ -229,11 +284,11 @@ func (x SmsRouteSelectionStrategy) String() string {
 }
 
 func (SmsRouteSelectionStrategy) Descriptor() protoreflect.EnumDescriptor {
-	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_enumTypes[3].Descriptor()
+	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_enumTypes[4].Descriptor()
 }
 
 func (SmsRouteSelectionStrategy) Type() protoreflect.EnumType {
-	return &file_byte_v_forge_sms_internal_v1_sms_internal_proto_enumTypes[3]
+	return &file_byte_v_forge_sms_internal_v1_sms_internal_proto_enumTypes[4]
 }
 
 func (x SmsRouteSelectionStrategy) Number() protoreflect.EnumNumber {
@@ -242,7 +297,7 @@ func (x SmsRouteSelectionStrategy) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use SmsRouteSelectionStrategy.Descriptor instead.
 func (SmsRouteSelectionStrategy) EnumDescriptor() ([]byte, []int) {
-	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{3}
+	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{4}
 }
 
 type ProviderError struct {
@@ -990,6 +1045,7 @@ type SmsProviderConfigField struct {
 	Advanced      bool                    `protobuf:"varint,5,opt,name=advanced,proto3" json:"advanced,omitempty"`
 	Placeholder   string                  `protobuf:"bytes,6,opt,name=placeholder,proto3" json:"placeholder,omitempty"`
 	Options       []*SmsConfigFieldOption `protobuf:"bytes,7,rep,name=options,proto3" json:"options,omitempty"`
+	Target        SmsConfigFieldTarget    `protobuf:"varint,8,opt,name=target,proto3,enum=byte.v.forge.sms.internal.v1.SmsConfigFieldTarget" json:"target,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1071,6 +1127,13 @@ func (x *SmsProviderConfigField) GetOptions() []*SmsConfigFieldOption {
 		return x.Options
 	}
 	return nil
+}
+
+func (x *SmsProviderConfigField) GetTarget() SmsConfigFieldTarget {
+	if x != nil {
+		return x.Target
+	}
+	return SmsConfigFieldTarget_SMS_CONFIG_FIELD_TARGET_UNSPECIFIED
 }
 
 type SmsProviderRouteField struct {
@@ -3785,7 +3848,7 @@ const file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDesc = "" +
 	"\x16supported_country_iso2\x18\v \x03(\tR\x14supportedCountryIso2\"B\n" +
 	"\x14SmsConfigFieldOption\x12\x14\n" +
 	"\x05value\x18\x01 \x01(\tR\x05value\x12\x14\n" +
-	"\x05label\x18\x02 \x01(\tR\x05label\"\xb9\x02\n" +
+	"\x05label\x18\x02 \x01(\tR\x05label\"\x85\x03\n" +
 	"\x16SmsProviderConfigField\x12\x1b\n" +
 	"\tfield_key\x18\x01 \x01(\tR\bfieldKey\x12\x14\n" +
 	"\x05label\x18\x02 \x01(\tR\x05label\x12D\n" +
@@ -3793,7 +3856,8 @@ const file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDesc = "" +
 	"\brequired\x18\x04 \x01(\bR\brequired\x12\x1a\n" +
 	"\badvanced\x18\x05 \x01(\bR\badvanced\x12 \n" +
 	"\vplaceholder\x18\x06 \x01(\tR\vplaceholder\x12L\n" +
-	"\aoptions\x18\a \x03(\v22.byte.v.forge.sms.internal.v1.SmsConfigFieldOptionR\aoptions\"\xa9\x02\n" +
+	"\aoptions\x18\a \x03(\v22.byte.v.forge.sms.internal.v1.SmsConfigFieldOptionR\aoptions\x12J\n" +
+	"\x06target\x18\b \x01(\x0e22.byte.v.forge.sms.internal.v1.SmsConfigFieldTargetR\x06target\"\xa9\x02\n" +
 	"\x15SmsProviderRouteField\x12\x1b\n" +
 	"\tfield_key\x18\x01 \x01(\tR\bfieldKey\x12\x14\n" +
 	"\x05label\x18\x02 \x01(\tR\x05label\x12F\n" +
@@ -3990,7 +4054,13 @@ const file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDesc = "" +
 	"\x1cSMS_CONFIG_FIELD_KIND_SECRET\x10\x02\x12 \n" +
 	"\x1cSMS_CONFIG_FIELD_KIND_NUMBER\x10\x03\x12\x1d\n" +
 	"\x19SMS_CONFIG_FIELD_KIND_URL\x10\x04\x12*\n" +
-	"&SMS_CONFIG_FIELD_KIND_DURATION_SECONDS\x10\x05*\xc8\x01\n" +
+	"&SMS_CONFIG_FIELD_KIND_DURATION_SECONDS\x10\x05*\xe3\x01\n" +
+	"\x14SmsConfigFieldTarget\x12'\n" +
+	"#SMS_CONFIG_FIELD_TARGET_UNSPECIFIED\x10\x00\x12-\n" +
+	")SMS_CONFIG_FIELD_TARGET_CREDENTIAL_SECRET\x10\x01\x12(\n" +
+	"$SMS_CONFIG_FIELD_TARGET_API_ENDPOINT\x10\x02\x12&\n" +
+	"\"SMS_CONFIG_FIELD_TARGET_HTTP_PROXY\x10\x03\x12!\n" +
+	"\x1dSMS_CONFIG_FIELD_TARGET_LABEL\x10\x04*\xc8\x01\n" +
 	"\x12SmsRouteFieldScope\x12%\n" +
 	"!SMS_ROUTE_FIELD_SCOPE_UNSPECIFIED\x10\x00\x12\x1f\n" +
 	"\x1bSMS_ROUTE_FIELD_SCOPE_ROUTE\x10\x01\x12 \n" +
@@ -4043,216 +4113,218 @@ func file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP() []byte {
 	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescData
 }
 
-var file_byte_v_forge_sms_internal_v1_sms_internal_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_byte_v_forge_sms_internal_v1_sms_internal_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
 var file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes = make([]protoimpl.MessageInfo, 59)
 var file_byte_v_forge_sms_internal_v1_sms_internal_proto_goTypes = []any{
 	(SmsConfigFieldKind)(0),                               // 0: byte.v.forge.sms.internal.v1.SmsConfigFieldKind
-	(SmsRouteFieldScope)(0),                               // 1: byte.v.forge.sms.internal.v1.SmsRouteFieldScope
-	(SmsRouteOptionSource)(0),                             // 2: byte.v.forge.sms.internal.v1.SmsRouteOptionSource
-	(SmsRouteSelectionStrategy)(0),                        // 3: byte.v.forge.sms.internal.v1.SmsRouteSelectionStrategy
-	(*ProviderError)(nil),                                 // 4: byte.v.forge.sms.internal.v1.ProviderError
-	(*SmsRouteOption)(nil),                                // 5: byte.v.forge.sms.internal.v1.SmsRouteOption
-	(*SmsProviderRouteOptions)(nil),                       // 6: byte.v.forge.sms.internal.v1.SmsProviderRouteOptions
-	(*ProviderActivation)(nil),                            // 7: byte.v.forge.sms.internal.v1.ProviderActivation
-	(*SmsProviderConfig)(nil),                             // 8: byte.v.forge.sms.internal.v1.SmsProviderConfig
-	(*SmsProviderPolicy)(nil),                             // 9: byte.v.forge.sms.internal.v1.SmsProviderPolicy
-	(*SmsProviderCapabilities)(nil),                       // 10: byte.v.forge.sms.internal.v1.SmsProviderCapabilities
-	(*SmsConfigFieldOption)(nil),                          // 11: byte.v.forge.sms.internal.v1.SmsConfigFieldOption
-	(*SmsProviderConfigField)(nil),                        // 12: byte.v.forge.sms.internal.v1.SmsProviderConfigField
-	(*SmsProviderRouteField)(nil),                         // 13: byte.v.forge.sms.internal.v1.SmsProviderRouteField
-	(*SmsProviderPluginDescriptor)(nil),                   // 14: byte.v.forge.sms.internal.v1.SmsProviderPluginDescriptor
-	(*SmsRouteCandidate)(nil),                             // 15: byte.v.forge.sms.internal.v1.SmsRouteCandidate
-	(*SmsRouteProfile)(nil),                               // 16: byte.v.forge.sms.internal.v1.SmsRouteProfile
-	(*UpsertProviderConfigRequest)(nil),                   // 17: byte.v.forge.sms.internal.v1.UpsertProviderConfigRequest
-	(*UpsertProviderConfigResponse)(nil),                  // 18: byte.v.forge.sms.internal.v1.UpsertProviderConfigResponse
-	(*GetProviderConfigRequest)(nil),                      // 19: byte.v.forge.sms.internal.v1.GetProviderConfigRequest
-	(*GetProviderConfigResponse)(nil),                     // 20: byte.v.forge.sms.internal.v1.GetProviderConfigResponse
-	(*ListProviderConfigsRequest)(nil),                    // 21: byte.v.forge.sms.internal.v1.ListProviderConfigsRequest
-	(*ListProviderConfigsResponse)(nil),                   // 22: byte.v.forge.sms.internal.v1.ListProviderConfigsResponse
-	(*DeleteProviderConfigRequest)(nil),                   // 23: byte.v.forge.sms.internal.v1.DeleteProviderConfigRequest
-	(*DeleteProviderConfigResponse)(nil),                  // 24: byte.v.forge.sms.internal.v1.DeleteProviderConfigResponse
-	(*ListRouteOptionsRequest)(nil),                       // 25: byte.v.forge.sms.internal.v1.ListRouteOptionsRequest
-	(*ListRouteOptionsResponse)(nil),                      // 26: byte.v.forge.sms.internal.v1.ListRouteOptionsResponse
-	(*UpsertRouteProfileRequest)(nil),                     // 27: byte.v.forge.sms.internal.v1.UpsertRouteProfileRequest
-	(*UpsertRouteProfileResponse)(nil),                    // 28: byte.v.forge.sms.internal.v1.UpsertRouteProfileResponse
-	(*GetRouteProfileRequest)(nil),                        // 29: byte.v.forge.sms.internal.v1.GetRouteProfileRequest
-	(*GetRouteProfileResponse)(nil),                       // 30: byte.v.forge.sms.internal.v1.GetRouteProfileResponse
-	(*ListRouteProfilesRequest)(nil),                      // 31: byte.v.forge.sms.internal.v1.ListRouteProfilesRequest
-	(*ListRouteProfilesResponse)(nil),                     // 32: byte.v.forge.sms.internal.v1.ListRouteProfilesResponse
-	(*DeleteRouteProfileRequest)(nil),                     // 33: byte.v.forge.sms.internal.v1.DeleteRouteProfileRequest
-	(*DeleteRouteProfileResponse)(nil),                    // 34: byte.v.forge.sms.internal.v1.DeleteRouteProfileResponse
-	(*GetProviderBalanceRequest)(nil),                     // 35: byte.v.forge.sms.internal.v1.GetProviderBalanceRequest
-	(*GetProviderBalanceResponse)(nil),                    // 36: byte.v.forge.sms.internal.v1.GetProviderBalanceResponse
-	(*SmsActivationView)(nil),                             // 37: byte.v.forge.sms.internal.v1.SmsActivationView
-	(*ListActivationsRequest)(nil),                        // 38: byte.v.forge.sms.internal.v1.ListActivationsRequest
-	(*ListActivationsResponse)(nil),                       // 39: byte.v.forge.sms.internal.v1.ListActivationsResponse
-	(*CancelProviderActivationRequest)(nil),               // 40: byte.v.forge.sms.internal.v1.CancelProviderActivationRequest
-	(*CancelProviderActivationResponse)(nil),              // 41: byte.v.forge.sms.internal.v1.CancelProviderActivationResponse
-	(*ProviderSmsApplicationInfo)(nil),                    // 42: byte.v.forge.sms.internal.v1.ProviderSmsApplicationInfo
-	(*ProviderSmsCountry)(nil),                            // 43: byte.v.forge.sms.internal.v1.ProviderSmsCountry
-	(*ProviderSmsPriceOffer)(nil),                         // 44: byte.v.forge.sms.internal.v1.ProviderSmsPriceOffer
-	(*ProviderSmsCountryPriceSummary)(nil),                // 45: byte.v.forge.sms.internal.v1.ProviderSmsCountryPriceSummary
-	(*ListProviderApplicationsRequest)(nil),               // 46: byte.v.forge.sms.internal.v1.ListProviderApplicationsRequest
-	(*ListProviderApplicationsResponse)(nil),              // 47: byte.v.forge.sms.internal.v1.ListProviderApplicationsResponse
-	(*ListProviderCountriesRequest)(nil),                  // 48: byte.v.forge.sms.internal.v1.ListProviderCountriesRequest
-	(*ListProviderCountriesResponse)(nil),                 // 49: byte.v.forge.sms.internal.v1.ListProviderCountriesResponse
-	(*ListProviderPriceOffersRequest)(nil),                // 50: byte.v.forge.sms.internal.v1.ListProviderPriceOffersRequest
-	(*ListProviderPriceOffersResponse)(nil),               // 51: byte.v.forge.sms.internal.v1.ListProviderPriceOffersResponse
-	(*ListTopProviderCountriesByApplicationRequest)(nil),  // 52: byte.v.forge.sms.internal.v1.ListTopProviderCountriesByApplicationRequest
-	(*ListTopProviderCountriesByApplicationResponse)(nil), // 53: byte.v.forge.sms.internal.v1.ListTopProviderCountriesByApplicationResponse
-	(*InboundProviderMessage)(nil),                        // 54: byte.v.forge.sms.internal.v1.InboundProviderMessage
-	(*IngestInboundMessageRequest)(nil),                   // 55: byte.v.forge.sms.internal.v1.IngestInboundMessageRequest
-	(*IngestInboundMessageResponse)(nil),                  // 56: byte.v.forge.sms.internal.v1.IngestInboundMessageResponse
-	(*ListProviderPluginsRequest)(nil),                    // 57: byte.v.forge.sms.internal.v1.ListProviderPluginsRequest
-	(*ListProviderPluginsResponse)(nil),                   // 58: byte.v.forge.sms.internal.v1.ListProviderPluginsResponse
-	nil,                                                   // 59: byte.v.forge.sms.internal.v1.SmsRouteOption.MetadataEntry
-	nil,                                                   // 60: byte.v.forge.sms.internal.v1.SmsProviderConfig.LabelsEntry
-	nil,                                                   // 61: byte.v.forge.sms.internal.v1.SmsRouteCandidate.ProviderOptionsEntry
-	nil,                                                   // 62: byte.v.forge.sms.internal.v1.SmsRouteProfile.LabelsEntry
-	(*v1.SmsError)(nil),                                   // 63: byte.v.forge.contracts.sms.v1.SmsError
-	(*v1.DecimalMoney)(nil),                               // 64: byte.v.forge.contracts.sms.v1.DecimalMoney
-	(*v1.SmsActivation)(nil),                              // 65: byte.v.forge.contracts.sms.v1.SmsActivation
-	(*structpb.Struct)(nil),                               // 66: google.protobuf.Struct
-	(*v1.SmsTarget)(nil),                                  // 67: byte.v.forge.contracts.sms.v1.SmsTarget
-	(*timestamppb.Timestamp)(nil),                         // 68: google.protobuf.Timestamp
-	(*durationpb.Duration)(nil),                           // 69: google.protobuf.Duration
-	(*v1.SmsCode)(nil),                                    // 70: byte.v.forge.contracts.sms.v1.SmsCode
-	(*v1.SmsApplicationInfo)(nil),                         // 71: byte.v.forge.contracts.sms.v1.SmsApplicationInfo
-	(*v1.SmsCountry)(nil),                                 // 72: byte.v.forge.contracts.sms.v1.SmsCountry
-	(*v1.SmsPriceOffer)(nil),                              // 73: byte.v.forge.contracts.sms.v1.SmsPriceOffer
-	(*v1.SmsCodeReceivedEvent)(nil),                       // 74: byte.v.forge.contracts.sms.v1.SmsCodeReceivedEvent
+	(SmsConfigFieldTarget)(0),                             // 1: byte.v.forge.sms.internal.v1.SmsConfigFieldTarget
+	(SmsRouteFieldScope)(0),                               // 2: byte.v.forge.sms.internal.v1.SmsRouteFieldScope
+	(SmsRouteOptionSource)(0),                             // 3: byte.v.forge.sms.internal.v1.SmsRouteOptionSource
+	(SmsRouteSelectionStrategy)(0),                        // 4: byte.v.forge.sms.internal.v1.SmsRouteSelectionStrategy
+	(*ProviderError)(nil),                                 // 5: byte.v.forge.sms.internal.v1.ProviderError
+	(*SmsRouteOption)(nil),                                // 6: byte.v.forge.sms.internal.v1.SmsRouteOption
+	(*SmsProviderRouteOptions)(nil),                       // 7: byte.v.forge.sms.internal.v1.SmsProviderRouteOptions
+	(*ProviderActivation)(nil),                            // 8: byte.v.forge.sms.internal.v1.ProviderActivation
+	(*SmsProviderConfig)(nil),                             // 9: byte.v.forge.sms.internal.v1.SmsProviderConfig
+	(*SmsProviderPolicy)(nil),                             // 10: byte.v.forge.sms.internal.v1.SmsProviderPolicy
+	(*SmsProviderCapabilities)(nil),                       // 11: byte.v.forge.sms.internal.v1.SmsProviderCapabilities
+	(*SmsConfigFieldOption)(nil),                          // 12: byte.v.forge.sms.internal.v1.SmsConfigFieldOption
+	(*SmsProviderConfigField)(nil),                        // 13: byte.v.forge.sms.internal.v1.SmsProviderConfigField
+	(*SmsProviderRouteField)(nil),                         // 14: byte.v.forge.sms.internal.v1.SmsProviderRouteField
+	(*SmsProviderPluginDescriptor)(nil),                   // 15: byte.v.forge.sms.internal.v1.SmsProviderPluginDescriptor
+	(*SmsRouteCandidate)(nil),                             // 16: byte.v.forge.sms.internal.v1.SmsRouteCandidate
+	(*SmsRouteProfile)(nil),                               // 17: byte.v.forge.sms.internal.v1.SmsRouteProfile
+	(*UpsertProviderConfigRequest)(nil),                   // 18: byte.v.forge.sms.internal.v1.UpsertProviderConfigRequest
+	(*UpsertProviderConfigResponse)(nil),                  // 19: byte.v.forge.sms.internal.v1.UpsertProviderConfigResponse
+	(*GetProviderConfigRequest)(nil),                      // 20: byte.v.forge.sms.internal.v1.GetProviderConfigRequest
+	(*GetProviderConfigResponse)(nil),                     // 21: byte.v.forge.sms.internal.v1.GetProviderConfigResponse
+	(*ListProviderConfigsRequest)(nil),                    // 22: byte.v.forge.sms.internal.v1.ListProviderConfigsRequest
+	(*ListProviderConfigsResponse)(nil),                   // 23: byte.v.forge.sms.internal.v1.ListProviderConfigsResponse
+	(*DeleteProviderConfigRequest)(nil),                   // 24: byte.v.forge.sms.internal.v1.DeleteProviderConfigRequest
+	(*DeleteProviderConfigResponse)(nil),                  // 25: byte.v.forge.sms.internal.v1.DeleteProviderConfigResponse
+	(*ListRouteOptionsRequest)(nil),                       // 26: byte.v.forge.sms.internal.v1.ListRouteOptionsRequest
+	(*ListRouteOptionsResponse)(nil),                      // 27: byte.v.forge.sms.internal.v1.ListRouteOptionsResponse
+	(*UpsertRouteProfileRequest)(nil),                     // 28: byte.v.forge.sms.internal.v1.UpsertRouteProfileRequest
+	(*UpsertRouteProfileResponse)(nil),                    // 29: byte.v.forge.sms.internal.v1.UpsertRouteProfileResponse
+	(*GetRouteProfileRequest)(nil),                        // 30: byte.v.forge.sms.internal.v1.GetRouteProfileRequest
+	(*GetRouteProfileResponse)(nil),                       // 31: byte.v.forge.sms.internal.v1.GetRouteProfileResponse
+	(*ListRouteProfilesRequest)(nil),                      // 32: byte.v.forge.sms.internal.v1.ListRouteProfilesRequest
+	(*ListRouteProfilesResponse)(nil),                     // 33: byte.v.forge.sms.internal.v1.ListRouteProfilesResponse
+	(*DeleteRouteProfileRequest)(nil),                     // 34: byte.v.forge.sms.internal.v1.DeleteRouteProfileRequest
+	(*DeleteRouteProfileResponse)(nil),                    // 35: byte.v.forge.sms.internal.v1.DeleteRouteProfileResponse
+	(*GetProviderBalanceRequest)(nil),                     // 36: byte.v.forge.sms.internal.v1.GetProviderBalanceRequest
+	(*GetProviderBalanceResponse)(nil),                    // 37: byte.v.forge.sms.internal.v1.GetProviderBalanceResponse
+	(*SmsActivationView)(nil),                             // 38: byte.v.forge.sms.internal.v1.SmsActivationView
+	(*ListActivationsRequest)(nil),                        // 39: byte.v.forge.sms.internal.v1.ListActivationsRequest
+	(*ListActivationsResponse)(nil),                       // 40: byte.v.forge.sms.internal.v1.ListActivationsResponse
+	(*CancelProviderActivationRequest)(nil),               // 41: byte.v.forge.sms.internal.v1.CancelProviderActivationRequest
+	(*CancelProviderActivationResponse)(nil),              // 42: byte.v.forge.sms.internal.v1.CancelProviderActivationResponse
+	(*ProviderSmsApplicationInfo)(nil),                    // 43: byte.v.forge.sms.internal.v1.ProviderSmsApplicationInfo
+	(*ProviderSmsCountry)(nil),                            // 44: byte.v.forge.sms.internal.v1.ProviderSmsCountry
+	(*ProviderSmsPriceOffer)(nil),                         // 45: byte.v.forge.sms.internal.v1.ProviderSmsPriceOffer
+	(*ProviderSmsCountryPriceSummary)(nil),                // 46: byte.v.forge.sms.internal.v1.ProviderSmsCountryPriceSummary
+	(*ListProviderApplicationsRequest)(nil),               // 47: byte.v.forge.sms.internal.v1.ListProviderApplicationsRequest
+	(*ListProviderApplicationsResponse)(nil),              // 48: byte.v.forge.sms.internal.v1.ListProviderApplicationsResponse
+	(*ListProviderCountriesRequest)(nil),                  // 49: byte.v.forge.sms.internal.v1.ListProviderCountriesRequest
+	(*ListProviderCountriesResponse)(nil),                 // 50: byte.v.forge.sms.internal.v1.ListProviderCountriesResponse
+	(*ListProviderPriceOffersRequest)(nil),                // 51: byte.v.forge.sms.internal.v1.ListProviderPriceOffersRequest
+	(*ListProviderPriceOffersResponse)(nil),               // 52: byte.v.forge.sms.internal.v1.ListProviderPriceOffersResponse
+	(*ListTopProviderCountriesByApplicationRequest)(nil),  // 53: byte.v.forge.sms.internal.v1.ListTopProviderCountriesByApplicationRequest
+	(*ListTopProviderCountriesByApplicationResponse)(nil), // 54: byte.v.forge.sms.internal.v1.ListTopProviderCountriesByApplicationResponse
+	(*InboundProviderMessage)(nil),                        // 55: byte.v.forge.sms.internal.v1.InboundProviderMessage
+	(*IngestInboundMessageRequest)(nil),                   // 56: byte.v.forge.sms.internal.v1.IngestInboundMessageRequest
+	(*IngestInboundMessageResponse)(nil),                  // 57: byte.v.forge.sms.internal.v1.IngestInboundMessageResponse
+	(*ListProviderPluginsRequest)(nil),                    // 58: byte.v.forge.sms.internal.v1.ListProviderPluginsRequest
+	(*ListProviderPluginsResponse)(nil),                   // 59: byte.v.forge.sms.internal.v1.ListProviderPluginsResponse
+	nil,                                                   // 60: byte.v.forge.sms.internal.v1.SmsRouteOption.MetadataEntry
+	nil,                                                   // 61: byte.v.forge.sms.internal.v1.SmsProviderConfig.LabelsEntry
+	nil,                                                   // 62: byte.v.forge.sms.internal.v1.SmsRouteCandidate.ProviderOptionsEntry
+	nil,                                                   // 63: byte.v.forge.sms.internal.v1.SmsRouteProfile.LabelsEntry
+	(*v1.SmsError)(nil),                                   // 64: byte.v.forge.contracts.sms.v1.SmsError
+	(*v1.DecimalMoney)(nil),                               // 65: byte.v.forge.contracts.sms.v1.DecimalMoney
+	(*v1.SmsActivation)(nil),                              // 66: byte.v.forge.contracts.sms.v1.SmsActivation
+	(*structpb.Struct)(nil),                               // 67: google.protobuf.Struct
+	(*v1.SmsTarget)(nil),                                  // 68: byte.v.forge.contracts.sms.v1.SmsTarget
+	(*timestamppb.Timestamp)(nil),                         // 69: google.protobuf.Timestamp
+	(*durationpb.Duration)(nil),                           // 70: google.protobuf.Duration
+	(*v1.SmsCode)(nil),                                    // 71: byte.v.forge.contracts.sms.v1.SmsCode
+	(*v1.SmsApplicationInfo)(nil),                         // 72: byte.v.forge.contracts.sms.v1.SmsApplicationInfo
+	(*v1.SmsCountry)(nil),                                 // 73: byte.v.forge.contracts.sms.v1.SmsCountry
+	(*v1.SmsPriceOffer)(nil),                              // 74: byte.v.forge.contracts.sms.v1.SmsPriceOffer
+	(*v1.SmsCodeReceivedEvent)(nil),                       // 75: byte.v.forge.contracts.sms.v1.SmsCodeReceivedEvent
 }
 var file_byte_v_forge_sms_internal_v1_sms_internal_proto_depIdxs = []int32{
-	63,  // 0: byte.v.forge.sms.internal.v1.ProviderError.public_error:type_name -> byte.v.forge.contracts.sms.v1.SmsError
-	64,  // 1: byte.v.forge.sms.internal.v1.SmsRouteOption.price:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
-	59,  // 2: byte.v.forge.sms.internal.v1.SmsRouteOption.metadata:type_name -> byte.v.forge.sms.internal.v1.SmsRouteOption.MetadataEntry
-	5,   // 3: byte.v.forge.sms.internal.v1.SmsProviderRouteOptions.services:type_name -> byte.v.forge.sms.internal.v1.SmsRouteOption
-	5,   // 4: byte.v.forge.sms.internal.v1.SmsProviderRouteOptions.countries:type_name -> byte.v.forge.sms.internal.v1.SmsRouteOption
-	5,   // 5: byte.v.forge.sms.internal.v1.SmsProviderRouteOptions.operators:type_name -> byte.v.forge.sms.internal.v1.SmsRouteOption
-	5,   // 6: byte.v.forge.sms.internal.v1.SmsProviderRouteOptions.upstream_providers:type_name -> byte.v.forge.sms.internal.v1.SmsRouteOption
-	4,   // 7: byte.v.forge.sms.internal.v1.SmsProviderRouteOptions.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	65,  // 8: byte.v.forge.sms.internal.v1.ProviderActivation.public_activation:type_name -> byte.v.forge.contracts.sms.v1.SmsActivation
-	4,   // 9: byte.v.forge.sms.internal.v1.ProviderActivation.last_provider_error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	66,  // 10: byte.v.forge.sms.internal.v1.ProviderActivation.raw_metadata:type_name -> google.protobuf.Struct
-	67,  // 11: byte.v.forge.sms.internal.v1.SmsProviderConfig.default_target:type_name -> byte.v.forge.contracts.sms.v1.SmsTarget
-	10,  // 12: byte.v.forge.sms.internal.v1.SmsProviderConfig.capabilities:type_name -> byte.v.forge.sms.internal.v1.SmsProviderCapabilities
-	9,   // 13: byte.v.forge.sms.internal.v1.SmsProviderConfig.policy:type_name -> byte.v.forge.sms.internal.v1.SmsProviderPolicy
-	60,  // 14: byte.v.forge.sms.internal.v1.SmsProviderConfig.labels:type_name -> byte.v.forge.sms.internal.v1.SmsProviderConfig.LabelsEntry
-	68,  // 15: byte.v.forge.sms.internal.v1.SmsProviderConfig.created_at:type_name -> google.protobuf.Timestamp
-	68,  // 16: byte.v.forge.sms.internal.v1.SmsProviderConfig.updated_at:type_name -> google.protobuf.Timestamp
-	69,  // 17: byte.v.forge.sms.internal.v1.SmsProviderPolicy.activation_ttl:type_name -> google.protobuf.Duration
-	69,  // 18: byte.v.forge.sms.internal.v1.SmsProviderPolicy.poll_interval:type_name -> google.protobuf.Duration
-	69,  // 19: byte.v.forge.sms.internal.v1.SmsProviderPolicy.cancel_allowed_after:type_name -> google.protobuf.Duration
-	69,  // 20: byte.v.forge.sms.internal.v1.SmsProviderPolicy.early_cancel_retry_after:type_name -> google.protobuf.Duration
-	69,  // 21: byte.v.forge.sms.internal.v1.SmsProviderPolicy.cancel_allowed_until:type_name -> google.protobuf.Duration
+	64,  // 0: byte.v.forge.sms.internal.v1.ProviderError.public_error:type_name -> byte.v.forge.contracts.sms.v1.SmsError
+	65,  // 1: byte.v.forge.sms.internal.v1.SmsRouteOption.price:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
+	60,  // 2: byte.v.forge.sms.internal.v1.SmsRouteOption.metadata:type_name -> byte.v.forge.sms.internal.v1.SmsRouteOption.MetadataEntry
+	6,   // 3: byte.v.forge.sms.internal.v1.SmsProviderRouteOptions.services:type_name -> byte.v.forge.sms.internal.v1.SmsRouteOption
+	6,   // 4: byte.v.forge.sms.internal.v1.SmsProviderRouteOptions.countries:type_name -> byte.v.forge.sms.internal.v1.SmsRouteOption
+	6,   // 5: byte.v.forge.sms.internal.v1.SmsProviderRouteOptions.operators:type_name -> byte.v.forge.sms.internal.v1.SmsRouteOption
+	6,   // 6: byte.v.forge.sms.internal.v1.SmsProviderRouteOptions.upstream_providers:type_name -> byte.v.forge.sms.internal.v1.SmsRouteOption
+	5,   // 7: byte.v.forge.sms.internal.v1.SmsProviderRouteOptions.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	66,  // 8: byte.v.forge.sms.internal.v1.ProviderActivation.public_activation:type_name -> byte.v.forge.contracts.sms.v1.SmsActivation
+	5,   // 9: byte.v.forge.sms.internal.v1.ProviderActivation.last_provider_error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	67,  // 10: byte.v.forge.sms.internal.v1.ProviderActivation.raw_metadata:type_name -> google.protobuf.Struct
+	68,  // 11: byte.v.forge.sms.internal.v1.SmsProviderConfig.default_target:type_name -> byte.v.forge.contracts.sms.v1.SmsTarget
+	11,  // 12: byte.v.forge.sms.internal.v1.SmsProviderConfig.capabilities:type_name -> byte.v.forge.sms.internal.v1.SmsProviderCapabilities
+	10,  // 13: byte.v.forge.sms.internal.v1.SmsProviderConfig.policy:type_name -> byte.v.forge.sms.internal.v1.SmsProviderPolicy
+	61,  // 14: byte.v.forge.sms.internal.v1.SmsProviderConfig.labels:type_name -> byte.v.forge.sms.internal.v1.SmsProviderConfig.LabelsEntry
+	69,  // 15: byte.v.forge.sms.internal.v1.SmsProviderConfig.created_at:type_name -> google.protobuf.Timestamp
+	69,  // 16: byte.v.forge.sms.internal.v1.SmsProviderConfig.updated_at:type_name -> google.protobuf.Timestamp
+	70,  // 17: byte.v.forge.sms.internal.v1.SmsProviderPolicy.activation_ttl:type_name -> google.protobuf.Duration
+	70,  // 18: byte.v.forge.sms.internal.v1.SmsProviderPolicy.poll_interval:type_name -> google.protobuf.Duration
+	70,  // 19: byte.v.forge.sms.internal.v1.SmsProviderPolicy.cancel_allowed_after:type_name -> google.protobuf.Duration
+	70,  // 20: byte.v.forge.sms.internal.v1.SmsProviderPolicy.early_cancel_retry_after:type_name -> google.protobuf.Duration
+	70,  // 21: byte.v.forge.sms.internal.v1.SmsProviderPolicy.cancel_allowed_until:type_name -> google.protobuf.Duration
 	0,   // 22: byte.v.forge.sms.internal.v1.SmsProviderConfigField.kind:type_name -> byte.v.forge.sms.internal.v1.SmsConfigFieldKind
-	11,  // 23: byte.v.forge.sms.internal.v1.SmsProviderConfigField.options:type_name -> byte.v.forge.sms.internal.v1.SmsConfigFieldOption
-	1,   // 24: byte.v.forge.sms.internal.v1.SmsProviderRouteField.scope:type_name -> byte.v.forge.sms.internal.v1.SmsRouteFieldScope
-	2,   // 25: byte.v.forge.sms.internal.v1.SmsProviderRouteField.option_source:type_name -> byte.v.forge.sms.internal.v1.SmsRouteOptionSource
-	10,  // 26: byte.v.forge.sms.internal.v1.SmsProviderPluginDescriptor.capabilities:type_name -> byte.v.forge.sms.internal.v1.SmsProviderCapabilities
-	12,  // 27: byte.v.forge.sms.internal.v1.SmsProviderPluginDescriptor.config_fields:type_name -> byte.v.forge.sms.internal.v1.SmsProviderConfigField
-	13,  // 28: byte.v.forge.sms.internal.v1.SmsProviderPluginDescriptor.route_fields:type_name -> byte.v.forge.sms.internal.v1.SmsProviderRouteField
-	67,  // 29: byte.v.forge.sms.internal.v1.SmsRouteCandidate.target:type_name -> byte.v.forge.contracts.sms.v1.SmsTarget
-	64,  // 30: byte.v.forge.sms.internal.v1.SmsRouteCandidate.min_price:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
-	64,  // 31: byte.v.forge.sms.internal.v1.SmsRouteCandidate.max_price:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
-	61,  // 32: byte.v.forge.sms.internal.v1.SmsRouteCandidate.provider_options:type_name -> byte.v.forge.sms.internal.v1.SmsRouteCandidate.ProviderOptionsEntry
-	3,   // 33: byte.v.forge.sms.internal.v1.SmsRouteProfile.selection_strategy:type_name -> byte.v.forge.sms.internal.v1.SmsRouteSelectionStrategy
-	67,  // 34: byte.v.forge.sms.internal.v1.SmsRouteProfile.default_target:type_name -> byte.v.forge.contracts.sms.v1.SmsTarget
-	15,  // 35: byte.v.forge.sms.internal.v1.SmsRouteProfile.routes:type_name -> byte.v.forge.sms.internal.v1.SmsRouteCandidate
-	62,  // 36: byte.v.forge.sms.internal.v1.SmsRouteProfile.labels:type_name -> byte.v.forge.sms.internal.v1.SmsRouteProfile.LabelsEntry
-	68,  // 37: byte.v.forge.sms.internal.v1.SmsRouteProfile.created_at:type_name -> google.protobuf.Timestamp
-	68,  // 38: byte.v.forge.sms.internal.v1.SmsRouteProfile.updated_at:type_name -> google.protobuf.Timestamp
-	8,   // 39: byte.v.forge.sms.internal.v1.UpsertProviderConfigRequest.config:type_name -> byte.v.forge.sms.internal.v1.SmsProviderConfig
-	8,   // 40: byte.v.forge.sms.internal.v1.UpsertProviderConfigResponse.config:type_name -> byte.v.forge.sms.internal.v1.SmsProviderConfig
-	4,   // 41: byte.v.forge.sms.internal.v1.UpsertProviderConfigResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	8,   // 42: byte.v.forge.sms.internal.v1.GetProviderConfigResponse.config:type_name -> byte.v.forge.sms.internal.v1.SmsProviderConfig
-	4,   // 43: byte.v.forge.sms.internal.v1.GetProviderConfigResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	8,   // 44: byte.v.forge.sms.internal.v1.ListProviderConfigsResponse.configs:type_name -> byte.v.forge.sms.internal.v1.SmsProviderConfig
-	4,   // 45: byte.v.forge.sms.internal.v1.ListProviderConfigsResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	4,   // 46: byte.v.forge.sms.internal.v1.DeleteProviderConfigResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	6,   // 47: byte.v.forge.sms.internal.v1.ListRouteOptionsResponse.options:type_name -> byte.v.forge.sms.internal.v1.SmsProviderRouteOptions
-	4,   // 48: byte.v.forge.sms.internal.v1.ListRouteOptionsResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	16,  // 49: byte.v.forge.sms.internal.v1.UpsertRouteProfileRequest.profile:type_name -> byte.v.forge.sms.internal.v1.SmsRouteProfile
-	16,  // 50: byte.v.forge.sms.internal.v1.UpsertRouteProfileResponse.profile:type_name -> byte.v.forge.sms.internal.v1.SmsRouteProfile
-	4,   // 51: byte.v.forge.sms.internal.v1.UpsertRouteProfileResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	16,  // 52: byte.v.forge.sms.internal.v1.GetRouteProfileResponse.profile:type_name -> byte.v.forge.sms.internal.v1.SmsRouteProfile
-	4,   // 53: byte.v.forge.sms.internal.v1.GetRouteProfileResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	16,  // 54: byte.v.forge.sms.internal.v1.ListRouteProfilesResponse.profiles:type_name -> byte.v.forge.sms.internal.v1.SmsRouteProfile
-	4,   // 55: byte.v.forge.sms.internal.v1.ListRouteProfilesResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	4,   // 56: byte.v.forge.sms.internal.v1.DeleteRouteProfileResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	64,  // 57: byte.v.forge.sms.internal.v1.GetProviderBalanceResponse.balance:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
-	4,   // 58: byte.v.forge.sms.internal.v1.GetProviderBalanceResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	65,  // 59: byte.v.forge.sms.internal.v1.SmsActivationView.activation:type_name -> byte.v.forge.contracts.sms.v1.SmsActivation
-	70,  // 60: byte.v.forge.sms.internal.v1.SmsActivationView.latest_code:type_name -> byte.v.forge.contracts.sms.v1.SmsCode
-	37,  // 61: byte.v.forge.sms.internal.v1.ListActivationsResponse.activations:type_name -> byte.v.forge.sms.internal.v1.SmsActivationView
-	4,   // 62: byte.v.forge.sms.internal.v1.ListActivationsResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	37,  // 63: byte.v.forge.sms.internal.v1.CancelProviderActivationResponse.activation:type_name -> byte.v.forge.sms.internal.v1.SmsActivationView
-	4,   // 64: byte.v.forge.sms.internal.v1.CancelProviderActivationResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	71,  // 65: byte.v.forge.sms.internal.v1.ProviderSmsApplicationInfo.public_application:type_name -> byte.v.forge.contracts.sms.v1.SmsApplicationInfo
-	66,  // 66: byte.v.forge.sms.internal.v1.ProviderSmsApplicationInfo.raw_metadata:type_name -> google.protobuf.Struct
-	72,  // 67: byte.v.forge.sms.internal.v1.ProviderSmsCountry.public_country:type_name -> byte.v.forge.contracts.sms.v1.SmsCountry
-	66,  // 68: byte.v.forge.sms.internal.v1.ProviderSmsCountry.raw_metadata:type_name -> google.protobuf.Struct
-	73,  // 69: byte.v.forge.sms.internal.v1.ProviderSmsPriceOffer.public_offer:type_name -> byte.v.forge.contracts.sms.v1.SmsPriceOffer
-	66,  // 70: byte.v.forge.sms.internal.v1.ProviderSmsPriceOffer.raw_metadata:type_name -> google.protobuf.Struct
-	43,  // 71: byte.v.forge.sms.internal.v1.ProviderSmsCountryPriceSummary.country:type_name -> byte.v.forge.sms.internal.v1.ProviderSmsCountry
-	44,  // 72: byte.v.forge.sms.internal.v1.ProviderSmsCountryPriceSummary.offers:type_name -> byte.v.forge.sms.internal.v1.ProviderSmsPriceOffer
-	42,  // 73: byte.v.forge.sms.internal.v1.ListProviderApplicationsResponse.applications:type_name -> byte.v.forge.sms.internal.v1.ProviderSmsApplicationInfo
-	4,   // 74: byte.v.forge.sms.internal.v1.ListProviderApplicationsResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	43,  // 75: byte.v.forge.sms.internal.v1.ListProviderCountriesResponse.countries:type_name -> byte.v.forge.sms.internal.v1.ProviderSmsCountry
-	4,   // 76: byte.v.forge.sms.internal.v1.ListProviderCountriesResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	44,  // 77: byte.v.forge.sms.internal.v1.ListProviderPriceOffersResponse.offers:type_name -> byte.v.forge.sms.internal.v1.ProviderSmsPriceOffer
-	4,   // 78: byte.v.forge.sms.internal.v1.ListProviderPriceOffersResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	45,  // 79: byte.v.forge.sms.internal.v1.ListTopProviderCountriesByApplicationResponse.countries:type_name -> byte.v.forge.sms.internal.v1.ProviderSmsCountryPriceSummary
-	4,   // 80: byte.v.forge.sms.internal.v1.ListTopProviderCountriesByApplicationResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	68,  // 81: byte.v.forge.sms.internal.v1.InboundProviderMessage.received_at:type_name -> google.protobuf.Timestamp
-	66,  // 82: byte.v.forge.sms.internal.v1.InboundProviderMessage.raw_payload:type_name -> google.protobuf.Struct
-	54,  // 83: byte.v.forge.sms.internal.v1.IngestInboundMessageRequest.message:type_name -> byte.v.forge.sms.internal.v1.InboundProviderMessage
-	7,   // 84: byte.v.forge.sms.internal.v1.IngestInboundMessageResponse.activation:type_name -> byte.v.forge.sms.internal.v1.ProviderActivation
-	74,  // 85: byte.v.forge.sms.internal.v1.IngestInboundMessageResponse.public_event:type_name -> byte.v.forge.contracts.sms.v1.SmsCodeReceivedEvent
-	4,   // 86: byte.v.forge.sms.internal.v1.IngestInboundMessageResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	14,  // 87: byte.v.forge.sms.internal.v1.ListProviderPluginsResponse.plugins:type_name -> byte.v.forge.sms.internal.v1.SmsProviderPluginDescriptor
-	4,   // 88: byte.v.forge.sms.internal.v1.ListProviderPluginsResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	57,  // 89: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListProviderPlugins:input_type -> byte.v.forge.sms.internal.v1.ListProviderPluginsRequest
-	17,  // 90: byte.v.forge.sms.internal.v1.SmsProviderAdminService.UpsertProviderConfig:input_type -> byte.v.forge.sms.internal.v1.UpsertProviderConfigRequest
-	19,  // 91: byte.v.forge.sms.internal.v1.SmsProviderAdminService.GetProviderConfig:input_type -> byte.v.forge.sms.internal.v1.GetProviderConfigRequest
-	21,  // 92: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListProviderConfigs:input_type -> byte.v.forge.sms.internal.v1.ListProviderConfigsRequest
-	23,  // 93: byte.v.forge.sms.internal.v1.SmsProviderAdminService.DeleteProviderConfig:input_type -> byte.v.forge.sms.internal.v1.DeleteProviderConfigRequest
-	25,  // 94: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListRouteOptions:input_type -> byte.v.forge.sms.internal.v1.ListRouteOptionsRequest
-	27,  // 95: byte.v.forge.sms.internal.v1.SmsProviderAdminService.UpsertRouteProfile:input_type -> byte.v.forge.sms.internal.v1.UpsertRouteProfileRequest
-	29,  // 96: byte.v.forge.sms.internal.v1.SmsProviderAdminService.GetRouteProfile:input_type -> byte.v.forge.sms.internal.v1.GetRouteProfileRequest
-	31,  // 97: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListRouteProfiles:input_type -> byte.v.forge.sms.internal.v1.ListRouteProfilesRequest
-	33,  // 98: byte.v.forge.sms.internal.v1.SmsProviderAdminService.DeleteRouteProfile:input_type -> byte.v.forge.sms.internal.v1.DeleteRouteProfileRequest
-	35,  // 99: byte.v.forge.sms.internal.v1.SmsProviderAdminService.GetProviderBalance:input_type -> byte.v.forge.sms.internal.v1.GetProviderBalanceRequest
-	38,  // 100: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListActivations:input_type -> byte.v.forge.sms.internal.v1.ListActivationsRequest
-	40,  // 101: byte.v.forge.sms.internal.v1.SmsProviderAdminService.CancelActivation:input_type -> byte.v.forge.sms.internal.v1.CancelProviderActivationRequest
-	46,  // 102: byte.v.forge.sms.internal.v1.SmsProviderCatalogService.ListProviderApplications:input_type -> byte.v.forge.sms.internal.v1.ListProviderApplicationsRequest
-	48,  // 103: byte.v.forge.sms.internal.v1.SmsProviderCatalogService.ListProviderCountries:input_type -> byte.v.forge.sms.internal.v1.ListProviderCountriesRequest
-	50,  // 104: byte.v.forge.sms.internal.v1.SmsProviderCatalogService.ListProviderPriceOffers:input_type -> byte.v.forge.sms.internal.v1.ListProviderPriceOffersRequest
-	52,  // 105: byte.v.forge.sms.internal.v1.SmsProviderCatalogService.ListTopProviderCountriesByApplication:input_type -> byte.v.forge.sms.internal.v1.ListTopProviderCountriesByApplicationRequest
-	55,  // 106: byte.v.forge.sms.internal.v1.SmsWebhookIngestService.IngestInboundMessage:input_type -> byte.v.forge.sms.internal.v1.IngestInboundMessageRequest
-	58,  // 107: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListProviderPlugins:output_type -> byte.v.forge.sms.internal.v1.ListProviderPluginsResponse
-	18,  // 108: byte.v.forge.sms.internal.v1.SmsProviderAdminService.UpsertProviderConfig:output_type -> byte.v.forge.sms.internal.v1.UpsertProviderConfigResponse
-	20,  // 109: byte.v.forge.sms.internal.v1.SmsProviderAdminService.GetProviderConfig:output_type -> byte.v.forge.sms.internal.v1.GetProviderConfigResponse
-	22,  // 110: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListProviderConfigs:output_type -> byte.v.forge.sms.internal.v1.ListProviderConfigsResponse
-	24,  // 111: byte.v.forge.sms.internal.v1.SmsProviderAdminService.DeleteProviderConfig:output_type -> byte.v.forge.sms.internal.v1.DeleteProviderConfigResponse
-	26,  // 112: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListRouteOptions:output_type -> byte.v.forge.sms.internal.v1.ListRouteOptionsResponse
-	28,  // 113: byte.v.forge.sms.internal.v1.SmsProviderAdminService.UpsertRouteProfile:output_type -> byte.v.forge.sms.internal.v1.UpsertRouteProfileResponse
-	30,  // 114: byte.v.forge.sms.internal.v1.SmsProviderAdminService.GetRouteProfile:output_type -> byte.v.forge.sms.internal.v1.GetRouteProfileResponse
-	32,  // 115: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListRouteProfiles:output_type -> byte.v.forge.sms.internal.v1.ListRouteProfilesResponse
-	34,  // 116: byte.v.forge.sms.internal.v1.SmsProviderAdminService.DeleteRouteProfile:output_type -> byte.v.forge.sms.internal.v1.DeleteRouteProfileResponse
-	36,  // 117: byte.v.forge.sms.internal.v1.SmsProviderAdminService.GetProviderBalance:output_type -> byte.v.forge.sms.internal.v1.GetProviderBalanceResponse
-	39,  // 118: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListActivations:output_type -> byte.v.forge.sms.internal.v1.ListActivationsResponse
-	41,  // 119: byte.v.forge.sms.internal.v1.SmsProviderAdminService.CancelActivation:output_type -> byte.v.forge.sms.internal.v1.CancelProviderActivationResponse
-	47,  // 120: byte.v.forge.sms.internal.v1.SmsProviderCatalogService.ListProviderApplications:output_type -> byte.v.forge.sms.internal.v1.ListProviderApplicationsResponse
-	49,  // 121: byte.v.forge.sms.internal.v1.SmsProviderCatalogService.ListProviderCountries:output_type -> byte.v.forge.sms.internal.v1.ListProviderCountriesResponse
-	51,  // 122: byte.v.forge.sms.internal.v1.SmsProviderCatalogService.ListProviderPriceOffers:output_type -> byte.v.forge.sms.internal.v1.ListProviderPriceOffersResponse
-	53,  // 123: byte.v.forge.sms.internal.v1.SmsProviderCatalogService.ListTopProviderCountriesByApplication:output_type -> byte.v.forge.sms.internal.v1.ListTopProviderCountriesByApplicationResponse
-	56,  // 124: byte.v.forge.sms.internal.v1.SmsWebhookIngestService.IngestInboundMessage:output_type -> byte.v.forge.sms.internal.v1.IngestInboundMessageResponse
-	107, // [107:125] is the sub-list for method output_type
-	89,  // [89:107] is the sub-list for method input_type
-	89,  // [89:89] is the sub-list for extension type_name
-	89,  // [89:89] is the sub-list for extension extendee
-	0,   // [0:89] is the sub-list for field type_name
+	12,  // 23: byte.v.forge.sms.internal.v1.SmsProviderConfigField.options:type_name -> byte.v.forge.sms.internal.v1.SmsConfigFieldOption
+	1,   // 24: byte.v.forge.sms.internal.v1.SmsProviderConfigField.target:type_name -> byte.v.forge.sms.internal.v1.SmsConfigFieldTarget
+	2,   // 25: byte.v.forge.sms.internal.v1.SmsProviderRouteField.scope:type_name -> byte.v.forge.sms.internal.v1.SmsRouteFieldScope
+	3,   // 26: byte.v.forge.sms.internal.v1.SmsProviderRouteField.option_source:type_name -> byte.v.forge.sms.internal.v1.SmsRouteOptionSource
+	11,  // 27: byte.v.forge.sms.internal.v1.SmsProviderPluginDescriptor.capabilities:type_name -> byte.v.forge.sms.internal.v1.SmsProviderCapabilities
+	13,  // 28: byte.v.forge.sms.internal.v1.SmsProviderPluginDescriptor.config_fields:type_name -> byte.v.forge.sms.internal.v1.SmsProviderConfigField
+	14,  // 29: byte.v.forge.sms.internal.v1.SmsProviderPluginDescriptor.route_fields:type_name -> byte.v.forge.sms.internal.v1.SmsProviderRouteField
+	68,  // 30: byte.v.forge.sms.internal.v1.SmsRouteCandidate.target:type_name -> byte.v.forge.contracts.sms.v1.SmsTarget
+	65,  // 31: byte.v.forge.sms.internal.v1.SmsRouteCandidate.min_price:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
+	65,  // 32: byte.v.forge.sms.internal.v1.SmsRouteCandidate.max_price:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
+	62,  // 33: byte.v.forge.sms.internal.v1.SmsRouteCandidate.provider_options:type_name -> byte.v.forge.sms.internal.v1.SmsRouteCandidate.ProviderOptionsEntry
+	4,   // 34: byte.v.forge.sms.internal.v1.SmsRouteProfile.selection_strategy:type_name -> byte.v.forge.sms.internal.v1.SmsRouteSelectionStrategy
+	68,  // 35: byte.v.forge.sms.internal.v1.SmsRouteProfile.default_target:type_name -> byte.v.forge.contracts.sms.v1.SmsTarget
+	16,  // 36: byte.v.forge.sms.internal.v1.SmsRouteProfile.routes:type_name -> byte.v.forge.sms.internal.v1.SmsRouteCandidate
+	63,  // 37: byte.v.forge.sms.internal.v1.SmsRouteProfile.labels:type_name -> byte.v.forge.sms.internal.v1.SmsRouteProfile.LabelsEntry
+	69,  // 38: byte.v.forge.sms.internal.v1.SmsRouteProfile.created_at:type_name -> google.protobuf.Timestamp
+	69,  // 39: byte.v.forge.sms.internal.v1.SmsRouteProfile.updated_at:type_name -> google.protobuf.Timestamp
+	9,   // 40: byte.v.forge.sms.internal.v1.UpsertProviderConfigRequest.config:type_name -> byte.v.forge.sms.internal.v1.SmsProviderConfig
+	9,   // 41: byte.v.forge.sms.internal.v1.UpsertProviderConfigResponse.config:type_name -> byte.v.forge.sms.internal.v1.SmsProviderConfig
+	5,   // 42: byte.v.forge.sms.internal.v1.UpsertProviderConfigResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	9,   // 43: byte.v.forge.sms.internal.v1.GetProviderConfigResponse.config:type_name -> byte.v.forge.sms.internal.v1.SmsProviderConfig
+	5,   // 44: byte.v.forge.sms.internal.v1.GetProviderConfigResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	9,   // 45: byte.v.forge.sms.internal.v1.ListProviderConfigsResponse.configs:type_name -> byte.v.forge.sms.internal.v1.SmsProviderConfig
+	5,   // 46: byte.v.forge.sms.internal.v1.ListProviderConfigsResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	5,   // 47: byte.v.forge.sms.internal.v1.DeleteProviderConfigResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	7,   // 48: byte.v.forge.sms.internal.v1.ListRouteOptionsResponse.options:type_name -> byte.v.forge.sms.internal.v1.SmsProviderRouteOptions
+	5,   // 49: byte.v.forge.sms.internal.v1.ListRouteOptionsResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	17,  // 50: byte.v.forge.sms.internal.v1.UpsertRouteProfileRequest.profile:type_name -> byte.v.forge.sms.internal.v1.SmsRouteProfile
+	17,  // 51: byte.v.forge.sms.internal.v1.UpsertRouteProfileResponse.profile:type_name -> byte.v.forge.sms.internal.v1.SmsRouteProfile
+	5,   // 52: byte.v.forge.sms.internal.v1.UpsertRouteProfileResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	17,  // 53: byte.v.forge.sms.internal.v1.GetRouteProfileResponse.profile:type_name -> byte.v.forge.sms.internal.v1.SmsRouteProfile
+	5,   // 54: byte.v.forge.sms.internal.v1.GetRouteProfileResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	17,  // 55: byte.v.forge.sms.internal.v1.ListRouteProfilesResponse.profiles:type_name -> byte.v.forge.sms.internal.v1.SmsRouteProfile
+	5,   // 56: byte.v.forge.sms.internal.v1.ListRouteProfilesResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	5,   // 57: byte.v.forge.sms.internal.v1.DeleteRouteProfileResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	65,  // 58: byte.v.forge.sms.internal.v1.GetProviderBalanceResponse.balance:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
+	5,   // 59: byte.v.forge.sms.internal.v1.GetProviderBalanceResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	66,  // 60: byte.v.forge.sms.internal.v1.SmsActivationView.activation:type_name -> byte.v.forge.contracts.sms.v1.SmsActivation
+	71,  // 61: byte.v.forge.sms.internal.v1.SmsActivationView.latest_code:type_name -> byte.v.forge.contracts.sms.v1.SmsCode
+	38,  // 62: byte.v.forge.sms.internal.v1.ListActivationsResponse.activations:type_name -> byte.v.forge.sms.internal.v1.SmsActivationView
+	5,   // 63: byte.v.forge.sms.internal.v1.ListActivationsResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	38,  // 64: byte.v.forge.sms.internal.v1.CancelProviderActivationResponse.activation:type_name -> byte.v.forge.sms.internal.v1.SmsActivationView
+	5,   // 65: byte.v.forge.sms.internal.v1.CancelProviderActivationResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	72,  // 66: byte.v.forge.sms.internal.v1.ProviderSmsApplicationInfo.public_application:type_name -> byte.v.forge.contracts.sms.v1.SmsApplicationInfo
+	67,  // 67: byte.v.forge.sms.internal.v1.ProviderSmsApplicationInfo.raw_metadata:type_name -> google.protobuf.Struct
+	73,  // 68: byte.v.forge.sms.internal.v1.ProviderSmsCountry.public_country:type_name -> byte.v.forge.contracts.sms.v1.SmsCountry
+	67,  // 69: byte.v.forge.sms.internal.v1.ProviderSmsCountry.raw_metadata:type_name -> google.protobuf.Struct
+	74,  // 70: byte.v.forge.sms.internal.v1.ProviderSmsPriceOffer.public_offer:type_name -> byte.v.forge.contracts.sms.v1.SmsPriceOffer
+	67,  // 71: byte.v.forge.sms.internal.v1.ProviderSmsPriceOffer.raw_metadata:type_name -> google.protobuf.Struct
+	44,  // 72: byte.v.forge.sms.internal.v1.ProviderSmsCountryPriceSummary.country:type_name -> byte.v.forge.sms.internal.v1.ProviderSmsCountry
+	45,  // 73: byte.v.forge.sms.internal.v1.ProviderSmsCountryPriceSummary.offers:type_name -> byte.v.forge.sms.internal.v1.ProviderSmsPriceOffer
+	43,  // 74: byte.v.forge.sms.internal.v1.ListProviderApplicationsResponse.applications:type_name -> byte.v.forge.sms.internal.v1.ProviderSmsApplicationInfo
+	5,   // 75: byte.v.forge.sms.internal.v1.ListProviderApplicationsResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	44,  // 76: byte.v.forge.sms.internal.v1.ListProviderCountriesResponse.countries:type_name -> byte.v.forge.sms.internal.v1.ProviderSmsCountry
+	5,   // 77: byte.v.forge.sms.internal.v1.ListProviderCountriesResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	45,  // 78: byte.v.forge.sms.internal.v1.ListProviderPriceOffersResponse.offers:type_name -> byte.v.forge.sms.internal.v1.ProviderSmsPriceOffer
+	5,   // 79: byte.v.forge.sms.internal.v1.ListProviderPriceOffersResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	46,  // 80: byte.v.forge.sms.internal.v1.ListTopProviderCountriesByApplicationResponse.countries:type_name -> byte.v.forge.sms.internal.v1.ProviderSmsCountryPriceSummary
+	5,   // 81: byte.v.forge.sms.internal.v1.ListTopProviderCountriesByApplicationResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	69,  // 82: byte.v.forge.sms.internal.v1.InboundProviderMessage.received_at:type_name -> google.protobuf.Timestamp
+	67,  // 83: byte.v.forge.sms.internal.v1.InboundProviderMessage.raw_payload:type_name -> google.protobuf.Struct
+	55,  // 84: byte.v.forge.sms.internal.v1.IngestInboundMessageRequest.message:type_name -> byte.v.forge.sms.internal.v1.InboundProviderMessage
+	8,   // 85: byte.v.forge.sms.internal.v1.IngestInboundMessageResponse.activation:type_name -> byte.v.forge.sms.internal.v1.ProviderActivation
+	75,  // 86: byte.v.forge.sms.internal.v1.IngestInboundMessageResponse.public_event:type_name -> byte.v.forge.contracts.sms.v1.SmsCodeReceivedEvent
+	5,   // 87: byte.v.forge.sms.internal.v1.IngestInboundMessageResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	15,  // 88: byte.v.forge.sms.internal.v1.ListProviderPluginsResponse.plugins:type_name -> byte.v.forge.sms.internal.v1.SmsProviderPluginDescriptor
+	5,   // 89: byte.v.forge.sms.internal.v1.ListProviderPluginsResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	58,  // 90: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListProviderPlugins:input_type -> byte.v.forge.sms.internal.v1.ListProviderPluginsRequest
+	18,  // 91: byte.v.forge.sms.internal.v1.SmsProviderAdminService.UpsertProviderConfig:input_type -> byte.v.forge.sms.internal.v1.UpsertProviderConfigRequest
+	20,  // 92: byte.v.forge.sms.internal.v1.SmsProviderAdminService.GetProviderConfig:input_type -> byte.v.forge.sms.internal.v1.GetProviderConfigRequest
+	22,  // 93: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListProviderConfigs:input_type -> byte.v.forge.sms.internal.v1.ListProviderConfigsRequest
+	24,  // 94: byte.v.forge.sms.internal.v1.SmsProviderAdminService.DeleteProviderConfig:input_type -> byte.v.forge.sms.internal.v1.DeleteProviderConfigRequest
+	26,  // 95: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListRouteOptions:input_type -> byte.v.forge.sms.internal.v1.ListRouteOptionsRequest
+	28,  // 96: byte.v.forge.sms.internal.v1.SmsProviderAdminService.UpsertRouteProfile:input_type -> byte.v.forge.sms.internal.v1.UpsertRouteProfileRequest
+	30,  // 97: byte.v.forge.sms.internal.v1.SmsProviderAdminService.GetRouteProfile:input_type -> byte.v.forge.sms.internal.v1.GetRouteProfileRequest
+	32,  // 98: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListRouteProfiles:input_type -> byte.v.forge.sms.internal.v1.ListRouteProfilesRequest
+	34,  // 99: byte.v.forge.sms.internal.v1.SmsProviderAdminService.DeleteRouteProfile:input_type -> byte.v.forge.sms.internal.v1.DeleteRouteProfileRequest
+	36,  // 100: byte.v.forge.sms.internal.v1.SmsProviderAdminService.GetProviderBalance:input_type -> byte.v.forge.sms.internal.v1.GetProviderBalanceRequest
+	39,  // 101: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListActivations:input_type -> byte.v.forge.sms.internal.v1.ListActivationsRequest
+	41,  // 102: byte.v.forge.sms.internal.v1.SmsProviderAdminService.CancelActivation:input_type -> byte.v.forge.sms.internal.v1.CancelProviderActivationRequest
+	47,  // 103: byte.v.forge.sms.internal.v1.SmsProviderCatalogService.ListProviderApplications:input_type -> byte.v.forge.sms.internal.v1.ListProviderApplicationsRequest
+	49,  // 104: byte.v.forge.sms.internal.v1.SmsProviderCatalogService.ListProviderCountries:input_type -> byte.v.forge.sms.internal.v1.ListProviderCountriesRequest
+	51,  // 105: byte.v.forge.sms.internal.v1.SmsProviderCatalogService.ListProviderPriceOffers:input_type -> byte.v.forge.sms.internal.v1.ListProviderPriceOffersRequest
+	53,  // 106: byte.v.forge.sms.internal.v1.SmsProviderCatalogService.ListTopProviderCountriesByApplication:input_type -> byte.v.forge.sms.internal.v1.ListTopProviderCountriesByApplicationRequest
+	56,  // 107: byte.v.forge.sms.internal.v1.SmsWebhookIngestService.IngestInboundMessage:input_type -> byte.v.forge.sms.internal.v1.IngestInboundMessageRequest
+	59,  // 108: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListProviderPlugins:output_type -> byte.v.forge.sms.internal.v1.ListProviderPluginsResponse
+	19,  // 109: byte.v.forge.sms.internal.v1.SmsProviderAdminService.UpsertProviderConfig:output_type -> byte.v.forge.sms.internal.v1.UpsertProviderConfigResponse
+	21,  // 110: byte.v.forge.sms.internal.v1.SmsProviderAdminService.GetProviderConfig:output_type -> byte.v.forge.sms.internal.v1.GetProviderConfigResponse
+	23,  // 111: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListProviderConfigs:output_type -> byte.v.forge.sms.internal.v1.ListProviderConfigsResponse
+	25,  // 112: byte.v.forge.sms.internal.v1.SmsProviderAdminService.DeleteProviderConfig:output_type -> byte.v.forge.sms.internal.v1.DeleteProviderConfigResponse
+	27,  // 113: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListRouteOptions:output_type -> byte.v.forge.sms.internal.v1.ListRouteOptionsResponse
+	29,  // 114: byte.v.forge.sms.internal.v1.SmsProviderAdminService.UpsertRouteProfile:output_type -> byte.v.forge.sms.internal.v1.UpsertRouteProfileResponse
+	31,  // 115: byte.v.forge.sms.internal.v1.SmsProviderAdminService.GetRouteProfile:output_type -> byte.v.forge.sms.internal.v1.GetRouteProfileResponse
+	33,  // 116: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListRouteProfiles:output_type -> byte.v.forge.sms.internal.v1.ListRouteProfilesResponse
+	35,  // 117: byte.v.forge.sms.internal.v1.SmsProviderAdminService.DeleteRouteProfile:output_type -> byte.v.forge.sms.internal.v1.DeleteRouteProfileResponse
+	37,  // 118: byte.v.forge.sms.internal.v1.SmsProviderAdminService.GetProviderBalance:output_type -> byte.v.forge.sms.internal.v1.GetProviderBalanceResponse
+	40,  // 119: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListActivations:output_type -> byte.v.forge.sms.internal.v1.ListActivationsResponse
+	42,  // 120: byte.v.forge.sms.internal.v1.SmsProviderAdminService.CancelActivation:output_type -> byte.v.forge.sms.internal.v1.CancelProviderActivationResponse
+	48,  // 121: byte.v.forge.sms.internal.v1.SmsProviderCatalogService.ListProviderApplications:output_type -> byte.v.forge.sms.internal.v1.ListProviderApplicationsResponse
+	50,  // 122: byte.v.forge.sms.internal.v1.SmsProviderCatalogService.ListProviderCountries:output_type -> byte.v.forge.sms.internal.v1.ListProviderCountriesResponse
+	52,  // 123: byte.v.forge.sms.internal.v1.SmsProviderCatalogService.ListProviderPriceOffers:output_type -> byte.v.forge.sms.internal.v1.ListProviderPriceOffersResponse
+	54,  // 124: byte.v.forge.sms.internal.v1.SmsProviderCatalogService.ListTopProviderCountriesByApplication:output_type -> byte.v.forge.sms.internal.v1.ListTopProviderCountriesByApplicationResponse
+	57,  // 125: byte.v.forge.sms.internal.v1.SmsWebhookIngestService.IngestInboundMessage:output_type -> byte.v.forge.sms.internal.v1.IngestInboundMessageResponse
+	108, // [108:126] is the sub-list for method output_type
+	90,  // [90:108] is the sub-list for method input_type
+	90,  // [90:90] is the sub-list for extension type_name
+	90,  // [90:90] is the sub-list for extension extendee
+	0,   // [0:90] is the sub-list for field type_name
 }
 
 func init() { file_byte_v_forge_sms_internal_v1_sms_internal_proto_init() }
@@ -4265,7 +4337,7 @@ func file_byte_v_forge_sms_internal_v1_sms_internal_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDesc), len(file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDesc)),
-			NumEnums:      4,
+			NumEnums:      5,
 			NumMessages:   59,
 			NumExtensions: 0,
 			NumServices:   3,

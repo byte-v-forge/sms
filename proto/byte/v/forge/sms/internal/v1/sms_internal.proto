@@ -125,6 +125,14 @@ enum SmsConfigFieldKind {
   SMS_CONFIG_FIELD_KIND_DURATION_SECONDS = 5;
 }
 
+enum SmsConfigFieldTarget {
+  SMS_CONFIG_FIELD_TARGET_UNSPECIFIED = 0;
+  SMS_CONFIG_FIELD_TARGET_CREDENTIAL_SECRET = 1;
+  SMS_CONFIG_FIELD_TARGET_API_ENDPOINT = 2;
+  SMS_CONFIG_FIELD_TARGET_HTTP_PROXY = 3;
+  SMS_CONFIG_FIELD_TARGET_LABEL = 4;
+}
+
 message SmsConfigFieldOption {
   string value = 1;
   string label = 2;
@@ -138,6 +146,7 @@ message SmsProviderConfigField {
   bool advanced = 5;
   string placeholder = 6;
   repeated SmsConfigFieldOption options = 7;
+  SmsConfigFieldTarget target = 8;
 }
 
 enum SmsRouteFieldScope {
