@@ -10,9 +10,6 @@ import (
 	smsv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/sms/v1"
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	"github.com/byte-v-forge/sms/internal/core"
-	"github.com/byte-v-forge/sms/internal/providers/fivesim"
-	"github.com/byte-v-forge/sms/internal/providers/herosms"
-	"github.com/byte-v-forge/sms/internal/providers/smsbower"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/proto"
@@ -447,22 +444,15 @@ func durationSeconds(value time.Duration) int64 {
 }
 
 func defaultProviderCapabilities(providerKey string) *smsinternalv1.SmsProviderCapabilities {
-	return &smsinternalv1.SmsProviderCapabilities{
-		SupportsBalance:         true,
-		RequiresMarkMessageSent: true,
-		SupportsAdditionalCode:  true,
-		SupportsCatalog:         providerKey == fivesim.ProviderKey || providerKey == smsbower.ProviderKey,
-		SupportsPriceLookup:     providerKey == fivesim.ProviderKey || providerKey == smsbower.ProviderKey,
+	if plugin, ok := smsProviderPluginByKey(providerKey); ok {
+		return plugin.Capabilities()
 	}
+	return &smsinternalv1.SmsProviderCapabilities{}
 }
 
 func supportedProviderKey(providerKey string) bool {
-	switch providerKey {
-	case fivesim.ProviderKey, herosms.ProviderKey, smsbower.ProviderKey:
-		return true
-	default:
-		return false
-	}
+	_, ok := smsProviderPluginByKey(providerKey)
+	return ok
 }
 
 func targetMatchScore(configTarget *smsv1.SmsTarget, target core.Target) int {

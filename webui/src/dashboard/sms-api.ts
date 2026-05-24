@@ -3,6 +3,7 @@ import type {
   CancelProviderActivationResponse,
   DeleteProviderConfigResponse,
   GetProviderBalanceResponse,
+  ListProviderPluginsResponse,
   ListRouteOptionsResponse,
   ListActivationsResponse,
   ListProviderConfigsResponse,
@@ -15,12 +16,17 @@ import type {
 } from '@/proto/byte/v/forge/sms/internal/v1/sms_internal';
 
 export const smsKeys = {
+  plugins: ['sms', 'provider-plugins'] as const,
   configs: ['sms', 'provider-configs'] as const,
   profiles: ['sms', 'route-profiles'] as const,
   activations: ['sms', 'activations'] as const,
   balance: (id: string) => ['sms', 'balance', id] as const,
   routeOptions: (providerKey: string) => ['sms', 'route-options', providerKey] as const
 };
+
+export function listSmsProviderPlugins() {
+  return api<ListProviderPluginsResponse>('/api/sms/provider-plugins');
+}
 
 export function listSmsProviderConfigs() {
   return api<ListProviderConfigsResponse>('/api/sms/provider-configs?include_disabled=true');

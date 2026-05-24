@@ -1,29 +1,43 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Save, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Save, Trash2 } from 'lucide-react';
 import { Button, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/dashboard/module-kit';
-import type { SmsProviderConfig } from '@/proto/byte/v/forge/sms/internal/v1/sms_internal';
+import {
+  SmsConfigFieldKind,
+  type SmsProviderConfig,
+  type SmsProviderConfigField,
+  type SmsProviderPluginDescriptor
+} from '@/proto/byte/v/forge/sms/internal/v1/sms_internal';
 import { defaultSmsProviderPolicy, durationSeconds, newSmsProviderConfig, secondsDuration } from './sms-format';
 
 type FormProps = {
   config: SmsProviderConfig | null;
+  plugins: SmsProviderPluginDescriptor[];
   saving?: boolean;
   deleting?: boolean;
   onSave: (config: SmsProviderConfig) => void;
   onDelete: (id: string) => void;
 };
 
-export function ProviderConfigForm({ config, saving, deleting, onSave, onDelete }: FormProps) {
+export function ProviderConfigForm({ config, plugins, saving, deleting, onSave, onDelete }: FormProps) {
   const [draft, setDraft] = useState<SmsProviderConfig>(() => config || newSmsProviderConfig());
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   useEffect(() => setDraft(config || newSmsProviderConfig()), [config]);
   const providerType = draft.provider_key || '5sim';
+  const plugin = plugins.find((item) => item.provider_key === providerType) || plugins[0];
+  const fields = plugin?.config_fields || [];
 
   function patch(next: Partial<SmsProviderConfig>) {
     setDraft((current) => ({ ...current, ...next }));
   }
 
   function patchProviderType(value: string) {
-    patch({ provider_key: value, provider_config_id: value, display_name: providerLabel(value), enabled: true, policy: defaultSmsProviderPolicy(value) });
+    const nextPlugin = plugins.find((item) => item.provider_key === value);
+    patch({ provider_key: value, provider_config_id: value, display_name: nextPlugin?.display_name || value, enabled: true, policy: defaultSmsProviderPolicy(value) });
+  }
+
+  function patchField(field: SmsProviderConfigField, value: string) {
+    setDraft((current) => writeConfigField(current, field.field_key, value));
   }
 
   function patchPolicy(field: keyof NonNullable<SmsProviderConfig['policy']>, seconds: number) {
@@ -35,7 +49,7 @@ export function ProviderConfigForm({ config, saving, deleting, onSave, onDelete 
       ...draft,
       provider_config_id: providerType,
       provider_key: providerType,
-      display_name: providerLabel(providerType),
+      display_name: plugin?.display_name || providerType,
       enabled: true,
       api_endpoint: '',
       credential_secret_ref: '',
@@ -43,12 +57,13 @@ export function ProviderConfigForm({ config, saving, deleting, onSave, onDelete 
       default_target: undefined,
       upstream_service_key: '',
       provider_country_id: '',
-      http_proxy: '',
       policy: draft.policy || defaultSmsProviderPolicy(providerType),
-      labels: {}
+      labels: normalizeLabels(draft.labels || {})
     });
   }
   const policy = draft.policy || defaultSmsProviderPolicy(providerType);
+  const basicFields = fields.filter((field) => !field.advanced);
+  const advancedFields = fields.filter((field) => field.advanced);
 
   return (
     <div className="flex min-h-0 flex-col gap-3 border-l border-border/70 p-3">
@@ -58,13 +73,19 @@ export function ProviderConfigForm({ config, saving, deleting, onSave, onDelete 
           <Select value={providerType} onValueChange={patchProviderType}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="5sim">5sim</SelectItem>
-              <SelectItem value="smsbower">SMSBower</SelectItem>
-              <SelectItem value="herosms">HeroSMS</SelectItem>
+              {plugins.map((item) => <SelectItem key={item.provider_key} value={item.provider_key}>{item.display_name || item.provider_key}</SelectItem>)}
             </SelectContent>
           </Select>
         </Field>
-        <Field label="API Key"><Input type="password" placeholder={draft.credential_secret_set ? '留空则保留现有密钥' : ''} value={draft.credential_secret} onChange={(e) => patch({ credential_secret: e.target.value })} /></Field>
+        <ProviderFieldList fields={basicFields} draft={draft} onChange={patchField} />
+        {advancedFields.length > 0 && (
+          <div className="grid gap-2">
+            <Button type="button" variant="ghost" size="sm" className="w-fit gap-1 px-1" onClick={() => setAdvancedOpen((open) => !open)}>
+              {advancedOpen ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}高级配置
+            </Button>
+            {advancedOpen && <ProviderFieldList fields={advancedFields} draft={draft} onChange={patchField} />}
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-2">
           <Field label="有效期(分钟)"><Input type="number" min={1} value={Math.round(durationSeconds(policy.activation_ttl) / 60)} onChange={(e) => patchPolicy('activation_ttl', Number(e.target.value) * 60)} /></Field>
           <Field label="轮询(秒)"><Input type="number" min={1} value={durationSeconds(policy.poll_interval)} onChange={(e) => patchPolicy('poll_interval', Number(e.target.value))} /></Field>
@@ -80,11 +101,52 @@ export function ProviderConfigForm({ config, saving, deleting, onSave, onDelete 
   );
 }
 
+function ProviderFieldList({ fields, draft, onChange }: {
+  fields: SmsProviderConfigField[];
+  draft: SmsProviderConfig;
+  onChange: (field: SmsProviderConfigField, value: string) => void;
+}) {
+  return <>{fields.map((field) => <ProviderField key={field.field_key} field={field} draft={draft} onChange={(value) => onChange(field, value)} />)}</>;
+}
+
+function ProviderField({ field, draft, onChange }: {
+  field: SmsProviderConfigField;
+  draft: SmsProviderConfig;
+  onChange: (value: string) => void;
+}) {
+  const type = field.kind === SmsConfigFieldKind.SMS_CONFIG_FIELD_KIND_SECRET
+    ? 'password'
+    : field.kind === SmsConfigFieldKind.SMS_CONFIG_FIELD_KIND_NUMBER || field.kind === SmsConfigFieldKind.SMS_CONFIG_FIELD_KIND_DURATION_SECONDS ? 'number' : 'text';
+  const placeholder = field.kind === SmsConfigFieldKind.SMS_CONFIG_FIELD_KIND_SECRET && draft.credential_secret_set ? '留空则保留现有密钥' : field.placeholder;
+  return (
+    <Field label={`${field.label}${field.required ? ' *' : ''}`}>
+      <Input type={type} placeholder={placeholder} value={readConfigField(draft, field.field_key)} onChange={(e) => onChange(e.target.value)} />
+    </Field>
+  );
+}
+
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return <div className="grid gap-1"><Label>{label}</Label>{children}</div>;
 }
 
-function providerLabel(providerType: string) {
-  const labels: Record<string, string> = { '5sim': '5sim', herosms: 'HeroSMS', smsbower: 'SMSBower' };
-  return labels[providerType] || providerType;
+function readConfigField(config: SmsProviderConfig, key: string) {
+  if (key === 'credential_secret') return config.credential_secret || '';
+  if (key === 'api_endpoint') return config.api_endpoint || '';
+  if (key === 'http_proxy') return config.http_proxy || '';
+  if (key.startsWith('labels.')) return config.labels?.[key.slice('labels.'.length)] || '';
+  return '';
+}
+
+function writeConfigField(config: SmsProviderConfig, key: string, value: string): SmsProviderConfig {
+  if (key === 'credential_secret') return { ...config, credential_secret: value };
+  if (key === 'api_endpoint') return { ...config, api_endpoint: value };
+  if (key === 'http_proxy') return { ...config, http_proxy: value };
+  if (key.startsWith('labels.')) {
+    return { ...config, labels: { ...(config.labels || {}), [key.slice('labels.'.length)]: value } };
+  }
+  return config;
+}
+
+function normalizeLabels(labels: Record<string, string>) {
+  return Object.fromEntries(Object.entries(labels).filter(([key, value]) => key.trim() && String(value).trim()));
 }

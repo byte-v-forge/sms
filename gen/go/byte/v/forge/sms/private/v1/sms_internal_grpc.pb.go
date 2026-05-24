@@ -19,6 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
+	SmsProviderAdminService_ListProviderPlugins_FullMethodName  = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/ListProviderPlugins"
 	SmsProviderAdminService_UpsertProviderConfig_FullMethodName = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/UpsertProviderConfig"
 	SmsProviderAdminService_GetProviderConfig_FullMethodName    = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/GetProviderConfig"
 	SmsProviderAdminService_ListProviderConfigs_FullMethodName  = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/ListProviderConfigs"
@@ -37,6 +38,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SmsProviderAdminServiceClient interface {
+	ListProviderPlugins(ctx context.Context, in *ListProviderPluginsRequest, opts ...grpc.CallOption) (*ListProviderPluginsResponse, error)
 	UpsertProviderConfig(ctx context.Context, in *UpsertProviderConfigRequest, opts ...grpc.CallOption) (*UpsertProviderConfigResponse, error)
 	GetProviderConfig(ctx context.Context, in *GetProviderConfigRequest, opts ...grpc.CallOption) (*GetProviderConfigResponse, error)
 	ListProviderConfigs(ctx context.Context, in *ListProviderConfigsRequest, opts ...grpc.CallOption) (*ListProviderConfigsResponse, error)
@@ -57,6 +59,16 @@ type smsProviderAdminServiceClient struct {
 
 func NewSmsProviderAdminServiceClient(cc grpc.ClientConnInterface) SmsProviderAdminServiceClient {
 	return &smsProviderAdminServiceClient{cc}
+}
+
+func (c *smsProviderAdminServiceClient) ListProviderPlugins(ctx context.Context, in *ListProviderPluginsRequest, opts ...grpc.CallOption) (*ListProviderPluginsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListProviderPluginsResponse)
+	err := c.cc.Invoke(ctx, SmsProviderAdminService_ListProviderPlugins_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *smsProviderAdminServiceClient) UpsertProviderConfig(ctx context.Context, in *UpsertProviderConfigRequest, opts ...grpc.CallOption) (*UpsertProviderConfigResponse, error) {
@@ -183,6 +195,7 @@ func (c *smsProviderAdminServiceClient) CancelActivation(ctx context.Context, in
 // All implementations must embed UnimplementedSmsProviderAdminServiceServer
 // for forward compatibility.
 type SmsProviderAdminServiceServer interface {
+	ListProviderPlugins(context.Context, *ListProviderPluginsRequest) (*ListProviderPluginsResponse, error)
 	UpsertProviderConfig(context.Context, *UpsertProviderConfigRequest) (*UpsertProviderConfigResponse, error)
 	GetProviderConfig(context.Context, *GetProviderConfigRequest) (*GetProviderConfigResponse, error)
 	ListProviderConfigs(context.Context, *ListProviderConfigsRequest) (*ListProviderConfigsResponse, error)
@@ -205,6 +218,9 @@ type SmsProviderAdminServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedSmsProviderAdminServiceServer struct{}
 
+func (UnimplementedSmsProviderAdminServiceServer) ListProviderPlugins(context.Context, *ListProviderPluginsRequest) (*ListProviderPluginsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListProviderPlugins not implemented")
+}
 func (UnimplementedSmsProviderAdminServiceServer) UpsertProviderConfig(context.Context, *UpsertProviderConfigRequest) (*UpsertProviderConfigResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpsertProviderConfig not implemented")
 }
@@ -261,6 +277,24 @@ func RegisterSmsProviderAdminServiceServer(s grpc.ServiceRegistrar, srv SmsProvi
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&SmsProviderAdminService_ServiceDesc, srv)
+}
+
+func _SmsProviderAdminService_ListProviderPlugins_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListProviderPluginsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SmsProviderAdminServiceServer).ListProviderPlugins(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SmsProviderAdminService_ListProviderPlugins_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SmsProviderAdminServiceServer).ListProviderPlugins(ctx, req.(*ListProviderPluginsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _SmsProviderAdminService_UpsertProviderConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -486,6 +520,10 @@ var SmsProviderAdminService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "byte.v.forge.sms.internal.v1.SmsProviderAdminService",
 	HandlerType: (*SmsProviderAdminServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ListProviderPlugins",
+			Handler:    _SmsProviderAdminService_ListProviderPlugins_Handler,
+		},
 		{
 			MethodName: "UpsertProviderConfig",
 			Handler:    _SmsProviderAdminService_UpsertProviderConfig_Handler,

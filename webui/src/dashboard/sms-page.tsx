@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { MessageSquareText } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger, ToastMessage, WorkspaceToolbar, useMutation, useQuery, useQueryClient, useToastMessage } from '@/dashboard/module-kit';
-import type { SmsProviderConfig, SmsRouteProfile } from '@/proto/byte/v/forge/sms/internal/v1/sms_internal';
-import { cancelSmsActivation, deleteSmsProviderConfig, deleteSmsRouteProfile, listSmsActivations, listSmsProviderConfigs, listSmsRouteProfiles, saveSmsProviderConfig, saveSmsRouteProfile, smsKeys } from './sms-api';
+import type { SmsProviderConfig, SmsRouteProfile, UpsertProviderConfigResponse, UpsertRouteProfileResponse } from '@/proto/byte/v/forge/sms/internal/v1/sms_internal';
+import { cancelSmsActivation, deleteSmsProviderConfig, deleteSmsRouteProfile, listSmsActivations, listSmsProviderConfigs, listSmsProviderPlugins, listSmsRouteProfiles, saveSmsProviderConfig, saveSmsRouteProfile, smsKeys } from './sms-api';
 import { newSmsProviderConfig, newSmsRouteProfile } from './sms-format';
 import { OrdersTab } from './orders-tab';
 import { ProviderTab } from './provider-tab';
@@ -13,13 +13,15 @@ export function SmsPage() {
   const toast = useToastMessage();
   const [selectedConfigId, setSelectedConfigId] = useState('');
   const [selectedProfileKey, setSelectedProfileKey] = useState('');
+  const pluginsQuery = useQuery({ queryKey: smsKeys.plugins, queryFn: listSmsProviderPlugins });
   const configsQuery = useQuery({ queryKey: smsKeys.configs, queryFn: listSmsProviderConfigs });
   const profilesQuery = useQuery({ queryKey: smsKeys.profiles, queryFn: listSmsRouteProfiles });
   const activationsQuery = useQuery({ queryKey: smsKeys.activations, queryFn: listSmsActivations, refetchInterval: 5000 });
   const configs = configsQuery.data?.configs || [];
+  const plugins = pluginsQuery.data?.plugins || [];
   const profiles = profilesQuery.data?.profiles || [];
-  const selectedConfig = useMemo(() => configs.find((item) => item.provider_config_id === selectedConfigId) || null, [configs, selectedConfigId]);
-  const selectedProfile = useMemo(() => profiles.find((item) => item.profile_key === selectedProfileKey) || null, [profiles, selectedProfileKey]);
+  const selectedConfig = useMemo(() => configs.find((item: SmsProviderConfig) => item.provider_config_id === selectedConfigId) || null, [configs, selectedConfigId]);
+  const selectedProfile = useMemo(() => profiles.find((item: SmsRouteProfile) => item.profile_key === selectedProfileKey) || null, [profiles, selectedProfileKey]);
 
   useEffect(() => {
     if (!selectedConfigId && configs[0]?.provider_config_id) setSelectedConfigId(configs[0].provider_config_id);
@@ -30,7 +32,7 @@ export function SmsPage() {
 
   const saveMutation = useMutation({
     mutationFn: saveSmsProviderConfig,
-    onSuccess: async (resp) => {
+    onSuccess: async (resp: UpsertProviderConfigResponse) => {
       if (resp.config?.provider_config_id) setSelectedConfigId(resp.config.provider_config_id);
       await queryClient.invalidateQueries({ queryKey: smsKeys.configs });
       toast.showOK('Provider配置已保存');
@@ -48,7 +50,7 @@ export function SmsPage() {
   });
   const saveProfileMutation = useMutation({
     mutationFn: saveSmsRouteProfile,
-    onSuccess: async (resp) => {
+    onSuccess: async (resp: UpsertRouteProfileResponse) => {
       if (resp.profile?.profile_key) setSelectedProfileKey(resp.profile.profile_key);
       await queryClient.invalidateQueries({ queryKey: smsKeys.profiles });
       toast.showOK('Profile配置已保存');
@@ -86,6 +88,7 @@ export function SmsPage() {
             />
             <TabsContent value="profiles" className="mt-0 min-h-0 flex-1">
               <RouteProfilesTab
+                plugins={plugins}
                 profiles={profiles}
                 selected={selectedProfile || (selectedProfileKey === 'new' ? newSmsRouteProfile() : null)}
                 busy={profilesQuery.isLoading}
@@ -99,6 +102,7 @@ export function SmsPage() {
             </TabsContent>
             <TabsContent value="providers" className="mt-0 min-h-0 flex-1">
               <ProviderTab
+                plugins={plugins}
                 configs={configs}
                 selected={selectedConfig || (selectedConfigId === 'new' ? newSmsProviderConfig() : null)}
                 busy={configsQuery.isLoading}

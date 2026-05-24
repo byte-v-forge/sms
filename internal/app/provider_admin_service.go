@@ -28,6 +28,10 @@ func NewProviderAdminService(configs ProviderConfigStore, activations *Activatio
 	}
 }
 
+func (s *ProviderAdminService) ListProviderPlugins(context.Context) ([]*smsinternalv1.SmsProviderPluginDescriptor, error) {
+	return listSMSProviderPluginDescriptors(), nil
+}
+
 func (s *ProviderAdminService) UpsertProviderConfig(ctx context.Context, config *smsinternalv1.SmsProviderConfig) (*smsinternalv1.SmsProviderConfig, error) {
 	saved, err := s.configs.UpsertProviderConfig(ctx, config)
 	if err != nil {

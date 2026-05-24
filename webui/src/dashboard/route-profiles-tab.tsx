@@ -1,10 +1,11 @@
 import { Plus } from 'lucide-react';
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@/dashboard/module-kit';
-import type { SmsRouteProfile } from '@/proto/byte/v/forge/sms/internal/v1/sms_internal';
+import type { SmsProviderPluginDescriptor, SmsRouteProfile } from '@/proto/byte/v/forge/sms/internal/v1/sms_internal';
 import { newSmsRouteProfile, strategyText } from './sms-format';
 import { RouteProfileForm } from './route-profile-form';
 
 type Props = {
+  plugins: SmsProviderPluginDescriptor[];
   profiles: SmsRouteProfile[];
   selected: SmsRouteProfile | null;
   busy?: boolean;
@@ -37,6 +38,7 @@ export function RouteProfilesTab(props: Props) {
         </div>
       </div>
       <RouteProfileForm
+        plugins={props.plugins}
         profile={props.selected || newSmsRouteProfile()}
         saving={props.saving}
         deleting={props.deleting}

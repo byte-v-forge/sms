@@ -5,9 +5,6 @@ import (
 
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	"github.com/byte-v-forge/sms/internal/core"
-	"github.com/byte-v-forge/sms/internal/providers/fivesim"
-	"github.com/byte-v-forge/sms/internal/providers/herosms"
-	"github.com/byte-v-forge/sms/internal/providers/smsbower"
 )
 
 type routeProviderAdapter interface {
@@ -21,16 +18,10 @@ type routeOptionProvider interface {
 }
 
 func routeAdapterForProvider(providerKey string) routeProviderAdapter {
-	switch normalizeProviderKey(providerKey) {
-	case fivesim.ProviderKey:
-		return fivesim.RouteAdapter{}
-	case herosms.ProviderKey:
-		return herosms.RouteAdapter{}
-	case smsbower.ProviderKey:
-		return smsbower.RouteAdapter{}
-	default:
-		return nil
+	if plugin, ok := smsProviderPluginByKey(providerKey); ok {
+		return plugin.RouteAdapter()
 	}
+	return nil
 }
 
 func applyRouteCandidate(candidate *smsinternalv1.SmsRouteCandidate, route *core.Route) {

@@ -17,6 +17,14 @@ func NewProviderAdminServer(service *app.ProviderAdminService) *ProviderAdminSer
 	return &ProviderAdminServer{service: service}
 }
 
+func (s *ProviderAdminServer) ListProviderPlugins(ctx context.Context, request *smsinternalv1.ListProviderPluginsRequest) (*smsinternalv1.ListProviderPluginsResponse, error) {
+	plugins, err := s.service.ListProviderPlugins(ctx)
+	if err != nil {
+		return &smsinternalv1.ListProviderPluginsResponse{Error: toProviderError(err)}, nil
+	}
+	return &smsinternalv1.ListProviderPluginsResponse{Plugins: plugins}, nil
+}
+
 func (s *ProviderAdminServer) UpsertProviderConfig(ctx context.Context, request *smsinternalv1.UpsertProviderConfigRequest) (*smsinternalv1.UpsertProviderConfigResponse, error) {
 	config, err := s.service.UpsertProviderConfig(ctx, request.GetConfig())
 	if err != nil {

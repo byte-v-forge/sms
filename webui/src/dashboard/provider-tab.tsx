@@ -1,11 +1,12 @@
 import { Plus } from 'lucide-react';
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle, useQuery } from '@/dashboard/module-kit';
-import type { SmsProviderConfig } from '@/proto/byte/v/forge/sms/internal/v1/sms_internal';
+import type { SmsProviderConfig, SmsProviderPluginDescriptor } from '@/proto/byte/v/forge/sms/internal/v1/sms_internal';
 import { getSmsProviderBalance, smsKeys } from './sms-api';
 import { moneyText, newSmsProviderConfig } from './sms-format';
 import { ProviderConfigForm } from './provider-config-form';
 
 type ProviderTabProps = {
+  plugins: SmsProviderPluginDescriptor[];
   configs: SmsProviderConfig[];
   selected: SmsProviderConfig | null;
   busy?: boolean;
@@ -30,6 +31,7 @@ export function ProviderTab(props: ProviderTabProps) {
             <ProviderCard
               key={config.provider_config_id}
               config={config}
+              plugin={props.plugins.find((item) => item.provider_key === config.provider_key)}
               selected={props.selected?.provider_config_id === config.provider_config_id}
               onSelect={() => props.onSelect(config.provider_config_id)}
             />
@@ -39,6 +41,7 @@ export function ProviderTab(props: ProviderTabProps) {
       </div>
       <ProviderConfigForm
         config={props.selected || newSmsProviderConfig()}
+        plugins={props.plugins}
         saving={props.saving}
         deleting={props.deleting}
         onSave={props.onSave}
@@ -48,7 +51,7 @@ export function ProviderTab(props: ProviderTabProps) {
   );
 }
 
-function ProviderCard({ config, selected, onSelect }: { config: SmsProviderConfig; selected: boolean; onSelect: () => void }) {
+function ProviderCard({ config, plugin, selected, onSelect }: { config: SmsProviderConfig; plugin?: SmsProviderPluginDescriptor; selected: boolean; onSelect: () => void }) {
   const balance = useQuery({
     queryKey: smsKeys.balance(config.provider_config_id),
     queryFn: () => getSmsProviderBalance(config.provider_config_id),
@@ -62,7 +65,7 @@ function ProviderCard({ config, selected, onSelect }: { config: SmsProviderConfi
           <CardTitle className="truncate text-sm">{config.display_name || config.provider_config_id}</CardTitle>
           <Badge variant={config.enabled ? 'default' : 'secondary'}>{config.enabled ? '启用' : '停用'}</Badge>
         </div>
-        <div className="truncate text-xs text-muted-foreground">{config.provider_key} · {config.provider_config_id}</div>
+        <div className="truncate text-xs text-muted-foreground">{plugin?.display_name || config.provider_key} · {config.provider_config_id}</div>
       </CardHeader>
       <CardContent className="grid gap-1 p-3 pt-0 text-xs">
         <Line label="余额" value={balance.isLoading ? '读取中' : moneyText(balance.data?.balance)} />

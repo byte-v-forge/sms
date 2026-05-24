@@ -15,6 +15,7 @@ option java_package = "com.bytevforge.sms.internal.v1";
 option php_namespace = "ByteVForge\\Sms\\Internal\\V1";
 
 service SmsProviderAdminService {
+  rpc ListProviderPlugins(ListProviderPluginsRequest) returns (ListProviderPluginsResponse);
   rpc UpsertProviderConfig(UpsertProviderConfigRequest) returns (UpsertProviderConfigResponse);
   rpc GetProviderConfig(GetProviderConfigRequest) returns (GetProviderConfigResponse);
   rpc ListProviderConfigs(ListProviderConfigsRequest) returns (ListProviderConfigsResponse);
@@ -113,6 +114,63 @@ message SmsProviderCapabilities {
   bool supports_webhook_notifications = 7;
   repeated string supported_application_keys = 10;
   repeated string supported_country_iso2 = 11;
+}
+
+enum SmsConfigFieldKind {
+  SMS_CONFIG_FIELD_KIND_UNSPECIFIED = 0;
+  SMS_CONFIG_FIELD_KIND_TEXT = 1;
+  SMS_CONFIG_FIELD_KIND_SECRET = 2;
+  SMS_CONFIG_FIELD_KIND_NUMBER = 3;
+  SMS_CONFIG_FIELD_KIND_URL = 4;
+  SMS_CONFIG_FIELD_KIND_DURATION_SECONDS = 5;
+}
+
+message SmsConfigFieldOption {
+  string value = 1;
+  string label = 2;
+}
+
+message SmsProviderConfigField {
+  string field_key = 1;
+  string label = 2;
+  SmsConfigFieldKind kind = 3;
+  bool required = 4;
+  bool advanced = 5;
+  string placeholder = 6;
+  repeated SmsConfigFieldOption options = 7;
+}
+
+enum SmsRouteFieldScope {
+  SMS_ROUTE_FIELD_SCOPE_UNSPECIFIED = 0;
+  SMS_ROUTE_FIELD_SCOPE_ROUTE = 1;
+  SMS_ROUTE_FIELD_SCOPE_OPTION = 2;
+  SMS_ROUTE_FIELD_SCOPE_MIN_PRICE = 3;
+  SMS_ROUTE_FIELD_SCOPE_MAX_PRICE = 4;
+}
+
+enum SmsRouteOptionSource {
+  SMS_ROUTE_OPTION_SOURCE_UNSPECIFIED = 0;
+  SMS_ROUTE_OPTION_SOURCE_SERVICES = 1;
+  SMS_ROUTE_OPTION_SOURCE_COUNTRIES = 2;
+  SMS_ROUTE_OPTION_SOURCE_OPERATORS = 3;
+  SMS_ROUTE_OPTION_SOURCE_UPSTREAM_PROVIDERS = 4;
+}
+
+message SmsProviderRouteField {
+  string field_key = 1;
+  string label = 2;
+  SmsRouteFieldScope scope = 3;
+  SmsRouteOptionSource option_source = 4;
+  bool advanced = 5;
+  string placeholder = 6;
+}
+
+message SmsProviderPluginDescriptor {
+  string provider_key = 1;
+  string display_name = 2;
+  SmsProviderCapabilities capabilities = 3;
+  repeated SmsProviderConfigField config_fields = 4;
+  repeated SmsProviderRouteField route_fields = 5;
 }
 
 enum SmsRouteSelectionStrategy {
@@ -355,4 +413,11 @@ message IngestInboundMessageResponse {
   ProviderActivation activation = 1;
   byte.v.forge.contracts.sms.v1.SmsCodeReceivedEvent public_event = 2;
   ProviderError error = 3;
+}
+
+message ListProviderPluginsRequest {}
+
+message ListProviderPluginsResponse {
+  repeated SmsProviderPluginDescriptor plugins = 1;
+  ProviderError error = 2;
 }

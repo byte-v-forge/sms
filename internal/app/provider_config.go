@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -12,9 +11,6 @@ import (
 	smsv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/sms/v1"
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	"github.com/byte-v-forge/sms/internal/core"
-	"github.com/byte-v-forge/sms/internal/providers/fivesim"
-	"github.com/byte-v-forge/sms/internal/providers/herosms"
-	"github.com/byte-v-forge/sms/internal/providers/smsbower"
 	"google.golang.org/protobuf/types/known/durationpb"
 )
 
@@ -259,25 +255,11 @@ func providerFromConfig(config *smsinternalv1.SmsProviderConfig, timeout time.Du
 	if err != nil {
 		return nil, err
 	}
-	switch normalizeProviderKey(config.GetProviderKey()) {
-	case fivesim.ProviderKey:
-		return fivesim.New(fivesim.Config{
-			Endpoint:     config.GetApiEndpoint(),
-			Token:        config.GetCredentialSecret(),
-			CurrencyCode: firstLabel(config.GetLabels(), "currency", "currency_code"),
-		}, client)
-	case herosms.ProviderKey:
-		return herosms.New(herosms.Config{Endpoint: config.GetApiEndpoint(), APIKey: config.GetCredentialSecret()}, client)
-	case smsbower.ProviderKey:
-		return smsbower.New(smsbower.Config{
-			Endpoint: config.GetApiEndpoint(),
-			APIKey:   config.GetCredentialSecret(),
-			Ref:      firstLabel(config.GetLabels(), "ref"),
-			UserID:   firstLabel(config.GetLabels(), "userID", "user_id"),
-		}, client)
-	default:
-		return nil, core.NewError(core.CodeUnsupportedOperation, fmt.Sprintf("unsupported sms provider %q", config.GetProviderKey()), false)
+	plugin, ok := smsProviderPluginByKey(config.GetProviderKey())
+	if !ok {
+		return nil, unsupportedSMSProvider(config.GetProviderKey())
 	}
+	return plugin.NewProvider(config, client)
 }
 
 func routeFromProviderConfig(config *smsinternalv1.SmsProviderConfig, requestTarget core.Target) core.Route {
@@ -378,22 +360,10 @@ func firstNonEmptyString(values ...string) string {
 }
 
 func defaultProviderPolicy(providerKey string) core.ProviderPolicy {
-	switch normalizeProviderKey(providerKey) {
-	case smsbower.ProviderKey:
-		return core.ProviderPolicy{
-			ActivationTTL:         25 * time.Minute,
-			PollInterval:          5 * time.Second,
-			EarlyCancelRetryAfter: 2 * time.Minute,
-		}
-	case herosms.ProviderKey:
-		return core.ProviderPolicy{
-			ActivationTTL:      20 * time.Minute,
-			PollInterval:       5 * time.Second,
-			CancelAllowedAfter: 2 * time.Minute,
-		}
-	default:
-		return core.ProviderPolicy{ActivationTTL: 20 * time.Minute, PollInterval: 5 * time.Second}
+	if plugin, ok := smsProviderPluginByKey(providerKey); ok {
+		return plugin.DefaultPolicy()
 	}
+	return core.ProviderPolicy{ActivationTTL: 20 * time.Minute, PollInterval: 5 * time.Second}
 }
 
 func providerPolicyFromConfig(config *smsinternalv1.SmsProviderConfig, fallback core.ProviderPolicy) core.ProviderPolicy {
