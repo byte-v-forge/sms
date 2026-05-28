@@ -4,7 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
+	"github.com/byte-v-forge/common-lib/httpx"
+	"github.com/byte-v-forge/common-lib/stringx"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -25,7 +26,6 @@ type Config struct {
 	Endpoint         string
 	Token            string
 	CurrencyCode     string
-	DefaultOperator  string
 	Ref              string
 	Reuse            bool
 	Voice            bool
@@ -37,7 +37,6 @@ type Client struct {
 	endpoint         string
 	token            string
 	currencyCode     string
-	defaultOperator  string
 	ref              string
 	reuse            bool
 	voice            bool
@@ -83,15 +82,10 @@ func New(config Config, httpClient handlerapi.HTTPDoer) (*Client, error) {
 	if httpClient == nil {
 		httpClient = &http.Client{Timeout: 15 * time.Second}
 	}
-	operator := strings.TrimSpace(config.DefaultOperator)
-	if operator == "" {
-		operator = "any"
-	}
 	return &Client{
 		endpoint:         endpoint,
 		token:            strings.TrimSpace(config.Token),
 		currencyCode:     strings.TrimSpace(config.CurrencyCode),
-		defaultOperator:  operator,
 		ref:              strings.TrimSpace(config.Ref),
 		reuse:            config.Reuse,
 		voice:            config.Voice,
@@ -100,8 +94,8 @@ func New(config Config, httpClient handlerapi.HTTPDoer) (*Client, error) {
 		httpClient:       httpClient,
 		userAgent:        "sms/1.0",
 		policy: core.ProviderPolicy{
-			ActivationTTL: 20 * time.Minute,
-			PollInterval:  5 * time.Second,
+			OrderTTL:     20 * time.Minute,
+			PollInterval: 5 * time.Second,
 		},
 	}, nil
 }
@@ -114,31 +108,33 @@ func (c *Client) Policy() core.ProviderPolicy {
 	return c.policy
 }
 
-func (c *Client) AcquireNumber(ctx context.Context, request core.ProviderAcquireRequest) (core.ProviderActivation, error) {
-	country, err := c.countryForRoute(ctx, request)
-	if err != nil {
-		return core.ProviderActivation{}, err
+func (c *Client) AcquireNumber(ctx context.Context, request core.ProviderAcquireRequest) (core.ProviderOrder, error) {
+	country := strings.TrimSpace(request.Route.ProviderCountryID)
+	if country == "" {
+		return core.ProviderOrder{}, core.NewError(core.CodeValidationFailed, "5sim country is required", false)
 	}
-	product := firstNonEmpty(request.Route.UpstreamServiceKey, request.Target.ApplicationKey)
+	product := strings.TrimSpace(request.Route.UpstreamServiceKey)
 	if product == "" {
-		return core.ProviderActivation{}, core.NewError(core.CodeValidationFailed, "5sim product is required", false)
+		return core.ProviderOrder{}, core.NewError(core.CodeValidationFailed, "5sim product is required", false)
 	}
-	operator := c.operatorForRoute(request.Route)
-	params := c.buyParams(request)
+	operator, err := operatorForRoute(request.Route)
+	if err != nil {
+		return core.ProviderOrder{}, err
+	}
+	params := c.buyParams()
 	path := fmt.Sprintf("/v1/user/buy/activation/%s/%s/%s", url.PathEscape(country), url.PathEscape(operator), url.PathEscape(product))
 
 	var payload order
 	if err := c.getJSON(ctx, path, params, true, &payload); err != nil {
-		return core.ProviderActivation{}, err
+		return core.ProviderOrder{}, err
 	}
-	activationID := rawJSONScalar(payload.ID)
-	if activationID == "" {
-		return core.ProviderActivation{}, core.NewError(core.CodeUpstreamRejected, "missing 5sim order id", false)
+	orderID := rawJSONScalar(payload.ID)
+	if orderID == "" {
+		return core.ProviderOrder{}, core.NewError(core.CodeUpstreamRejected, "missing 5sim order id", false)
 	}
 	e164, national := phone.Normalize(payload.Phone, request.Target.CountryISO2, request.Target.CountryCallingCode)
-	return core.ProviderActivation{
-		UpstreamActivationID: activationID,
-		UpstreamOperator:     payload.Operator,
+	return core.ProviderOrder{
+		UpstreamOrderID: orderID,
 		PhoneNumber: core.PhoneNumber{
 			E164:               e164,
 			NationalNumber:     national,
@@ -151,68 +147,24 @@ func (c *Client) AcquireNumber(ctx context.Context, request core.ProviderAcquire
 	}, nil
 }
 
-func (c *Client) countryForRoute(ctx context.Context, request core.ProviderAcquireRequest) (string, error) {
-	country := strings.TrimSpace(request.Route.ProviderCountryID)
-	if country != "" && !isNeutralCountryValue(country, request.Target) {
-		return country, nil
-	}
-	resolved, err := c.resolveCountryID(ctx, request.Target)
-	if err == nil && resolved != "" {
-		return resolved, nil
-	}
-	if country != "" && err == nil {
-		return country, nil
-	}
-	if err != nil {
-		return "", err
-	}
-	return "", core.NewError(core.CodeValidationFailed, "5sim country is required", false)
-}
-
-func (c *Client) resolveCountryID(ctx context.Context, target core.Target) (string, error) {
-	iso2 := strings.ToUpper(strings.TrimSpace(target.CountryISO2))
-	callingCode := strings.TrimPrefix(strings.TrimSpace(target.CountryCallingCode), "+")
-	if iso2 == "" && callingCode == "" {
-		return "", nil
-	}
-	countries, err := c.ListCountries(ctx)
-	if err != nil {
-		return "", err
-	}
-	for _, country := range countries {
-		if iso2 != "" && strings.EqualFold(country.CountryISO2, iso2) {
-			return country.CountryID, nil
-		}
-		if callingCode != "" && strings.TrimPrefix(country.CountryCallingCode, "+") == callingCode {
-			return country.CountryID, nil
-		}
-	}
-	return "", core.NewError(core.CodeRouteNotFound, "5sim country not found for sms target", false)
-}
-
-func isNeutralCountryValue(value string, target core.Target) bool {
-	value = strings.TrimSpace(value)
-	return value != "" && (strings.EqualFold(value, target.CountryISO2) || value == strings.TrimPrefix(target.CountryCallingCode, "+"))
-}
-
-func (c *Client) GetStatus(ctx context.Context, upstreamActivationID string) (core.ProviderCodeResult, error) {
+func (c *Client) GetStatus(ctx context.Context, upstreamOrderID string) (core.ProviderCodeResult, error) {
 	var payload order
-	if err := c.getJSON(ctx, "/v1/user/check/"+url.PathEscape(upstreamActivationID), nil, true, &payload); err != nil {
+	if err := c.getJSON(ctx, "/v1/user/check/"+url.PathEscape(upstreamOrderID), nil, true, &payload); err != nil {
 		return core.ProviderCodeResult{}, err
 	}
 	return orderToCodeResult(payload), nil
 }
 
-func (c *Client) SetStatus(ctx context.Context, upstreamActivationID string, action core.ProviderAction) error {
+func (c *Client) SetStatus(ctx context.Context, upstreamOrderID string, action core.ProviderAction) error {
 	switch action {
 	case core.ActionMarkMessageSent, core.ActionRequestAdditional:
 		return nil
-	case core.ActionCompleteActivation:
+	case core.ActionCompleteOrder:
 		var payload order
-		return c.getJSON(ctx, "/v1/user/finish/"+url.PathEscape(upstreamActivationID), nil, true, &payload)
-	case core.ActionCancelActivation:
+		return c.getJSON(ctx, "/v1/user/finish/"+url.PathEscape(upstreamOrderID), nil, true, &payload)
+	case core.ActionCancelOrder:
 		var payload order
-		return c.getJSON(ctx, "/v1/user/cancel/"+url.PathEscape(upstreamActivationID), nil, true, &payload)
+		return c.getJSON(ctx, "/v1/user/cancel/"+url.PathEscape(upstreamOrderID), nil, true, &payload)
 	default:
 		return core.NewError(core.CodeUnsupportedOperation, "unsupported 5sim status action", false)
 	}
@@ -228,35 +180,26 @@ func (c *Client) GetBalance(ctx context.Context) (core.Money, error) {
 	return core.Money{CurrencyCode: c.currencyCode, AmountDecimal: rawJSONScalar(payload.Balance)}, nil
 }
 
-func (c *Client) buyParams(request core.ProviderAcquireRequest) url.Values {
+func (c *Client) buyParams() url.Values {
 	params := url.Values{}
-	setBool(params, "reuse", firstBool(request.Route.ProviderOptions["reuse"], c.reuse))
-	setBool(params, "voice", firstBool(request.Route.ProviderOptions["voice"], c.voice))
-	setBool(params, "forwarding", firstBool(request.Route.ProviderOptions["forwarding"], c.forwarding))
-	forwardingNumber := firstNonEmpty(request.Route.ProviderOptions["number"], request.Route.ProviderOptions["forwarding_number"], c.forwardingNumber)
-	if forwardingNumber != "" {
-		params.Set("number", forwardingNumber)
+	setBool(params, "reuse", c.reuse)
+	setBool(params, "voice", c.voice)
+	setBool(params, "forwarding", c.forwarding)
+	if c.forwardingNumber != "" {
+		params.Set("number", c.forwardingNumber)
 	}
-	ref := firstNonEmpty(request.Route.ProviderOptions["ref"], c.ref)
-	if ref != "" {
-		params.Set("ref", ref)
-	}
-	price := firstNonEmpty(request.Target.MaxPrice.AmountDecimal, request.Route.MaxPrice.AmountDecimal)
-	if price != "" {
-		params.Set("maxPrice", price)
+	if c.ref != "" {
+		params.Set("ref", c.ref)
 	}
 	return params
 }
 
-func (c *Client) operatorForRoute(route core.Route) string {
-	operator := firstNonEmpty(route.ProviderOptions["operator"], route.ProviderOptions["upstream_operator"])
-	if operator != "" {
-		return operator
+func operatorForRoute(route core.Route) (string, error) {
+	operator := strings.TrimSpace(route.UpstreamProviderID)
+	if operator == "" {
+		return "", core.NewError(core.CodeValidationFailed, "5sim operator is required", false)
 	}
-	if len(route.IncludeUpstreamProviderID) == 1 {
-		return route.IncludeUpstreamProviderID[0]
-	}
-	return c.defaultOperator
+	return operator, nil
 }
 
 func (c *Client) getJSON(ctx context.Context, path string, params url.Values, authenticated bool, out any) error {
@@ -281,7 +224,7 @@ func (c *Client) getJSON(ctx context.Context, path string, params url.Values, au
 		return core.NewError(core.CodeSupplyUnavailable, err.Error(), true)
 	}
 	defer resp.Body.Close()
-	body, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+	body, err := httpx.ReadLimited(resp.Body, 1<<20)
 	if err != nil {
 		return core.NewError(core.CodeSupplyUnavailable, err.Error(), true)
 	}
@@ -298,7 +241,7 @@ func (c *Client) getJSON(ctx context.Context, path string, params url.Values, au
 func orderToCodeResult(payload order) core.ProviderCodeResult {
 	latestSMS := latestSMS(payload.SMS)
 	if latestSMS.Code != "" || latestSMS.Text != "" {
-		receivedAt := parseTime(firstNonEmpty(latestSMS.Date, latestSMS.CreatedAt))
+		receivedAt := parseTime(stringx.FirstNonEmpty(latestSMS.Date, latestSMS.CreatedAt))
 		return core.ProviderCodeResult{
 			Status:      core.StatusCodeReceived,
 			Code:        latestSMS.Code,
@@ -325,9 +268,9 @@ func latestSMS(messages []sms) sms {
 		return sms{}
 	}
 	latest := messages[0]
-	latestAt := parseTime(firstNonEmpty(latest.Date, latest.CreatedAt))
+	latestAt := parseTime(stringx.FirstNonEmpty(latest.Date, latest.CreatedAt))
 	for _, message := range messages[1:] {
-		messageAt := parseTime(firstNonEmpty(message.Date, message.CreatedAt))
+		messageAt := parseTime(stringx.FirstNonEmpty(message.Date, message.CreatedAt))
 		if latestAt.IsZero() || messageAt.After(latestAt) {
 			latest = message
 			latestAt = messageAt
@@ -342,13 +285,13 @@ func mapError(statusCode int, text string) error {
 	case statusCode == http.StatusUnauthorized:
 		return core.NewError(core.CodeUpstreamRejected, "5sim credential rejected", false)
 	case strings.Contains(normalized, "order not found"), strings.Contains(normalized, "record not found"):
-		return core.NewError(core.CodeActivationNotFound, text, false)
+		return core.NewError(core.CodeOrderNotFound, text, false)
 	case strings.Contains(normalized, "no free phones"):
 		return core.NewError(core.CodeNoNumberAvailable, text, true)
 	case strings.Contains(normalized, "not enough user balance"), strings.Contains(normalized, "insufficient"):
 		return core.NewError(core.CodeInsufficientBalance, text, false)
 	case strings.Contains(normalized, "order expired"):
-		return core.NewError(core.CodeActivationExpired, text, false)
+		return core.NewError(core.CodeOrderExpired, text, false)
 	case strings.Contains(normalized, "order has sms"):
 		return core.NewError(core.CodeCancelNotAllowed, text, false)
 	case strings.Contains(normalized, "bad country"), strings.Contains(normalized, "bad operator"), strings.Contains(normalized, "bad product"),
@@ -406,26 +349,4 @@ func setBool(values url.Values, key string, value bool) {
 	if value {
 		values.Set(key, "1")
 	}
-}
-
-func firstBool(value string, fallback bool) bool {
-	value = strings.TrimSpace(strings.ToLower(value))
-	switch value {
-	case "1", "true", "yes", "on":
-		return true
-	case "0", "false", "no", "off":
-		return false
-	default:
-		return fallback
-	}
-}
-
-func firstNonEmpty(values ...string) string {
-	for _, value := range values {
-		value = strings.TrimSpace(value)
-		if value != "" {
-			return value
-		}
-	}
-	return ""
 }

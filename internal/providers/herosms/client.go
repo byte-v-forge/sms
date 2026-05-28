@@ -38,7 +38,7 @@ func New(config Config, httpClient handlerapi.HTTPDoer) (*Client, error) {
 	return &Client{
 		api: api,
 		policy: core.ProviderPolicy{
-			ActivationTTL:      20 * time.Minute,
+			OrderTTL:           20 * time.Minute,
 			PollInterval:       5 * time.Second,
 			CancelAllowedAfter: 2 * time.Minute,
 		},
@@ -53,35 +53,30 @@ func (c *Client) Policy() core.ProviderPolicy {
 	return c.policy
 }
 
-func (c *Client) AcquireNumber(ctx context.Context, request core.ProviderAcquireRequest) (core.ProviderActivation, error) {
-	service := strings.TrimSpace(firstNonEmpty(request.Route.UpstreamServiceKey, request.Target.ApplicationKey))
+func (c *Client) AcquireNumber(ctx context.Context, request core.ProviderAcquireRequest) (core.ProviderOrder, error) {
+	service := strings.TrimSpace(request.Route.UpstreamServiceKey)
 	if service == "" {
-		return core.ProviderActivation{}, core.NewError(core.CodeValidationFailed, "hero sms service is required", false)
+		return core.ProviderOrder{}, core.NewError(core.CodeValidationFailed, "hero sms service is required", false)
 	}
 	country := strings.TrimSpace(request.Route.ProviderCountryID)
 	if country == "" {
-		return core.ProviderActivation{}, core.NewError(core.CodeValidationFailed, "hero sms provider country id is required", false)
+		return core.ProviderOrder{}, core.NewError(core.CodeValidationFailed, "hero sms provider country id is required", false)
 	}
 	params := url.Values{}
 	params.Set("service", service)
 	params.Set("country", country)
-	if request.Target.MaxPrice.AmountDecimal != "" {
-		params.Set("maxPrice", request.Target.MaxPrice.AmountDecimal)
-	} else if request.Route.MaxPrice.AmountDecimal != "" {
-		params.Set("maxPrice", request.Route.MaxPrice.AmountDecimal)
-	}
 
 	result, err := c.api.Do(ctx, "getNumber", params)
 	if err != nil {
-		return core.ProviderActivation{}, err
+		return core.ProviderOrder{}, err
 	}
-	activationID, rawPhone, ok := parseAccessNumber(result)
+	orderID, rawPhone, ok := parseAccessNumber(result)
 	if !ok {
-		return core.ProviderActivation{}, handlerapi.MapTextError(result)
+		return core.ProviderOrder{}, handlerapi.MapTextError(result)
 	}
 	e164, national := phone.Normalize(rawPhone, request.Target.CountryISO2, request.Target.CountryCallingCode)
-	return core.ProviderActivation{
-		UpstreamActivationID: activationID,
+	return core.ProviderOrder{
+		UpstreamOrderID: orderID,
 		PhoneNumber: core.PhoneNumber{
 			E164:               e164,
 			NationalNumber:     national,
@@ -92,18 +87,9 @@ func (c *Client) AcquireNumber(ctx context.Context, request core.ProviderAcquire
 	}, nil
 }
 
-func firstNonEmpty(values ...string) string {
-	for _, value := range values {
-		if strings.TrimSpace(value) != "" {
-			return strings.TrimSpace(value)
-		}
-	}
-	return ""
-}
-
-func (c *Client) GetStatus(ctx context.Context, upstreamActivationID string) (core.ProviderCodeResult, error) {
+func (c *Client) GetStatus(ctx context.Context, upstreamOrderID string) (core.ProviderCodeResult, error) {
 	params := url.Values{}
-	params.Set("id", upstreamActivationID)
+	params.Set("id", upstreamOrderID)
 	result, err := c.api.Do(ctx, "getStatus", params)
 	if err != nil {
 		return core.ProviderCodeResult{}, err
@@ -111,13 +97,13 @@ func (c *Client) GetStatus(ctx context.Context, upstreamActivationID string) (co
 	return parseStatus(result)
 }
 
-func (c *Client) SetStatus(ctx context.Context, upstreamActivationID string, action core.ProviderAction) error {
+func (c *Client) SetStatus(ctx context.Context, upstreamOrderID string, action core.ProviderAction) error {
 	status, expected, err := statusForAction(action)
 	if err != nil {
 		return err
 	}
 	params := url.Values{}
-	params.Set("id", upstreamActivationID)
+	params.Set("id", upstreamOrderID)
 	params.Set("status", status)
 	result, err := c.api.Do(ctx, "setStatus", params)
 	if err != nil {
@@ -141,7 +127,7 @@ func (c *Client) GetBalance(ctx context.Context) (core.Money, error) {
 	return core.Money{AmountDecimal: strings.TrimPrefix(result, prefix)}, nil
 }
 
-func parseAccessNumber(result string) (activationID, rawPhone string, ok bool) {
+func parseAccessNumber(result string) (orderID, rawPhone string, ok bool) {
 	parts := strings.SplitN(result, ":", 3)
 	if len(parts) != 3 || parts[0] != "ACCESS_NUMBER" {
 		return "", "", false
@@ -174,9 +160,9 @@ func statusForAction(action core.ProviderAction) (status string, expected string
 		return "1", "ACCESS_READY", nil
 	case core.ActionRequestAdditional:
 		return "3", "ACCESS_RETRY_GET", nil
-	case core.ActionCompleteActivation:
+	case core.ActionCompleteOrder:
 		return "6", "ACCESS_ACTIVATION", nil
-	case core.ActionCancelActivation:
+	case core.ActionCancelOrder:
 		return "8", "ACCESS_CANCEL", nil
 	default:
 		return "", "", core.NewError(core.CodeUnsupportedOperation, "unsupported hero sms status action", false)

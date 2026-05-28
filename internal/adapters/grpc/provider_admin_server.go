@@ -34,7 +34,7 @@ func (s *ProviderAdminServer) UpsertProviderConfig(ctx context.Context, request 
 }
 
 func (s *ProviderAdminServer) GetProviderConfig(ctx context.Context, request *smsinternalv1.GetProviderConfigRequest) (*smsinternalv1.GetProviderConfigResponse, error) {
-	config, err := s.service.GetProviderConfig(ctx, request.GetProviderConfigId())
+	config, err := s.service.GetProviderConfig(ctx, request.GetProviderKey())
 	if err != nil {
 		return &smsinternalv1.GetProviderConfigResponse{Error: toProviderError(err)}, nil
 	}
@@ -50,90 +50,47 @@ func (s *ProviderAdminServer) ListProviderConfigs(ctx context.Context, request *
 }
 
 func (s *ProviderAdminServer) DeleteProviderConfig(ctx context.Context, request *smsinternalv1.DeleteProviderConfigRequest) (*smsinternalv1.DeleteProviderConfigResponse, error) {
-	if err := s.service.DeleteProviderConfig(ctx, request.GetProviderConfigId()); err != nil {
+	if err := s.service.DeleteProviderConfig(ctx, request.GetProviderKey()); err != nil {
 		return &smsinternalv1.DeleteProviderConfigResponse{Error: toProviderError(err)}, nil
 	}
 	return &smsinternalv1.DeleteProviderConfigResponse{}, nil
 }
 
-func (s *ProviderAdminServer) ListRouteOptions(ctx context.Context, request *smsinternalv1.ListRouteOptionsRequest) (*smsinternalv1.ListRouteOptionsResponse, error) {
-	options, err := s.service.ListRouteOptions(ctx, request.GetProviderConfigId(), request.GetProviderKey())
-	if err != nil {
-		return &smsinternalv1.ListRouteOptionsResponse{Error: toProviderError(err)}, nil
-	}
-	return &smsinternalv1.ListRouteOptionsResponse{Options: options}, nil
-}
-
-func (s *ProviderAdminServer) UpsertRouteProfile(ctx context.Context, request *smsinternalv1.UpsertRouteProfileRequest) (*smsinternalv1.UpsertRouteProfileResponse, error) {
-	profile, err := s.service.UpsertRouteProfile(ctx, request.GetProfile())
-	if err != nil {
-		return &smsinternalv1.UpsertRouteProfileResponse{Error: toProviderError(err)}, nil
-	}
-	return &smsinternalv1.UpsertRouteProfileResponse{Profile: profile}, nil
-}
-
-func (s *ProviderAdminServer) GetRouteProfile(ctx context.Context, request *smsinternalv1.GetRouteProfileRequest) (*smsinternalv1.GetRouteProfileResponse, error) {
-	profile, err := s.service.GetRouteProfile(ctx, request.GetProfileKey())
-	if err != nil {
-		return &smsinternalv1.GetRouteProfileResponse{Error: toProviderError(err)}, nil
-	}
-	return &smsinternalv1.GetRouteProfileResponse{Profile: profile}, nil
-}
-
-func (s *ProviderAdminServer) ListRouteProfiles(ctx context.Context, request *smsinternalv1.ListRouteProfilesRequest) (*smsinternalv1.ListRouteProfilesResponse, error) {
-	profiles, err := s.service.ListRouteProfiles(ctx, request.GetIncludeDisabled())
-	if err != nil {
-		return &smsinternalv1.ListRouteProfilesResponse{Error: toProviderError(err)}, nil
-	}
-	return &smsinternalv1.ListRouteProfilesResponse{Profiles: profiles}, nil
-}
-
-func (s *ProviderAdminServer) DeleteRouteProfile(ctx context.Context, request *smsinternalv1.DeleteRouteProfileRequest) (*smsinternalv1.DeleteRouteProfileResponse, error) {
-	if err := s.service.DeleteRouteProfile(ctx, request.GetProfileKey()); err != nil {
-		return &smsinternalv1.DeleteRouteProfileResponse{Error: toProviderError(err)}, nil
-	}
-	return &smsinternalv1.DeleteRouteProfileResponse{}, nil
-}
-
 func (s *ProviderAdminServer) GetProviderBalance(ctx context.Context, request *smsinternalv1.GetProviderBalanceRequest) (*smsinternalv1.GetProviderBalanceResponse, error) {
-	balance, err := s.service.GetProviderBalance(ctx, request.GetProviderConfigId())
+	balance, err := s.service.GetProviderBalance(ctx, request.GetProviderKey())
 	if err != nil {
 		return &smsinternalv1.GetProviderBalanceResponse{Error: toProviderError(err)}, nil
 	}
 	return &smsinternalv1.GetProviderBalanceResponse{Balance: toProtoMoney(balance)}, nil
 }
 
-func (s *ProviderAdminServer) ListActivations(ctx context.Context, request *smsinternalv1.ListActivationsRequest) (*smsinternalv1.ListActivationsResponse, error) {
-	activations, err := s.service.ListActivations(ctx, request.GetIncludeFinal(), int(request.GetLimit()))
+func (s *ProviderAdminServer) ListOrders(ctx context.Context, request *smsinternalv1.ListOrdersRequest) (*smsinternalv1.ListOrdersResponse, error) {
+	orders, err := s.service.ListOrders(ctx, request.GetIncludeFinal(), int(request.GetLimit()))
 	if err != nil {
-		return &smsinternalv1.ListActivationsResponse{Error: toProviderError(err)}, nil
+		return &smsinternalv1.ListOrdersResponse{Error: toProviderError(err)}, nil
 	}
-	views := make([]*smsinternalv1.SmsActivationView, 0, len(activations))
-	for _, activation := range activations {
-		views = append(views, toActivationView(activation))
+	out := make([]*smsinternalv1.SmsOrderView, 0, len(orders))
+	for _, order := range orders {
+		out = append(out, toOrderView(order))
 	}
-	return &smsinternalv1.ListActivationsResponse{Activations: views}, nil
+	return &smsinternalv1.ListOrdersResponse{Orders: out}, nil
 }
 
-func (s *ProviderAdminServer) CancelActivation(ctx context.Context, request *smsinternalv1.CancelProviderActivationRequest) (*smsinternalv1.CancelProviderActivationResponse, error) {
-	activation, err := s.service.CancelActivation(ctx, request.GetActivationId(), request.GetRequestId())
+func (s *ProviderAdminServer) CancelOrder(ctx context.Context, request *smsinternalv1.CancelProviderOrderRequest) (*smsinternalv1.CancelProviderOrderResponse, error) {
+	order, err := s.service.CancelOrder(ctx, request.GetOrderId(), request.GetRequestId())
 	if err != nil {
-		return &smsinternalv1.CancelProviderActivationResponse{Activation: toActivationView(activation), Error: toProviderError(err)}, nil
+		return &smsinternalv1.CancelProviderOrderResponse{Order: toOrderView(order), Error: toProviderError(err)}, nil
 	}
-	return &smsinternalv1.CancelProviderActivationResponse{Activation: toActivationView(activation)}, nil
+	return &smsinternalv1.CancelProviderOrderResponse{Order: toOrderView(order)}, nil
 }
 
-func toActivationView(activation core.Activation) *smsinternalv1.SmsActivationView {
-	if activation.ID == "" {
+func toOrderView(order core.Order) *smsinternalv1.SmsOrderView {
+	if order.ID == "" {
 		return nil
 	}
-	return &smsinternalv1.SmsActivationView{
-		Activation:           toProtoActivation(activation),
-		LatestCode:           toProtoCode(activation.Code),
-		ProviderConfigId:     activation.ProviderConfigID,
-		ProviderKey:          activation.ProviderKey,
-		UpstreamActivationId: activation.UpstreamActivationID,
-		UpstreamOperator:     activation.UpstreamOperator,
+	return &smsinternalv1.SmsOrderView{
+		Order:       toProtoOrder(order),
+		ProviderKey: order.ProviderKey,
 	}
 }
 

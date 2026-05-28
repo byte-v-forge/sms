@@ -3,7 +3,7 @@ package handlerapi
 import (
 	"context"
 	"fmt"
-	"io"
+	"github.com/byte-v-forge/common-lib/httpx"
 	"net/http"
 	"net/url"
 	"strings"
@@ -68,7 +68,7 @@ func (c *Client) Do(ctx context.Context, action string, params url.Values) (stri
 		return "", core.NewError(core.CodeSupplyUnavailable, err.Error(), true)
 	}
 	defer resp.Body.Close()
-	body, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+	body, err := httpx.ReadLimited(resp.Body, 1<<20)
 	if err != nil {
 		return "", core.NewError(core.CodeSupplyUnavailable, err.Error(), true)
 	}
@@ -95,11 +95,9 @@ func MapTextError(text string) error {
 	case code == "BAD_SERVICE", code == "BAD_COUNTRY", code == "BAD_STATUS", code == "WRONG_EXCEPTION_PHONE", code == "WRONG_ACTIVATION_ID":
 		return core.NewError(core.CodeValidationFailed, text, false)
 	case code == "NO_ACTIVATION":
-		return core.NewError(core.CodeActivationNotFound, "upstream activation not found", false)
+		return core.NewError(core.CodeOrderNotFound, "upstream order not found", false)
 	case code == "NO_BALANCE", code == "NO_BALANCE_FORWARD":
 		return core.NewError(core.CodeInsufficientBalance, "provider balance is insufficient", false)
-	case code == "WRONG_MAX_PRICE", code == "BAD_MAX_PRICE":
-		return core.NewError(core.CodePriceLimitExceeded, text, false)
 	case code == "NO_NUMBERS", code == "NO_NUMBER", strings.Contains(text, "NO_NUMBERS"):
 		return core.NewError(core.CodeNoNumberAvailable, "no upstream number available", true)
 	case code == "EARLY_CANCEL_DENIED":

@@ -4,19 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"net/url"
+	"strings"
+	"time"
 
 	"github.com/byte-v-forge/sms/internal/core"
 )
-
-type ProductOffer struct {
-	ApplicationKey     string
-	UpstreamServiceKey string
-	Category           string
-	CountryID          string
-	Operator           string
-	Price              core.Money
-	AvailableCount     int
-}
 
 type Country struct {
 	CountryID          string
@@ -32,34 +24,6 @@ type PriceOffer struct {
 	Price              core.Money
 	AvailableCount     int
 	SuccessRate        float64
-}
-
-func (c *Client) ListProducts(ctx context.Context, countryID, operator string) ([]ProductOffer, error) {
-	if operator == "" {
-		operator = c.defaultOperator
-	}
-	var raw map[string]struct {
-		Category string          `json:"Category"`
-		Qty      int             `json:"Qty"`
-		Price    json.RawMessage `json:"Price"`
-	}
-	path := "/v1/guest/products/" + url.PathEscape(countryID) + "/" + url.PathEscape(operator)
-	if err := c.getJSON(ctx, path, nil, false, &raw); err != nil {
-		return nil, err
-	}
-	offers := make([]ProductOffer, 0, len(raw))
-	for product, offer := range raw {
-		offers = append(offers, ProductOffer{
-			ApplicationKey:     product,
-			UpstreamServiceKey: product,
-			Category:           offer.Category,
-			CountryID:          countryID,
-			Operator:           operator,
-			Price:              core.Money{CurrencyCode: c.currencyCode, AmountDecimal: rawJSONScalar(offer.Price)},
-			AvailableCount:     offer.Qty,
-		})
-	}
-	return offers, nil
 }
 
 func (c *Client) ListCountries(ctx context.Context) ([]Country, error) {
@@ -115,6 +79,67 @@ func (c *Client) ListPriceOffers(ctx context.Context, product, countryID string)
 		}
 	}
 	return offers, nil
+}
+
+func (c *Client) ListRouteOffers(ctx context.Context, query core.RouteOfferQuery) ([]core.RouteOffer, error) {
+	countries, err := c.ListCountries(ctx)
+	if err != nil {
+		return nil, err
+	}
+	countryID := fiveSimCountryIDForQuery(query, countries)
+	if (query.CountryISO2 != "" || query.CountryCallingCode != "") && countryID == "" {
+		return nil, nil
+	}
+	priceOffers, err := c.ListPriceOffers(ctx, query.ApplicationKey, countryID)
+	if err != nil {
+		return nil, err
+	}
+	countryByID := map[string]Country{}
+	for _, country := range countries {
+		countryByID[country.CountryID] = country
+	}
+	out := make([]core.RouteOffer, 0, len(priceOffers))
+	now := time.Now().UTC()
+	for _, offer := range priceOffers {
+		country := countryByID[offer.CountryID]
+		route := core.Route{
+			ProviderKey:        ProviderKey,
+			ApplicationKey:     offer.UpstreamServiceKey,
+			UpstreamServiceKey: offer.UpstreamServiceKey,
+			CountryISO2:        country.CountryISO2,
+			CountryCallingCode: country.CountryCallingCode,
+			ProviderCountryID:  offer.CountryID,
+			UpstreamProviderID: offer.Operator,
+		}
+		out = append(out, core.RouteOffer{
+			ProviderKey:          ProviderKey,
+			UpstreamProviderID:   offer.Operator,
+			UpstreamProviderName: offer.Operator,
+			ApplicationKey:       offer.UpstreamServiceKey,
+			ApplicationName:      offer.UpstreamServiceKey,
+			CountryISO2:          country.CountryISO2,
+			CountryName:          country.Name,
+			CountryCallingCode:   country.CountryCallingCode,
+			Price:                offer.Price,
+			AvailableCount:       offer.AvailableCount,
+			ObservedAt:           now,
+			Route:                route,
+		})
+	}
+	return out, nil
+}
+
+func fiveSimCountryIDForQuery(query core.RouteOfferQuery, countries []Country) string {
+	for _, country := range countries {
+		if query.CountryISO2 != "" && !strings.EqualFold(query.CountryISO2, country.CountryISO2) {
+			continue
+		}
+		if query.CountryCallingCode != "" && strings.TrimPrefix(country.CountryCallingCode, "+") != strings.TrimPrefix(query.CountryCallingCode, "+") {
+			continue
+		}
+		return country.CountryID
+	}
+	return ""
 }
 
 func firstMapKey(values map[string]int) string {

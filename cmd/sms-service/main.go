@@ -2,18 +2,30 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"os"
-	"strconv"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
-	smsv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/sms/v1"
+	"github.com/byte-v-forge/common-lib/envx"
+	"github.com/byte-v-forge/common-lib/eventcatalog"
+	"github.com/byte-v-forge/common-lib/eventoutbox"
+	smsv1 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/sms/v1"
+	"github.com/byte-v-forge/common-lib/grpcclient"
+	"github.com/byte-v-forge/common-lib/grpchealth"
+	"github.com/byte-v-forge/common-lib/hotstream"
+	"github.com/byte-v-forge/common-lib/hotstreamnats"
+	"github.com/byte-v-forge/common-lib/natseventbus"
+	"github.com/byte-v-forge/common-lib/redisx"
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
+	eventbusadapter "github.com/byte-v-forge/sms/internal/adapters/eventbus"
 	grpcadapter "github.com/byte-v-forge/sms/internal/adapters/grpc"
 	"github.com/byte-v-forge/sms/internal/app"
-	"github.com/byte-v-forge/sms/internal/core"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 )
 
@@ -22,11 +34,17 @@ type config struct {
 	PGDSN              string
 	HTTPTimeoutSeconds int
 	ProviderHTTPProxy  string
+	DashboardHTTPAddr  string
+	DashboardStaticDir string
+	PlatformNATSURL    string
+	PlatformRedisURL   string
+	EventStreamName    string
 }
 
 func main() {
 	cfg := loadConfig()
-	ctx := context.Background()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
 	configStore, err := app.NewPostgresProviderConfigStore(ctx, cfg.PGDSN)
 	if err != nil {
@@ -34,25 +52,54 @@ func main() {
 	}
 	defer configStore.Close()
 
-	activationStore, err := app.NewPostgresActivationStore(ctx, cfg.PGDSN)
+	orderHistoryStore, err := app.NewPostgresOrderStore(ctx, cfg.PGDSN)
 	if err != nil {
-		log.Fatalf("initialize SMS activation store: %v", err)
+		log.Fatalf("initialize SMS order store: %v", err)
 	}
-	defer activationStore.Close()
+	defer orderHistoryStore.Close()
+	redisClient, err := redisx.NewRequiredClient(ctx, cfg.PlatformRedisURL, "PLATFORM_REDIS_URL is required for SMS order state")
+	if err != nil {
+		log.Fatalf("initialize SMS order redis: %v", err)
+	}
+	defer redisClient.Close()
+	activeStore := app.NewRedisOrderStore(redisx.NewStringStore(redisClient, "sms:order", 30*time.Minute), app.SystemClock{})
+	orderStore := app.NewCompositeOrderStore(activeStore, orderHistoryStore)
+
+	platformEventBus, closePlatformEventBus, err := newPlatformEventBus(ctx, cfg)
+	if err != nil {
+		log.Fatalf("initialize SMS platform event bus: %v", err)
+	}
+	defer closePlatformEventBus()
+	hotStream, closeHotStream, err := newSMSHotStreamBus(ctx, cfg)
+	if err != nil {
+		log.Fatalf("initialize SMS hotstream: %v", err)
+	}
+	defer closeHotStream()
+
 	httpTimeout := time.Duration(cfg.HTTPTimeoutSeconds) * time.Second
-	activationService := app.NewActivationService(
-		activationStore,
-		app.NewProviderConfigRouteResolver(configStore),
-		[]core.Provider{
-			app.NewConfiguredProvider("5sim", configStore, httpTimeout, cfg.ProviderHTTPProxy),
-			app.NewConfiguredProvider("herosms", configStore, httpTimeout, cfg.ProviderHTTPProxy),
-			app.NewConfiguredProvider("smsbower", configStore, httpTimeout, cfg.ProviderHTTPProxy),
-		},
+	orderEvents := eventbusadapter.NewOrderEventRecorder("sms-service")
+	catalogService := app.NewCatalogService(configStore, httpTimeout, cfg.ProviderHTTPProxy, app.SystemClock{})
+	orderService := app.NewOrderService(
+		orderStore,
+		app.NewConfiguredProviders(configStore, httpTimeout, cfg.ProviderHTTPProxy),
 		app.SystemClock{},
 		app.RandomIDGenerator{},
+		orderEvents,
+		hotStream,
 	)
-	activationService.StartCancelScheduler(ctx, 30*time.Second)
-	adminService := app.NewProviderAdminService(configStore, activationService, activationStore, httpTimeout, cfg.ProviderHTTPProxy)
+	acquireConsumer, err := platformEventBus.PullWorkerConsumer(cfg.EventStreamName, eventcatalog.SMSOrderAcquireRequested.Subject, eventcatalog.SMSOrderAcquireRequested.ConsumerDurable, 10, 60*time.Second)
+	if err != nil {
+		log.Fatalf("initialize SMS order acquire worker: %v", err)
+	}
+	pollConsumer, err := platformEventBus.PullWorkerConsumer(cfg.EventStreamName, eventcatalog.SMSOrderPollRequested.Subject, eventcatalog.SMSOrderPollRequested.ConsumerDurable, 10, 60*time.Second)
+	if err != nil {
+		log.Fatalf("initialize SMS order poll worker: %v", err)
+	}
+	cancelConsumer, err := platformEventBus.PullWorkerConsumer(cfg.EventStreamName, eventcatalog.SMSOrderCancelRequested.Subject, eventcatalog.SMSOrderCancelRequested.ConsumerDurable, 10, 60*time.Second)
+	if err != nil {
+		log.Fatalf("initialize SMS order cancel worker: %v", err)
+	}
+	adminService := app.NewProviderAdminService(configStore, orderService, orderHistoryStore, httpTimeout, cfg.ProviderHTTPProxy, hotStream)
 
 	listener, err := net.Listen("tcp", cfg.ListenAddr)
 	if err != nil {
@@ -60,20 +107,73 @@ func main() {
 	}
 
 	server := grpc.NewServer()
-	smsv1.RegisterSmsActivationServiceServer(server, grpcadapter.NewActivationServer(activationService))
+	smsv1.RegisterSmsOrderServiceServer(server, grpcadapter.NewOrderServer(orderService))
+	smsv1.RegisterSmsCatalogServiceServer(server, grpcadapter.NewCatalogServer(catalogService))
 	smsinternalv1.RegisterSmsProviderAdminServiceServer(server, grpcadapter.NewProviderAdminServer(adminService))
+	grpchealth.RegisterServing(server)
+	group, groupCtx := errgroup.WithContext(ctx)
+	group.Go(func() error {
+		return eventoutbox.RunWorker(groupCtx, eventoutbox.WorkerConfig{
+			Name:      "sms platform event outbox",
+			Processor: app.NewOrderOutboxProcessor(orderHistoryStore, platformEventBus),
+			Logf:      log.Printf,
+		})
+	})
+	group.Go(func() error {
+		return eventbusadapter.RunOrderAcquireWorker(groupCtx, acquireConsumer, orderService)
+	})
+	group.Go(func() error {
+		return eventbusadapter.RunOrderPollWorker(groupCtx, pollConsumer, orderService)
+	})
+	group.Go(func() error {
+		return eventbusadapter.RunOrderCancelWorker(groupCtx, cancelConsumer, orderService)
+	})
+
+	go func() {
+		<-groupCtx.Done()
+		server.GracefulStop()
+	}()
+
+	dashboardConn, err := grpcclient.NewInsecure(selfTarget(cfg.ListenAddr))
+	if err != nil {
+		log.Fatalf("connect sms dashboard admin API: %v", err)
+	}
+	defer dashboardConn.Close()
+	errCh := make(chan error, 2)
+	startDashboardHTTP(groupCtx, cfg.DashboardHTTPAddr, cfg.DashboardStaticDir, smsinternalv1.NewSmsProviderAdminServiceClient(dashboardConn), hotStream, errCh)
+
 	log.Printf("sms-service listening on %s", cfg.ListenAddr)
-	if err := server.Serve(listener); err != nil {
+	group.Go(func() error {
+		if err := server.Serve(listener); err != nil && ctx.Err() == nil {
+			return err
+		}
+		return nil
+	})
+	group.Go(func() error {
+		select {
+		case <-groupCtx.Done():
+			return nil
+		case err := <-errCh:
+			return err
+		}
+	})
+	if err := group.Wait(); err != nil {
+		stop()
 		log.Fatalf("sms-service failed: %v", err)
 	}
 }
 
 func loadConfig() config {
 	cfg := config{
-		ListenAddr:         envDefault("SMS_LISTEN_ADDR", ":50051"),
-		PGDSN:              envDefault("SMS_PG_DSN", envDefault("PG_DSN", "")),
-		HTTPTimeoutSeconds: envInt("SMS_HTTP_TIMEOUT_SECONDS", 20),
-		ProviderHTTPProxy:  envDefault("SMS_PROVIDER_HTTP_PROXY", ""),
+		ListenAddr:         envx.StringDefault("SMS_LISTEN_ADDR", ":50051"),
+		PGDSN:              envx.StringDefault("SMS_PG_DSN", envx.StringDefault("PG_DSN", "")),
+		HTTPTimeoutSeconds: mustEnvInt("SMS_HTTP_TIMEOUT_SECONDS", 20),
+		ProviderHTTPProxy:  envx.StringDefault("SMS_PROVIDER_HTTP_PROXY", ""),
+		DashboardHTTPAddr:  envx.StringDefault("SMS_DASHBOARD_HTTP_ADDR", ":8080"),
+		DashboardStaticDir: envx.StringDefault("SMS_DASHBOARD_STATIC_DIR", "/app/dashboard/sms"),
+		PlatformNATSURL:    envx.StringDefault("PLATFORM_NATS_URL", ""),
+		PlatformRedisURL:   envx.StringDefault("PLATFORM_REDIS_URL", ""),
+		EventStreamName:    envx.StringDefault("PLATFORM_EVENT_STREAM_NAME", natseventbus.DefaultStream),
 	}
 	if cfg.HTTPTimeoutSeconds <= 0 {
 		cfg.HTTPTimeoutSeconds = 20
@@ -81,22 +181,39 @@ func loadConfig() config {
 	return cfg
 }
 
-func envDefault(name string, fallback string) string {
-	value := strings.TrimSpace(os.Getenv(name))
-	if value == "" {
-		return fallback
+func newPlatformEventBus(ctx context.Context, cfg config) (*natseventbus.Bus, func(), error) {
+	if strings.TrimSpace(cfg.PlatformNATSURL) == "" {
+		return nil, nil, fmt.Errorf("PLATFORM_NATS_URL is required for SMS order polling")
 	}
-	return value
+	bus, err := natseventbus.Connect(natseventbus.Config{
+		URL:        cfg.PlatformNATSURL,
+		ClientName: "sms-service",
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	return bus, bus.Close, nil
 }
 
-func envInt(name string, fallback int) int {
-	value := strings.TrimSpace(os.Getenv(name))
-	if value == "" {
-		return fallback
+func newSMSHotStreamBus(ctx context.Context, cfg config) (hotstream.Bus, func(), error) {
+	if strings.TrimSpace(cfg.PlatformNATSURL) == "" {
+		return nil, nil, fmt.Errorf("PLATFORM_NATS_URL is required for SMS hotstream")
 	}
-	parsed, err := strconv.Atoi(value)
+	bus, err := hotstreamnats.Connect(ctx, hotstreamnats.Config{
+		URL:        cfg.PlatformNATSURL,
+		ClientName: "sms-service",
+		Subject:    hotstream.ServiceStateSubject("sms"),
+	})
 	if err != nil {
-		log.Fatalf("%s must be an integer: %v", name, err)
+		return nil, nil, err
+	}
+	return bus, bus.Close, nil
+}
+
+func mustEnvInt(name string, fallback int) int {
+	parsed, err := envx.IntStrict(name, fallback)
+	if err != nil {
+		log.Fatal(err)
 	}
 	return parsed
 }

@@ -3,7 +3,10 @@ package smsbower
 import (
 	"context"
 	"encoding/json"
+	"github.com/byte-v-forge/common-lib/stringx"
 	"net/url"
+	"strings"
+	"time"
 
 	"github.com/byte-v-forge/sms/internal/core"
 	"github.com/byte-v-forge/sms/internal/providers/handlerapi"
@@ -68,7 +71,7 @@ func decodeApplicationOffers(raw json.RawMessage) ([]ApplicationOffer, error) {
 	if err := json.Unmarshal(raw, &byCode); err == nil {
 		offers := make([]ApplicationOffer, 0, len(byCode))
 		for code, item := range byCode {
-			offers = append(offers, applicationOffer(firstNonEmpty(item.Code, code), firstNonEmpty(item.Name, code)))
+			offers = append(offers, applicationOffer(stringx.FirstNonEmpty(item.Code, code), stringx.FirstNonEmpty(item.Name, code)))
 		}
 		return offers, nil
 	}
@@ -95,11 +98,11 @@ func applicationOffersFromList(list []struct {
 }
 
 func applicationOffer(code, name string) ApplicationOffer {
-	code = firstNonEmpty(code)
+	code = stringx.FirstNonEmpty(code)
 	return ApplicationOffer{
 		ApplicationKey:     code,
 		UpstreamServiceKey: code,
-		DisplayName:        firstNonEmpty(name, code),
+		DisplayName:        stringx.FirstNonEmpty(name, code),
 	}
 }
 
@@ -123,7 +126,7 @@ func (c *Client) ListCountries(ctx context.Context) ([]Country, error) {
 		if id == "" || id == "0" {
 			id = key
 		}
-		name := firstNonEmpty(item.Eng, item.Chn, item.Rus, key)
+		name := stringx.FirstNonEmpty(item.Eng, item.Chn, item.Rus, key)
 		countries = append(countries, Country{CountryID: id, Name: name})
 	}
 	return countries, nil
@@ -152,7 +155,7 @@ func (c *Client) ListPriceOffers(ctx context.Context, serviceKey, countryID stri
 				offers = append(offers, PriceOffer{
 					CountryID:          cID,
 					UpstreamServiceKey: svc,
-					ProviderID:         firstNonEmpty(rawJSONScalar(offer.ProviderID), providerID),
+					ProviderID:         stringx.FirstNonEmpty(rawJSONScalar(offer.ProviderID), providerID),
 					Price:              core.Money{AmountDecimal: rawJSONScalar(offer.Price)},
 					AvailableCount:     offer.Count,
 				})
@@ -160,4 +163,91 @@ func (c *Client) ListPriceOffers(ctx context.Context, serviceKey, countryID stri
 		}
 	}
 	return offers, nil
+}
+
+func (c *Client) ListRouteOffers(ctx context.Context, query core.RouteOfferQuery) ([]core.RouteOffer, error) {
+	applications, err := c.ListApplications(ctx)
+	if err != nil {
+		return nil, err
+	}
+	countries, err := c.ListCountries(ctx)
+	if err != nil {
+		return nil, err
+	}
+	service := matchService(query.ApplicationKey, applications)
+	if strings.TrimSpace(query.ApplicationKey) != "" && service == "" {
+		return nil, nil
+	}
+	countryID := smsbowerCountryIDForQuery(query, countries)
+	if (query.CountryISO2 != "" || query.CountryCallingCode != "") && countryID == "" {
+		return nil, nil
+	}
+	priceOffers, err := c.ListPriceOffers(ctx, service, countryID)
+	if err != nil {
+		return nil, err
+	}
+	appNames := map[string]string{}
+	for _, app := range applications {
+		appNames[app.UpstreamServiceKey] = stringx.FirstNonEmpty(app.DisplayName, app.UpstreamServiceKey)
+	}
+	countryByID := map[string]Country{}
+	for _, country := range countries {
+		countryByID[country.CountryID] = country
+	}
+	out := make([]core.RouteOffer, 0, len(priceOffers))
+	now := time.Now().UTC()
+	for _, offer := range priceOffers {
+		country := countryByID[offer.CountryID]
+		iso2, callingCode := smsbowerCountryCodes(country.Name)
+		route := core.Route{
+			ProviderKey:        ProviderKey,
+			ApplicationKey:     offer.UpstreamServiceKey,
+			UpstreamServiceKey: offer.UpstreamServiceKey,
+			CountryISO2:        iso2,
+			CountryCallingCode: callingCode,
+			ProviderCountryID:  offer.CountryID,
+			UpstreamProviderID: offer.ProviderID,
+		}
+		out = append(out, core.RouteOffer{
+			ProviderKey:          ProviderKey,
+			UpstreamProviderID:   offer.ProviderID,
+			UpstreamProviderName: offer.ProviderID,
+			ApplicationKey:       offer.UpstreamServiceKey,
+			ApplicationName:      stringx.FirstNonEmpty(appNames[offer.UpstreamServiceKey], offer.UpstreamServiceKey),
+			CountryISO2:          iso2,
+			CountryName:          stringx.FirstNonEmpty(country.Name, offer.CountryID),
+			CountryCallingCode:   callingCode,
+			Price:                offer.Price,
+			AvailableCount:       offer.AvailableCount,
+			ObservedAt:           now,
+			Route:                route,
+		})
+	}
+	return out, nil
+}
+
+func smsbowerCountryIDForQuery(query core.RouteOfferQuery, countries []Country) string {
+	for _, country := range countries {
+		iso2, callingCode := smsbowerCountryCodes(country.Name)
+		if query.CountryISO2 != "" && !strings.EqualFold(query.CountryISO2, iso2) {
+			continue
+		}
+		if query.CountryCallingCode != "" && query.CountryCallingCode != strings.TrimPrefix(callingCode, "+") {
+			continue
+		}
+		return country.CountryID
+	}
+	return ""
+}
+
+func smsbowerCountryCodes(name string) (string, string) {
+	normalized := strings.ToLower(strings.TrimSpace(name))
+	switch {
+	case strings.Contains(normalized, "indonesia"):
+		return "ID", "62"
+	case strings.Contains(normalized, "thai"):
+		return "TH", "66"
+	default:
+		return "", ""
+	}
 }

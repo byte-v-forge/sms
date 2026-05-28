@@ -2,9 +2,13 @@ package app
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"strings"
 	"time"
 
+	"github.com/byte-v-forge/common-lib/eventbus"
+	"github.com/byte-v-forge/common-lib/hotstream"
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	"github.com/byte-v-forge/sms/internal/core"
 	"google.golang.org/protobuf/proto"
@@ -12,19 +16,21 @@ import (
 
 type ProviderAdminService struct {
 	configs          ProviderConfigStore
-	activations      *ActivationService
-	activationDB     ActivationListStore
+	orders           *OrderService
+	orderDB          OrderListStore
 	timeout          time.Duration
 	defaultHTTPProxy string
+	hot              HotStreamPublisher
 }
 
-func NewProviderAdminService(configs ProviderConfigStore, activations *ActivationService, activationDB ActivationListStore, timeout time.Duration, defaultHTTPProxy string) *ProviderAdminService {
+func NewProviderAdminService(configs ProviderConfigStore, orders *OrderService, orderDB OrderListStore, timeout time.Duration, defaultHTTPProxy string, hot HotStreamPublisher) *ProviderAdminService {
 	return &ProviderAdminService{
 		configs:          configs,
-		activations:      activations,
-		activationDB:     activationDB,
+		orders:           orders,
+		orderDB:          orderDB,
 		timeout:          timeout,
 		defaultHTTPProxy: strings.TrimSpace(defaultHTTPProxy),
+		hot:              hot,
 	}
 }
 
@@ -37,11 +43,12 @@ func (s *ProviderAdminService) UpsertProviderConfig(ctx context.Context, config 
 	if err != nil {
 		return nil, err
 	}
+	s.publishProviderConfig(ctx, SMSProviderConfigUpdated, saved)
 	return RedactProviderConfig(saved), nil
 }
 
-func (s *ProviderAdminService) GetProviderConfig(ctx context.Context, providerConfigID string) (*smsinternalv1.SmsProviderConfig, error) {
-	config, err := s.configs.GetProviderConfig(ctx, providerConfigID)
+func (s *ProviderAdminService) GetProviderConfig(ctx context.Context, providerKey string) (*smsinternalv1.SmsProviderConfig, error) {
+	config, err := s.configs.GetProviderConfig(ctx, providerKey)
 	if err != nil {
 		return nil, err
 	}
@@ -59,50 +66,46 @@ func (s *ProviderAdminService) ListProviderConfigs(ctx context.Context, includeD
 	return configs, nil
 }
 
-func (s *ProviderAdminService) DeleteProviderConfig(ctx context.Context, providerConfigID string) error {
-	return s.configs.DeleteProviderConfig(ctx, providerConfigID)
-}
-
-func (s *ProviderAdminService) ListRouteOptions(ctx context.Context, providerConfigID, providerKey string) (*smsinternalv1.SmsProviderRouteOptions, error) {
-	config, err := s.configForRouteOptions(ctx, providerConfigID, providerKey)
-	if err != nil {
-		return nil, err
+func (s *ProviderAdminService) DeleteProviderConfig(ctx context.Context, providerKey string) error {
+	if err := s.configs.DeleteProviderConfig(ctx, providerKey); err != nil {
+		return err
 	}
-	if !config.GetEnabled() {
-		return nil, core.NewError(core.CodeValidationFailed, "sms provider config is disabled", false)
+	s.publishResource(ctx, SMSProviderConfigDeleted, SMSProviderConfigResource, providerKey, map[string]string{"provider_key": providerKey})
+	return nil
+}
+
+func (s *ProviderAdminService) publishProviderConfig(ctx context.Context, eventType string, config *smsinternalv1.SmsProviderConfig) {
+	if config == nil {
+		return
 	}
-	provider, err := providerFromConfig(config, s.timeout, s.defaultHTTPProxy)
-	if err != nil {
-		return nil, err
+	s.publishResource(ctx, eventType, SMSProviderConfigResource, config.GetProviderKey(), map[string]string{
+		"provider_key": config.GetProviderKey(),
+		"enabled":      fmt.Sprintf("%t", config.GetEnabled()),
+	})
+}
+
+func (s *ProviderAdminService) publishResource(ctx context.Context, eventType string, resourceType string, resourceID string, attrs map[string]string) {
+	if s == nil || s.hot == nil || strings.TrimSpace(resourceID) == "" {
+		return
 	}
-	return listRouteOptions(ctx, provider, config)
-}
-
-func (s *ProviderAdminService) UpsertRouteProfile(ctx context.Context, profile *smsinternalv1.SmsRouteProfile) (*smsinternalv1.SmsRouteProfile, error) {
-	return s.configs.UpsertRouteProfile(ctx, profile)
-}
-
-func (s *ProviderAdminService) GetRouteProfile(ctx context.Context, profileKey string) (*smsinternalv1.SmsRouteProfile, error) {
-	return s.configs.GetRouteProfile(ctx, profileKey)
-}
-
-func (s *ProviderAdminService) ListRouteProfiles(ctx context.Context, includeDisabled bool) ([]*smsinternalv1.SmsRouteProfile, error) {
-	return s.configs.ListRouteProfiles(ctx, includeDisabled)
-}
-
-func (s *ProviderAdminService) DeleteRouteProfile(ctx context.Context, profileKey string) error {
-	return s.configs.DeleteRouteProfile(ctx, profileKey)
-}
-
-func (s *ProviderAdminService) configForRouteOptions(ctx context.Context, providerConfigID, providerKey string) (*smsinternalv1.SmsProviderConfig, error) {
-	if strings.TrimSpace(providerConfigID) != "" {
-		return s.configs.GetProviderConfig(ctx, providerConfigID)
+	now := time.Now()
+	event := hotstream.NewEvent(hotstream.EventConfig{
+		EventID:       eventbus.StableEventID("sms-hot-", eventType, resourceID, fmt.Sprintf("%d", now.UnixNano())),
+		EventType:     eventType,
+		SourceService: SMSHotStreamSource,
+		ResourceType:  resourceType,
+		ResourceID:    resourceID,
+		OccurredAt:    now,
+		CorrelationID: resourceID,
+		Attributes:    attrs,
+	})
+	if err := s.hot.Publish(context.WithoutCancel(ctx), event); err != nil {
+		log.Printf("publish sms config hotstream failed type=%s resource=%s: %v", eventType, resourceID, err)
 	}
-	return s.configs.GetEnabledProviderConfig(ctx, providerKey, core.Target{})
 }
 
-func (s *ProviderAdminService) GetProviderBalance(ctx context.Context, providerConfigID string) (core.Money, error) {
-	config, err := s.configs.GetProviderConfig(ctx, providerConfigID)
+func (s *ProviderAdminService) GetProviderBalance(ctx context.Context, providerKey string) (core.Money, error) {
+	config, err := s.configs.GetProviderConfig(ctx, providerKey)
 	if err != nil {
 		return core.Money{}, err
 	}
@@ -116,9 +119,9 @@ func (s *ProviderAdminService) GetProviderBalance(ctx context.Context, providerC
 	return provider.GetBalance(ctx)
 }
 
-func (s *ProviderAdminService) ListActivations(ctx context.Context, includeFinal bool, limit int) ([]core.Activation, error) {
-	if s.activationDB == nil {
-		return nil, core.NewError(core.CodeUnsupportedOperation, "sms activation list is not available", false)
+func (s *ProviderAdminService) ListOrders(ctx context.Context, includeFinal bool, limit int) ([]core.Order, error) {
+	if s.orderDB == nil {
+		return nil, core.NewError(core.CodeUnsupportedOperation, "sms order list is not available", false)
 	}
 	if limit <= 0 {
 		limit = 100
@@ -126,17 +129,17 @@ func (s *ProviderAdminService) ListActivations(ctx context.Context, includeFinal
 	if limit > 500 {
 		limit = 500
 	}
-	return s.activationDB.List(ctx, includeFinal, limit)
+	return s.orderDB.List(ctx, includeFinal, limit)
 }
 
-func (s *ProviderAdminService) CancelActivation(ctx context.Context, activationID string, requestID string) (core.Activation, error) {
-	if strings.TrimSpace(activationID) == "" {
-		return core.Activation{}, core.NewError(core.CodeValidationFailed, "activation_id is required", false)
+func (s *ProviderAdminService) CancelOrder(ctx context.Context, orderID string, requestID string) (core.Order, error) {
+	if strings.TrimSpace(orderID) == "" {
+		return core.Order{}, core.NewError(core.CodeValidationFailed, "order_id is required", false)
 	}
 	if strings.TrimSpace(requestID) == "" {
 		requestID = RandomIDGenerator{}.NewID("req_")
 	}
-	return s.activations.CancelActivation(ctx, activationID, requestID)
+	return s.orders.CancelOrder(ctx, orderID, requestID)
 }
 
 func RedactProviderConfig(config *smsinternalv1.SmsProviderConfig) *smsinternalv1.SmsProviderConfig {

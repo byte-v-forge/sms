@@ -7,7 +7,6 @@
 package herosmsv1
 
 import (
-	v11 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/sms/v1"
 	v1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -23,70 +22,66 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type HeroSmsActivationStatusCode int32
+type HeroSmsOrderStatusCode int32
 
 const (
-	HeroSmsActivationStatusCode_HERO_SMS_ACTIVATION_STATUS_CODE_UNSPECIFIED HeroSmsActivationStatusCode = 0
-	HeroSmsActivationStatusCode_HERO_SMS_ACTIVATION_STATUS_CODE_READY       HeroSmsActivationStatusCode = 1
-	HeroSmsActivationStatusCode_HERO_SMS_ACTIVATION_STATUS_CODE_RETRY_GET   HeroSmsActivationStatusCode = 3
-	HeroSmsActivationStatusCode_HERO_SMS_ACTIVATION_STATUS_CODE_COMPLETE    HeroSmsActivationStatusCode = 6
-	HeroSmsActivationStatusCode_HERO_SMS_ACTIVATION_STATUS_CODE_CANCEL      HeroSmsActivationStatusCode = 8
+	HeroSmsOrderStatusCode_HERO_SMS_ORDER_STATUS_CODE_UNSPECIFIED HeroSmsOrderStatusCode = 0
+	HeroSmsOrderStatusCode_HERO_SMS_ORDER_STATUS_CODE_READY       HeroSmsOrderStatusCode = 1
+	HeroSmsOrderStatusCode_HERO_SMS_ORDER_STATUS_CODE_RETRY_GET   HeroSmsOrderStatusCode = 3
+	HeroSmsOrderStatusCode_HERO_SMS_ORDER_STATUS_CODE_COMPLETE    HeroSmsOrderStatusCode = 6
+	HeroSmsOrderStatusCode_HERO_SMS_ORDER_STATUS_CODE_CANCEL      HeroSmsOrderStatusCode = 8
 )
 
-// Enum value maps for HeroSmsActivationStatusCode.
+// Enum value maps for HeroSmsOrderStatusCode.
 var (
-	HeroSmsActivationStatusCode_name = map[int32]string{
-		0: "HERO_SMS_ACTIVATION_STATUS_CODE_UNSPECIFIED",
-		1: "HERO_SMS_ACTIVATION_STATUS_CODE_READY",
-		3: "HERO_SMS_ACTIVATION_STATUS_CODE_RETRY_GET",
-		6: "HERO_SMS_ACTIVATION_STATUS_CODE_COMPLETE",
-		8: "HERO_SMS_ACTIVATION_STATUS_CODE_CANCEL",
+	HeroSmsOrderStatusCode_name = map[int32]string{
+		0: "HERO_SMS_ORDER_STATUS_CODE_UNSPECIFIED",
+		1: "HERO_SMS_ORDER_STATUS_CODE_READY",
+		3: "HERO_SMS_ORDER_STATUS_CODE_RETRY_GET",
+		6: "HERO_SMS_ORDER_STATUS_CODE_COMPLETE",
+		8: "HERO_SMS_ORDER_STATUS_CODE_CANCEL",
 	}
-	HeroSmsActivationStatusCode_value = map[string]int32{
-		"HERO_SMS_ACTIVATION_STATUS_CODE_UNSPECIFIED": 0,
-		"HERO_SMS_ACTIVATION_STATUS_CODE_READY":       1,
-		"HERO_SMS_ACTIVATION_STATUS_CODE_RETRY_GET":   3,
-		"HERO_SMS_ACTIVATION_STATUS_CODE_COMPLETE":    6,
-		"HERO_SMS_ACTIVATION_STATUS_CODE_CANCEL":      8,
+	HeroSmsOrderStatusCode_value = map[string]int32{
+		"HERO_SMS_ORDER_STATUS_CODE_UNSPECIFIED": 0,
+		"HERO_SMS_ORDER_STATUS_CODE_READY":       1,
+		"HERO_SMS_ORDER_STATUS_CODE_RETRY_GET":   3,
+		"HERO_SMS_ORDER_STATUS_CODE_COMPLETE":    6,
+		"HERO_SMS_ORDER_STATUS_CODE_CANCEL":      8,
 	}
 )
 
-func (x HeroSmsActivationStatusCode) Enum() *HeroSmsActivationStatusCode {
-	p := new(HeroSmsActivationStatusCode)
+func (x HeroSmsOrderStatusCode) Enum() *HeroSmsOrderStatusCode {
+	p := new(HeroSmsOrderStatusCode)
 	*p = x
 	return p
 }
 
-func (x HeroSmsActivationStatusCode) String() string {
+func (x HeroSmsOrderStatusCode) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (HeroSmsActivationStatusCode) Descriptor() protoreflect.EnumDescriptor {
+func (HeroSmsOrderStatusCode) Descriptor() protoreflect.EnumDescriptor {
 	return file_byte_v_forge_sms_providers_herosms_v1_herosms_proto_enumTypes[0].Descriptor()
 }
 
-func (HeroSmsActivationStatusCode) Type() protoreflect.EnumType {
+func (HeroSmsOrderStatusCode) Type() protoreflect.EnumType {
 	return &file_byte_v_forge_sms_providers_herosms_v1_herosms_proto_enumTypes[0]
 }
 
-func (x HeroSmsActivationStatusCode) Number() protoreflect.EnumNumber {
+func (x HeroSmsOrderStatusCode) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use HeroSmsActivationStatusCode.Descriptor instead.
-func (HeroSmsActivationStatusCode) EnumDescriptor() ([]byte, []int) {
+// Deprecated: Use HeroSmsOrderStatusCode.Descriptor instead.
+func (HeroSmsOrderStatusCode) EnumDescriptor() ([]byte, []int) {
 	return file_byte_v_forge_sms_providers_herosms_v1_herosms_proto_rawDescGZIP(), []int{0}
 }
 
 type HeroSmsProviderConfig struct {
-	state                     protoimpl.MessageState `protogen:"open.v1"`
-	Config                    *v1.SmsProviderConfig  `protobuf:"bytes,1,opt,name=config,proto3" json:"config,omitempty"`
-	DefaultCountryId          int32                  `protobuf:"varint,2,opt,name=default_country_id,json=defaultCountryId,proto3" json:"default_country_id,omitempty"`
-	DefaultCountryCallingCode string                 `protobuf:"bytes,3,opt,name=default_country_calling_code,json=defaultCountryCallingCode,proto3" json:"default_country_calling_code,omitempty"`
-	DefaultUpstreamServiceKey string                 `protobuf:"bytes,4,opt,name=default_upstream_service_key,json=defaultUpstreamServiceKey,proto3" json:"default_upstream_service_key,omitempty"`
-	DefaultMaxPrice           *v11.DecimalMoney      `protobuf:"bytes,5,opt,name=default_max_price,json=defaultMaxPrice,proto3" json:"default_max_price,omitempty"`
-	unknownFields             protoimpl.UnknownFields
-	sizeCache                 protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Config        *v1.SmsProviderConfig  `protobuf:"bytes,1,opt,name=config,proto3" json:"config,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *HeroSmsProviderConfig) Reset() {
@@ -126,39 +121,10 @@ func (x *HeroSmsProviderConfig) GetConfig() *v1.SmsProviderConfig {
 	return nil
 }
 
-func (x *HeroSmsProviderConfig) GetDefaultCountryId() int32 {
-	if x != nil {
-		return x.DefaultCountryId
-	}
-	return 0
-}
-
-func (x *HeroSmsProviderConfig) GetDefaultCountryCallingCode() string {
-	if x != nil {
-		return x.DefaultCountryCallingCode
-	}
-	return ""
-}
-
-func (x *HeroSmsProviderConfig) GetDefaultUpstreamServiceKey() string {
-	if x != nil {
-		return x.DefaultUpstreamServiceKey
-	}
-	return ""
-}
-
-func (x *HeroSmsProviderConfig) GetDefaultMaxPrice() *v11.DecimalMoney {
-	if x != nil {
-		return x.DefaultMaxPrice
-	}
-	return nil
-}
-
 type HeroSmsGetNumberRequest struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
 	UpstreamServiceKey string                 `protobuf:"bytes,1,opt,name=upstream_service_key,json=upstreamServiceKey,proto3" json:"upstream_service_key,omitempty"`
 	CountryId          int32                  `protobuf:"varint,2,opt,name=country_id,json=countryId,proto3" json:"country_id,omitempty"`
-	MaxPrice           *v11.DecimalMoney      `protobuf:"bytes,3,opt,name=max_price,json=maxPrice,proto3" json:"max_price,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -207,16 +173,9 @@ func (x *HeroSmsGetNumberRequest) GetCountryId() int32 {
 	return 0
 }
 
-func (x *HeroSmsGetNumberRequest) GetMaxPrice() *v11.DecimalMoney {
-	if x != nil {
-		return x.MaxPrice
-	}
-	return nil
-}
-
 type HeroSmsAccessNumberResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ActivationId  string                 `protobuf:"bytes,1,opt,name=activation_id,json=activationId,proto3" json:"activation_id,omitempty"`
+	OrderId       string                 `protobuf:"bytes,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	PhoneNumber   string                 `protobuf:"bytes,2,opt,name=phone_number,json=phoneNumber,proto3" json:"phone_number,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -252,9 +211,9 @@ func (*HeroSmsAccessNumberResponse) Descriptor() ([]byte, []int) {
 	return file_byte_v_forge_sms_providers_herosms_v1_herosms_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *HeroSmsAccessNumberResponse) GetActivationId() string {
+func (x *HeroSmsAccessNumberResponse) GetOrderId() string {
 	if x != nil {
-		return x.ActivationId
+		return x.OrderId
 	}
 	return ""
 }
@@ -268,7 +227,7 @@ func (x *HeroSmsAccessNumberResponse) GetPhoneNumber() string {
 
 type HeroSmsGetStatusRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ActivationId  string                 `protobuf:"bytes,1,opt,name=activation_id,json=activationId,proto3" json:"activation_id,omitempty"`
+	OrderId       string                 `protobuf:"bytes,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -303,9 +262,9 @@ func (*HeroSmsGetStatusRequest) Descriptor() ([]byte, []int) {
 	return file_byte_v_forge_sms_providers_herosms_v1_herosms_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *HeroSmsGetStatusRequest) GetActivationId() string {
+func (x *HeroSmsGetStatusRequest) GetOrderId() string {
 	if x != nil {
-		return x.ActivationId
+		return x.OrderId
 	}
 	return ""
 }
@@ -363,9 +322,9 @@ func (x *HeroSmsGetStatusResponse) GetCode() string {
 }
 
 type HeroSmsSetStatusRequest struct {
-	state         protoimpl.MessageState      `protogen:"open.v1"`
-	ActivationId  string                      `protobuf:"bytes,1,opt,name=activation_id,json=activationId,proto3" json:"activation_id,omitempty"`
-	Status        HeroSmsActivationStatusCode `protobuf:"varint,2,opt,name=status,proto3,enum=byte.v.forge.sms.providers.herosms.v1.HeroSmsActivationStatusCode" json:"status,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrderId       string                 `protobuf:"bytes,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	Status        HeroSmsOrderStatusCode `protobuf:"varint,2,opt,name=status,proto3,enum=byte.v.forge.sms.providers.herosms.v1.HeroSmsOrderStatusCode" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -400,18 +359,18 @@ func (*HeroSmsSetStatusRequest) Descriptor() ([]byte, []int) {
 	return file_byte_v_forge_sms_providers_herosms_v1_herosms_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *HeroSmsSetStatusRequest) GetActivationId() string {
+func (x *HeroSmsSetStatusRequest) GetOrderId() string {
 	if x != nil {
-		return x.ActivationId
+		return x.OrderId
 	}
 	return ""
 }
 
-func (x *HeroSmsSetStatusRequest) GetStatus() HeroSmsActivationStatusCode {
+func (x *HeroSmsSetStatusRequest) GetStatus() HeroSmsOrderStatusCode {
 	if x != nil {
 		return x.Status
 	}
-	return HeroSmsActivationStatusCode_HERO_SMS_ACTIVATION_STATUS_CODE_UNSPECIFIED
+	return HeroSmsOrderStatusCode_HERO_SMS_ORDER_STATUS_CODE_UNSPECIFIED
 }
 
 type HeroSmsSetStatusResponse struct {
@@ -462,39 +421,34 @@ var File_byte_v_forge_sms_providers_herosms_v1_herosms_proto protoreflect.FileDe
 
 const file_byte_v_forge_sms_providers_herosms_v1_herosms_proto_rawDesc = "" +
 	"\n" +
-	"3byte/v/forge/sms/providers/herosms/v1/herosms.proto\x12%byte.v.forge.sms.providers.herosms.v1\x1a'byte/v/forge/contracts/sms/v1/sms.proto\x1a/byte/v/forge/sms/internal/v1/sms_internal.proto\"\xe9\x02\n" +
+	"3byte/v/forge/sms/providers/herosms/v1/herosms.proto\x12%byte.v.forge.sms.providers.herosms.v1\x1a/byte/v/forge/sms/internal/v1/sms_internal.proto\"f\n" +
 	"\x15HeroSmsProviderConfig\x12G\n" +
-	"\x06config\x18\x01 \x01(\v2/.byte.v.forge.sms.internal.v1.SmsProviderConfigR\x06config\x12,\n" +
-	"\x12default_country_id\x18\x02 \x01(\x05R\x10defaultCountryId\x12?\n" +
-	"\x1cdefault_country_calling_code\x18\x03 \x01(\tR\x19defaultCountryCallingCode\x12?\n" +
-	"\x1cdefault_upstream_service_key\x18\x04 \x01(\tR\x19defaultUpstreamServiceKey\x12W\n" +
-	"\x11default_max_price\x18\x05 \x01(\v2+.byte.v.forge.contracts.sms.v1.DecimalMoneyR\x0fdefaultMaxPrice\"\xb4\x01\n" +
+	"\x06config\x18\x01 \x01(\v2/.byte.v.forge.sms.internal.v1.SmsProviderConfigR\x06configJ\x04\b\x02\x10\x06\"p\n" +
 	"\x17HeroSmsGetNumberRequest\x120\n" +
 	"\x14upstream_service_key\x18\x01 \x01(\tR\x12upstreamServiceKey\x12\x1d\n" +
 	"\n" +
-	"country_id\x18\x02 \x01(\x05R\tcountryId\x12H\n" +
-	"\tmax_price\x18\x03 \x01(\v2+.byte.v.forge.contracts.sms.v1.DecimalMoneyR\bmaxPrice\"e\n" +
-	"\x1bHeroSmsAccessNumberResponse\x12#\n" +
-	"\ractivation_id\x18\x01 \x01(\tR\factivationId\x12!\n" +
-	"\fphone_number\x18\x02 \x01(\tR\vphoneNumber\">\n" +
-	"\x17HeroSmsGetStatusRequest\x12#\n" +
-	"\ractivation_id\x18\x01 \x01(\tR\factivationId\"M\n" +
+	"country_id\x18\x02 \x01(\x05R\tcountryIdJ\x04\b\x03\x10\x04\"[\n" +
+	"\x1bHeroSmsAccessNumberResponse\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\tR\aorderId\x12!\n" +
+	"\fphone_number\x18\x02 \x01(\tR\vphoneNumber\"4\n" +
+	"\x17HeroSmsGetStatusRequest\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\tR\aorderId\"M\n" +
 	"\x18HeroSmsGetStatusResponse\x12\x1d\n" +
 	"\n" +
 	"raw_status\x18\x01 \x01(\tR\trawStatus\x12\x12\n" +
-	"\x04code\x18\x02 \x01(\tR\x04code\"\x9a\x01\n" +
-	"\x17HeroSmsSetStatusRequest\x12#\n" +
-	"\ractivation_id\x18\x01 \x01(\tR\factivationId\x12Z\n" +
-	"\x06status\x18\x02 \x01(\x0e2B.byte.v.forge.sms.providers.herosms.v1.HeroSmsActivationStatusCodeR\x06status\"9\n" +
+	"\x04code\x18\x02 \x01(\tR\x04code\"\x8b\x01\n" +
+	"\x17HeroSmsSetStatusRequest\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\tR\aorderId\x12U\n" +
+	"\x06status\x18\x02 \x01(\x0e2=.byte.v.forge.sms.providers.herosms.v1.HeroSmsOrderStatusCodeR\x06status\"9\n" +
 	"\x18HeroSmsSetStatusResponse\x12\x1d\n" +
 	"\n" +
-	"raw_status\x18\x01 \x01(\tR\trawStatus*\x82\x02\n" +
-	"\x1bHeroSmsActivationStatusCode\x12/\n" +
-	"+HERO_SMS_ACTIVATION_STATUS_CODE_UNSPECIFIED\x10\x00\x12)\n" +
-	"%HERO_SMS_ACTIVATION_STATUS_CODE_READY\x10\x01\x12-\n" +
-	")HERO_SMS_ACTIVATION_STATUS_CODE_RETRY_GET\x10\x03\x12,\n" +
-	"(HERO_SMS_ACTIVATION_STATUS_CODE_COMPLETE\x10\x06\x12*\n" +
-	"&HERO_SMS_ACTIVATION_STATUS_CODE_CANCEL\x10\bB\xd9\x01\n" +
+	"raw_status\x18\x01 \x01(\tR\trawStatus*\xe4\x01\n" +
+	"\x16HeroSmsOrderStatusCode\x12*\n" +
+	"&HERO_SMS_ORDER_STATUS_CODE_UNSPECIFIED\x10\x00\x12$\n" +
+	" HERO_SMS_ORDER_STATUS_CODE_READY\x10\x01\x12(\n" +
+	"$HERO_SMS_ORDER_STATUS_CODE_RETRY_GET\x10\x03\x12'\n" +
+	"#HERO_SMS_ORDER_STATUS_CODE_COMPLETE\x10\x06\x12%\n" +
+	"!HERO_SMS_ORDER_STATUS_CODE_CANCEL\x10\bB\xd9\x01\n" +
 	"'com.bytevforge.sms.providers.herosms.v1B\fHeroSmsProtoP\x01ZRgithub.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/providers/herosms/v1;herosmsv1\xaa\x02#ByteVForge.Sms.Providers.HeroSms.V1\xca\x02#ByteVForge\\Sms\\Providers\\HeroSms\\V1b\x06proto3"
 
 var (
@@ -512,7 +466,7 @@ func file_byte_v_forge_sms_providers_herosms_v1_herosms_proto_rawDescGZIP() []by
 var file_byte_v_forge_sms_providers_herosms_v1_herosms_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_byte_v_forge_sms_providers_herosms_v1_herosms_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_byte_v_forge_sms_providers_herosms_v1_herosms_proto_goTypes = []any{
-	(HeroSmsActivationStatusCode)(0),    // 0: byte.v.forge.sms.providers.herosms.v1.HeroSmsActivationStatusCode
+	(HeroSmsOrderStatusCode)(0),         // 0: byte.v.forge.sms.providers.herosms.v1.HeroSmsOrderStatusCode
 	(*HeroSmsProviderConfig)(nil),       // 1: byte.v.forge.sms.providers.herosms.v1.HeroSmsProviderConfig
 	(*HeroSmsGetNumberRequest)(nil),     // 2: byte.v.forge.sms.providers.herosms.v1.HeroSmsGetNumberRequest
 	(*HeroSmsAccessNumberResponse)(nil), // 3: byte.v.forge.sms.providers.herosms.v1.HeroSmsAccessNumberResponse
@@ -521,18 +475,15 @@ var file_byte_v_forge_sms_providers_herosms_v1_herosms_proto_goTypes = []any{
 	(*HeroSmsSetStatusRequest)(nil),     // 6: byte.v.forge.sms.providers.herosms.v1.HeroSmsSetStatusRequest
 	(*HeroSmsSetStatusResponse)(nil),    // 7: byte.v.forge.sms.providers.herosms.v1.HeroSmsSetStatusResponse
 	(*v1.SmsProviderConfig)(nil),        // 8: byte.v.forge.sms.internal.v1.SmsProviderConfig
-	(*v11.DecimalMoney)(nil),            // 9: byte.v.forge.contracts.sms.v1.DecimalMoney
 }
 var file_byte_v_forge_sms_providers_herosms_v1_herosms_proto_depIdxs = []int32{
 	8, // 0: byte.v.forge.sms.providers.herosms.v1.HeroSmsProviderConfig.config:type_name -> byte.v.forge.sms.internal.v1.SmsProviderConfig
-	9, // 1: byte.v.forge.sms.providers.herosms.v1.HeroSmsProviderConfig.default_max_price:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
-	9, // 2: byte.v.forge.sms.providers.herosms.v1.HeroSmsGetNumberRequest.max_price:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
-	0, // 3: byte.v.forge.sms.providers.herosms.v1.HeroSmsSetStatusRequest.status:type_name -> byte.v.forge.sms.providers.herosms.v1.HeroSmsActivationStatusCode
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	0, // 1: byte.v.forge.sms.providers.herosms.v1.HeroSmsSetStatusRequest.status:type_name -> byte.v.forge.sms.providers.herosms.v1.HeroSmsOrderStatusCode
+	2, // [2:2] is the sub-list for method output_type
+	2, // [2:2] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_byte_v_forge_sms_providers_herosms_v1_herosms_proto_init() }

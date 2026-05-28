@@ -22,14 +22,10 @@ const (
 type Config struct {
 	Endpoint string
 	APIKey   string
-	Ref      string
-	UserID   string
 }
 
 type Client struct {
 	api    *handlerapi.Client
-	ref    string
-	userID string
 	policy core.ProviderPolicy
 }
 
@@ -43,11 +39,9 @@ func New(config Config, httpClient handlerapi.HTTPDoer) (*Client, error) {
 		return nil, err
 	}
 	return &Client{
-		api:    api,
-		ref:    config.Ref,
-		userID: config.UserID,
+		api: api,
 		policy: core.ProviderPolicy{
-			ActivationTTL:         25 * time.Minute,
+			OrderTTL:              25 * time.Minute,
 			PollInterval:          5 * time.Second,
 			EarlyCancelRetryAfter: 2 * time.Minute,
 		},
@@ -62,48 +56,35 @@ func (c *Client) Policy() core.ProviderPolicy {
 	return c.policy
 }
 
-func (c *Client) AcquireNumber(ctx context.Context, request core.ProviderAcquireRequest) (core.ProviderActivation, error) {
-	service, err := c.serviceForRoute(ctx, request)
-	if err != nil {
-		return core.ProviderActivation{}, err
+func (c *Client) AcquireNumber(ctx context.Context, request core.ProviderAcquireRequest) (core.ProviderOrder, error) {
+	if strings.TrimSpace(request.Route.UpstreamServiceKey) == "" {
+		return core.ProviderOrder{}, core.NewError(core.CodeValidationFailed, "smsbower service is required", false)
 	}
-	country, err := c.countryForRoute(ctx, request)
-	if err != nil {
-		return core.ProviderActivation{}, err
+	if strings.TrimSpace(request.Route.ProviderCountryID) == "" {
+		return core.ProviderOrder{}, core.NewError(core.CodeValidationFailed, "smsbower country is required", false)
 	}
-	request.Route.UpstreamServiceKey = service
-	request.Route.ProviderCountryID = country
-	if c.requiresGetNumber(request) {
-		params := c.acquireParams(request, false)
-		result, err := c.api.Do(ctx, "getNumber", params)
-		if err != nil {
-			return core.ProviderActivation{}, err
-		}
-		activation, err := parseAccessNumber(result, request)
-		if err == nil {
-			return activation, nil
-		}
-		return core.ProviderActivation{}, handlerapi.MapTextError(result)
+	if strings.TrimSpace(request.Route.UpstreamProviderID) == "" {
+		return core.ProviderOrder{}, core.NewError(core.CodeValidationFailed, "smsbower upstream provider id is required", false)
 	}
 
-	params := c.acquireParams(request, true)
+	params := c.acquireParams(request)
 	result, err := c.api.Do(ctx, "getNumberV2", params)
 	if err != nil {
-		return core.ProviderActivation{}, err
+		return core.ProviderOrder{}, err
 	}
-	activation, err := c.parseGetNumberV2(result, request)
+	order, err := c.parseGetNumberV2(result, request)
 	if err == nil {
-		return activation, nil
+		return order, nil
 	}
 	if isProviderTextError(result) {
-		return core.ProviderActivation{}, handlerapi.MapTextError(result)
+		return core.ProviderOrder{}, handlerapi.MapTextError(result)
 	}
-	return core.ProviderActivation{}, err
+	return core.ProviderOrder{}, err
 }
 
-func (c *Client) GetStatus(ctx context.Context, upstreamActivationID string) (core.ProviderCodeResult, error) {
+func (c *Client) GetStatus(ctx context.Context, upstreamOrderID string) (core.ProviderCodeResult, error) {
 	params := url.Values{}
-	params.Set("id", upstreamActivationID)
+	params.Set("id", upstreamOrderID)
 	result, err := c.api.Do(ctx, "getStatus", params)
 	if err != nil {
 		return core.ProviderCodeResult{}, err
@@ -111,13 +92,13 @@ func (c *Client) GetStatus(ctx context.Context, upstreamActivationID string) (co
 	return parseStatus(result)
 }
 
-func (c *Client) SetStatus(ctx context.Context, upstreamActivationID string, action core.ProviderAction) error {
+func (c *Client) SetStatus(ctx context.Context, upstreamOrderID string, action core.ProviderAction) error {
 	status, expected, err := statusForAction(action)
 	if err != nil {
 		return err
 	}
 	params := url.Values{}
-	params.Set("id", upstreamActivationID)
+	params.Set("id", upstreamOrderID)
 	params.Set("status", status)
 	result, err := c.api.Do(ctx, "setStatus", params)
 	if err != nil {
@@ -139,26 +120,6 @@ func (c *Client) GetBalance(ctx context.Context) (core.Money, error) {
 		return core.Money{}, handlerapi.MapTextError(result)
 	}
 	return core.Money{AmountDecimal: strings.TrimPrefix(result, prefix)}, nil
-}
-
-func (c *Client) serviceForRoute(ctx context.Context, request core.ProviderAcquireRequest) (string, error) {
-	explicit := strings.TrimSpace(request.Route.UpstreamServiceKey)
-	target := strings.TrimSpace(request.Target.ApplicationKey)
-	if explicit != "" && explicit != target {
-		return explicit, nil
-	}
-	candidate := firstNonEmpty(explicit, target)
-	if candidate == "" {
-		return "", core.NewError(core.CodeValidationFailed, "smsbower service is required", false)
-	}
-	applications, err := c.ListApplications(ctx)
-	if err != nil {
-		return "", err
-	}
-	if service := matchService(candidate, applications); service != "" {
-		return service, nil
-	}
-	return "", core.NewError(core.CodeRouteNotFound, "smsbower service not found for sms target", false)
 }
 
 func matchService(candidate string, applications []ApplicationOffer) string {
@@ -187,129 +148,36 @@ func normalizeApplicationAlias(value string) string {
 	return out.String()
 }
 
-func (c *Client) countryForRoute(ctx context.Context, request core.ProviderAcquireRequest) (string, error) {
-	if country := strings.TrimSpace(request.Route.ProviderCountryID); country != "" {
-		return country, nil
-	}
-	aliases := countryAliases(request.Target)
-	if len(aliases) == 0 {
-		return "", core.NewError(core.CodeValidationFailed, "smsbower provider country id is required", false)
-	}
-	countries, err := c.ListCountries(ctx)
-	if err != nil {
-		return "", err
-	}
-	for _, country := range countries {
-		if matchesCountryAlias(country.Name, aliases) {
-			return country.CountryID, nil
-		}
-	}
-	return "", core.NewError(core.CodeRouteNotFound, "smsbower country not found for sms target", false)
-}
-
-func countryAliases(target core.Target) map[string]bool {
-	aliases := map[string]bool{}
-	switch strings.ToUpper(strings.TrimSpace(target.CountryISO2)) {
-	case "ID":
-		aliases["indonesia"] = true
-	}
-	switch strings.TrimPrefix(strings.TrimSpace(target.CountryCallingCode), "+") {
-	case "62":
-		aliases["indonesia"] = true
-	}
-	if len(aliases) == 0 {
-		return nil
-	}
-	return aliases
-}
-
-func normalizeCountryName(value string) string {
-	return strings.ToLower(strings.TrimSpace(value))
-}
-
-func matchesCountryAlias(name string, aliases map[string]bool) bool {
-	normalized := normalizeCountryName(name)
-	if aliases[normalized] {
-		return true
-	}
-	for alias := range aliases {
-		if strings.Contains(normalized, alias) {
-			return true
-		}
-	}
-	return false
-}
-
-func (c *Client) acquireParams(request core.ProviderAcquireRequest, v2 bool) url.Values {
+func (c *Client) acquireParams(request core.ProviderAcquireRequest) url.Values {
 	params := url.Values{}
 	params.Set("service", request.Route.UpstreamServiceKey)
 	params.Set("country", request.Route.ProviderCountryID)
-	setMoney(params, "maxPrice", firstMoney(request.Target.MaxPrice, request.Route.MaxPrice))
-	setMoney(params, "minPrice", firstMoney(request.Target.MinPrice, request.Route.MinPrice))
-	if len(request.Route.IncludeUpstreamProviderID) > 0 {
-		params.Set("providerIds", strings.Join(request.Route.IncludeUpstreamProviderID, ","))
-	}
-	if len(request.Route.ExcludeUpstreamProviderID) > 0 {
-		params.Set("exceptProviderIds", strings.Join(request.Route.ExcludeUpstreamProviderID, ","))
-	}
-	if !v2 && len(request.Route.ExcludedPhonePrefixes) > 0 {
-		params.Set("phoneException", strings.Join(request.Route.ExcludedPhonePrefixes, ","))
-	}
-	ref := firstNonEmpty(request.Route.ProviderOptions["ref"], c.ref)
-	if !v2 && ref != "" {
-		params.Set("ref", ref)
-	}
-	userID := firstNonEmpty(request.Route.ProviderOptions["userID"], request.Route.ProviderOptions["user_id"], c.userID)
-	if userID != "" {
-		params.Set("userID", userID)
-	}
+	params.Set("providerIds", strings.TrimSpace(request.Route.UpstreamProviderID))
 	return params
 }
 
-func (c *Client) requiresGetNumber(request core.ProviderAcquireRequest) bool {
-	if len(request.Route.ExcludedPhonePrefixes) > 0 {
-		return true
-	}
-	return firstNonEmpty(request.Route.ProviderOptions["ref"], c.ref) != ""
-}
-
-func parseAccessNumber(result string, request core.ProviderAcquireRequest) (core.ProviderActivation, error) {
-	parts := strings.SplitN(result, ":", 3)
-	if len(parts) != 3 || parts[0] != "ACCESS_NUMBER" {
-		return core.ProviderActivation{}, core.NewError(core.CodeUpstreamRejected, "bad getNumber text response", false)
-	}
-	e164, national := phone.Normalize(parts[2], request.Target.CountryISO2, request.Target.CountryCallingCode)
-	return core.ProviderActivation{
-		UpstreamActivationID: parts[1],
-		PhoneNumber:          core.PhoneNumber{E164: e164, NationalNumber: national, CountryISO2: request.Target.CountryISO2, CountryCallingCode: request.Target.CountryCallingCode},
-		AcquiredAt:           time.Now().UTC(),
-	}, nil
-}
-
-func (c *Client) parseGetNumberV2(result string, request core.ProviderAcquireRequest) (core.ProviderActivation, error) {
+func (c *Client) parseGetNumberV2(result string, request core.ProviderAcquireRequest) (core.ProviderOrder, error) {
 	var payload struct {
-		ActivationID       int64   `json:"activationId"`
-		PhoneNumber        string  `json:"phoneNumber"`
-		ActivationCost     string  `json:"activationCost"`
-		CountryCode        string  `json:"countryCode"`
-		CanGetAnotherSMS   string  `json:"canGetAnotherSms"`
-		ActivationTime     string  `json:"activationTime"`
-		ActivationOperator *string `json:"activationOperator"`
+		OrderID          int64  `json:"activationId"`
+		PhoneNumber      string `json:"phoneNumber"`
+		OrderCost        string `json:"activationCost"`
+		CountryCode      string `json:"countryCode"`
+		CanGetAnotherSMS string `json:"canGetAnotherSms"`
+		OrderTime        string `json:"activationTime"`
 	}
 	if err := json.Unmarshal([]byte(result), &payload); err != nil {
-		return core.ProviderActivation{}, core.NewError(core.CodeUpstreamRejected, "bad getNumberV2 json response", false)
+		return core.ProviderOrder{}, core.NewError(core.CodeUpstreamRejected, "bad getNumberV2 json response", false)
 	}
-	if payload.ActivationID <= 0 {
-		return core.ProviderActivation{}, core.NewError(core.CodeUpstreamRejected, "missing activationId in getNumberV2 response", false)
+	if payload.OrderID <= 0 {
+		return core.ProviderOrder{}, core.NewError(core.CodeUpstreamRejected, "missing activationId in getNumberV2 response", false)
 	}
-	activationID := strconv.FormatInt(payload.ActivationID, 10)
+	orderID := strconv.FormatInt(payload.OrderID, 10)
 	e164, national := phone.Normalize(payload.PhoneNumber, request.Target.CountryISO2, request.Target.CountryCallingCode)
-	return core.ProviderActivation{
-		UpstreamActivationID:     activationID,
-		UpstreamOperator:         stringOrEmpty(payload.ActivationOperator),
+	return core.ProviderOrder{
+		UpstreamOrderID:          orderID,
 		PhoneNumber:              core.PhoneNumber{E164: e164, NationalNumber: national, CountryISO2: request.Target.CountryISO2, CountryCallingCode: request.Target.CountryCallingCode},
-		Price:                    core.Money{AmountDecimal: strings.TrimSpace(payload.ActivationCost)},
-		AcquiredAt:               parseActivationTimeText(payload.ActivationTime),
+		Price:                    core.Money{AmountDecimal: strings.TrimSpace(payload.OrderCost)},
+		AcquiredAt:               parseOrderTimeText(payload.OrderTime),
 		CanRequestAdditionalCode: payload.CanGetAnotherSMS == "1",
 	}, nil
 }
@@ -342,9 +210,9 @@ func statusForAction(action core.ProviderAction) (status string, expected string
 		return "1", "ACCESS_READY", nil
 	case core.ActionRequestAdditional:
 		return "3", "ACCESS_RETRY_GET", nil
-	case core.ActionCompleteActivation:
+	case core.ActionCompleteOrder:
 		return "6", "ACCESS_ACTIVATION", nil
-	case core.ActionCancelActivation:
+	case core.ActionCancelOrder:
 		return "8", "ACCESS_CANCEL", nil
 	default:
 		return "", "", core.NewError(core.CodeUnsupportedOperation, "unsupported smsbower status action", false)
@@ -353,30 +221,6 @@ func statusForAction(action core.ProviderAction) (status string, expected string
 
 func isProviderTextError(result string) bool {
 	return !strings.HasPrefix(strings.TrimSpace(result), "{")
-}
-
-func setMoney(params url.Values, key string, money core.Money) {
-	if money.AmountDecimal != "" {
-		params.Set(key, money.AmountDecimal)
-	}
-}
-
-func firstMoney(values ...core.Money) core.Money {
-	for _, value := range values {
-		if value.AmountDecimal != "" {
-			return value
-		}
-	}
-	return core.Money{}
-}
-
-func firstNonEmpty(values ...string) string {
-	for _, value := range values {
-		if strings.TrimSpace(value) != "" {
-			return strings.TrimSpace(value)
-		}
-	}
-	return ""
 }
 
 func rawJSONScalar(raw json.RawMessage) string {
@@ -398,11 +242,11 @@ func rawJSONScalar(raw json.RawMessage) string {
 	return strings.Trim(string(raw), "\"")
 }
 
-func parseActivationTime(raw json.RawMessage) time.Time {
-	return parseActivationTimeText(rawJSONScalar(raw))
+func parseOrderTime(raw json.RawMessage) time.Time {
+	return parseOrderTimeText(rawJSONScalar(raw))
 }
 
-func parseActivationTimeText(value string) time.Time {
+func parseOrderTimeText(value string) time.Time {
 	value = strings.TrimSpace(value)
 	if value == "" {
 		return time.Now().UTC()
@@ -424,13 +268,6 @@ func parseActivationTimeText(value string) time.Time {
 		}
 	}
 	return time.Now().UTC()
-}
-
-func stringOrEmpty(value *string) string {
-	if value == nil {
-		return ""
-	}
-	return strings.TrimSpace(*value)
 }
 
 func decodeJSONObject(result string, out any) error {

@@ -2,9 +2,7 @@ syntax = "proto3";
 
 package byte.v.forge.sms.internal.v1;
 
-import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
-import "google/protobuf/duration.proto";
 import "byte/v/forge/contracts/sms/v1/sms.proto";
 
 option csharp_namespace = "ByteVForge.Sms.Internal.V1";
@@ -20,88 +18,48 @@ service SmsProviderAdminService {
   rpc GetProviderConfig(GetProviderConfigRequest) returns (GetProviderConfigResponse);
   rpc ListProviderConfigs(ListProviderConfigsRequest) returns (ListProviderConfigsResponse);
   rpc DeleteProviderConfig(DeleteProviderConfigRequest) returns (DeleteProviderConfigResponse);
-  rpc ListRouteOptions(ListRouteOptionsRequest) returns (ListRouteOptionsResponse);
-  rpc UpsertRouteProfile(UpsertRouteProfileRequest) returns (UpsertRouteProfileResponse);
-  rpc GetRouteProfile(GetRouteProfileRequest) returns (GetRouteProfileResponse);
-  rpc ListRouteProfiles(ListRouteProfilesRequest) returns (ListRouteProfilesResponse);
-  rpc DeleteRouteProfile(DeleteRouteProfileRequest) returns (DeleteRouteProfileResponse);
   rpc GetProviderBalance(GetProviderBalanceRequest) returns (GetProviderBalanceResponse);
-  rpc ListActivations(ListActivationsRequest) returns (ListActivationsResponse);
-  rpc CancelActivation(CancelProviderActivationRequest) returns (CancelProviderActivationResponse);
+  rpc ListOrders(ListOrdersRequest) returns (ListOrdersResponse);
+  rpc CancelOrder(CancelProviderOrderRequest) returns (CancelProviderOrderResponse);
 }
 
-service SmsProviderCatalogService {
-  rpc ListProviderApplications(ListProviderApplicationsRequest) returns (ListProviderApplicationsResponse);
-  rpc ListProviderCountries(ListProviderCountriesRequest) returns (ListProviderCountriesResponse);
-  rpc ListProviderPriceOffers(ListProviderPriceOffersRequest) returns (ListProviderPriceOffersResponse);
-  rpc ListTopProviderCountriesByApplication(ListTopProviderCountriesByApplicationRequest) returns (ListTopProviderCountriesByApplicationResponse);
+message SmsOrderAcquireRequest {
+  string order_id = 1;
+  string request_id = 2;
+  string reason = 3;
+  byte.v.forge.contracts.sms.v1.SmsNumberAcquireParams acquire_params = 4;
 }
 
-service SmsWebhookIngestService {
-  rpc IngestInboundMessage(IngestInboundMessageRequest) returns (IngestInboundMessageResponse);
+message SmsOrderPollRequest {
+  string order_id = 1;
+  string reason = 2;
+}
+
+message SmsOrderCancelRequest {
+  string order_id = 1;
+  string request_id = 2;
+  string reason = 3;
+}
+
+enum SmsProviderAction {
+  SMS_PROVIDER_ACTION_UNSPECIFIED = 0;
+  SMS_PROVIDER_ACTION_MARK_MESSAGE_SENT = 1;
+  SMS_PROVIDER_ACTION_REQUEST_ADDITIONAL_CODE = 2;
+  SMS_PROVIDER_ACTION_COMPLETE_ORDER = 3;
 }
 
 message ProviderError {
   byte.v.forge.contracts.sms.v1.SmsError public_error = 1;
   string provider_error_code = 2;
-  string raw_response = 3;
-}
-
-message SmsRouteOption {
-  string value = 1;
-  string label = 2;
-  byte.v.forge.contracts.sms.v1.DecimalMoney price = 3;
-  int32 available_count = 4;
-  map<string, string> metadata = 20;
-}
-
-message SmsProviderRouteOptions {
-  string provider_key = 1;
-  repeated SmsRouteOption services = 2;
-  repeated SmsRouteOption countries = 3;
-  repeated SmsRouteOption operators = 4;
-  repeated SmsRouteOption upstream_providers = 5;
-  ProviderError error = 20;
-}
-
-message ProviderActivation {
-  byte.v.forge.contracts.sms.v1.SmsActivation public_activation = 1;
-  string provider_config_id = 2;
-  string provider_key = 3;
-  string upstream_activation_id = 4;
-  string upstream_operator = 5;
-  string raw_status = 6;
-  ProviderError last_provider_error = 7;
-  google.protobuf.Struct raw_metadata = 20;
 }
 
 message SmsProviderConfig {
-  string provider_config_id = 1;
-  string provider_key = 2;
-  string display_name = 3;
-  bool enabled = 4;
-  string api_endpoint = 5;
-  string credential_secret_ref = 6;
-  string proxy_ref = 7;
-  byte.v.forge.contracts.sms.v1.SmsTarget default_target = 8;
-  SmsProviderCapabilities capabilities = 9;
-  string upstream_service_key = 10;
-  string provider_country_id = 11;
-  string credential_secret = 12;
-  string http_proxy = 13;
-  bool credential_secret_set = 14;
-  SmsProviderPolicy policy = 15;
-  map<string, string> labels = 20;
-  google.protobuf.Timestamp created_at = 30;
-  google.protobuf.Timestamp updated_at = 31;
-}
-
-message SmsProviderPolicy {
-  google.protobuf.Duration activation_ttl = 1;
-  google.protobuf.Duration poll_interval = 2;
-  google.protobuf.Duration cancel_allowed_after = 3;
-  google.protobuf.Duration early_cancel_retry_after = 4;
-  google.protobuf.Duration cancel_allowed_until = 5;
+  string provider_key = 1;
+  bool enabled = 2;
+  string credential_secret = 3;
+  bool credential_secret_set = 4;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
 }
 
 message SmsProviderCapabilities {
@@ -110,110 +68,12 @@ message SmsProviderCapabilities {
   bool supports_additional_code = 3;
   bool supports_catalog = 4;
   bool supports_price_lookup = 5;
-  bool supports_upstream_provider_selection = 6;
-  bool supports_webhook_notifications = 7;
-  repeated string supported_application_keys = 10;
-  repeated string supported_country_iso2 = 11;
-}
-
-enum SmsConfigFieldKind {
-  SMS_CONFIG_FIELD_KIND_UNSPECIFIED = 0;
-  SMS_CONFIG_FIELD_KIND_TEXT = 1;
-  SMS_CONFIG_FIELD_KIND_SECRET = 2;
-  SMS_CONFIG_FIELD_KIND_NUMBER = 3;
-  SMS_CONFIG_FIELD_KIND_URL = 4;
-  SMS_CONFIG_FIELD_KIND_DURATION_SECONDS = 5;
-}
-
-enum SmsConfigFieldTarget {
-  SMS_CONFIG_FIELD_TARGET_UNSPECIFIED = 0;
-  SMS_CONFIG_FIELD_TARGET_CREDENTIAL_SECRET = 1;
-  SMS_CONFIG_FIELD_TARGET_API_ENDPOINT = 2;
-  SMS_CONFIG_FIELD_TARGET_HTTP_PROXY = 3;
-  SMS_CONFIG_FIELD_TARGET_LABEL = 4;
-}
-
-message SmsConfigFieldOption {
-  string value = 1;
-  string label = 2;
-}
-
-message SmsProviderConfigField {
-  string field_key = 1;
-  string label = 2;
-  SmsConfigFieldKind kind = 3;
-  bool required = 4;
-  bool advanced = 5;
-  string placeholder = 6;
-  repeated SmsConfigFieldOption options = 7;
-  SmsConfigFieldTarget target = 8;
-}
-
-enum SmsRouteFieldScope {
-  SMS_ROUTE_FIELD_SCOPE_UNSPECIFIED = 0;
-  SMS_ROUTE_FIELD_SCOPE_ROUTE = 1;
-  SMS_ROUTE_FIELD_SCOPE_OPTION = 2;
-  SMS_ROUTE_FIELD_SCOPE_MIN_PRICE = 3;
-  SMS_ROUTE_FIELD_SCOPE_MAX_PRICE = 4;
-}
-
-enum SmsRouteOptionSource {
-  SMS_ROUTE_OPTION_SOURCE_UNSPECIFIED = 0;
-  SMS_ROUTE_OPTION_SOURCE_SERVICES = 1;
-  SMS_ROUTE_OPTION_SOURCE_COUNTRIES = 2;
-  SMS_ROUTE_OPTION_SOURCE_OPERATORS = 3;
-  SMS_ROUTE_OPTION_SOURCE_UPSTREAM_PROVIDERS = 4;
-}
-
-message SmsProviderRouteField {
-  string field_key = 1;
-  string label = 2;
-  SmsRouteFieldScope scope = 3;
-  SmsRouteOptionSource option_source = 4;
-  bool advanced = 5;
-  string placeholder = 6;
 }
 
 message SmsProviderPluginDescriptor {
   string provider_key = 1;
   string display_name = 2;
   SmsProviderCapabilities capabilities = 3;
-  repeated SmsProviderConfigField config_fields = 4;
-  repeated SmsProviderRouteField route_fields = 5;
-}
-
-enum SmsRouteSelectionStrategy {
-  SMS_ROUTE_SELECTION_STRATEGY_UNSPECIFIED = 0;
-  SMS_ROUTE_SELECTION_STRATEGY_PRIORITY = 1;
-  SMS_ROUTE_SELECTION_STRATEGY_LOWEST_PRICE = 2;
-  SMS_ROUTE_SELECTION_STRATEGY_SPECIFIED_PROVIDER = 3;
-}
-
-message SmsRouteCandidate {
-  string route_id = 1;
-  bool enabled = 2;
-  int32 priority = 3;
-  string provider_config_id = 4;
-  string provider_key = 5;
-  string upstream_service_key = 6;
-  string provider_country_id = 7;
-  byte.v.forge.contracts.sms.v1.SmsTarget target = 8;
-  byte.v.forge.contracts.sms.v1.DecimalMoney min_price = 9;
-  byte.v.forge.contracts.sms.v1.DecimalMoney max_price = 10;
-  map<string, string> provider_options = 20;
-}
-
-message SmsRouteProfile {
-  string profile_key = 1;
-  string display_name = 2;
-  bool enabled = 3;
-  SmsRouteSelectionStrategy selection_strategy = 4;
-  string preferred_provider_key = 5;
-  byte.v.forge.contracts.sms.v1.SmsTarget default_target = 6;
-  repeated SmsRouteCandidate routes = 7;
-  map<string, string> labels = 20;
-  google.protobuf.Timestamp created_at = 30;
-  google.protobuf.Timestamp updated_at = 31;
 }
 
 message UpsertProviderConfigRequest {
@@ -226,7 +86,7 @@ message UpsertProviderConfigResponse {
 }
 
 message GetProviderConfigRequest {
-  string provider_config_id = 1;
+  string provider_key = 1;
 }
 
 message GetProviderConfigResponse {
@@ -245,60 +105,15 @@ message ListProviderConfigsResponse {
 }
 
 message DeleteProviderConfigRequest {
-  string provider_config_id = 1;
+  string provider_key = 1;
 }
 
 message DeleteProviderConfigResponse {
   ProviderError error = 1;
 }
 
-message ListRouteOptionsRequest {
-  string provider_config_id = 1;
-  string provider_key = 2;
-}
-
-message ListRouteOptionsResponse {
-  SmsProviderRouteOptions options = 1;
-  ProviderError error = 2;
-}
-
-message UpsertRouteProfileRequest {
-  SmsRouteProfile profile = 1;
-}
-
-message UpsertRouteProfileResponse {
-  SmsRouteProfile profile = 1;
-  ProviderError error = 2;
-}
-
-message GetRouteProfileRequest {
-  string profile_key = 1;
-}
-
-message GetRouteProfileResponse {
-  SmsRouteProfile profile = 1;
-  ProviderError error = 2;
-}
-
-message ListRouteProfilesRequest {
-  bool include_disabled = 1;
-}
-
-message ListRouteProfilesResponse {
-  repeated SmsRouteProfile profiles = 1;
-  ProviderError error = 2;
-}
-
-message DeleteRouteProfileRequest {
-  string profile_key = 1;
-}
-
-message DeleteRouteProfileResponse {
-  ProviderError error = 1;
-}
-
 message GetProviderBalanceRequest {
-  string provider_config_id = 1;
+  string provider_key = 1;
 }
 
 message GetProviderBalanceResponse {
@@ -306,122 +121,29 @@ message GetProviderBalanceResponse {
   ProviderError error = 2;
 }
 
-message SmsActivationView {
-  byte.v.forge.contracts.sms.v1.SmsActivation activation = 1;
-  byte.v.forge.contracts.sms.v1.SmsCode latest_code = 2;
-  string provider_config_id = 3;
-  string provider_key = 4;
-  string upstream_activation_id = 5;
-  string upstream_operator = 6;
+message SmsOrderView {
+  byte.v.forge.contracts.sms.v1.SmsOrder order = 1;
+  string provider_key = 2;
 }
 
-message ListActivationsRequest {
+message ListOrdersRequest {
   bool include_final = 1;
   int32 limit = 2;
 }
 
-message ListActivationsResponse {
-  repeated SmsActivationView activations = 1;
+message ListOrdersResponse {
+  repeated SmsOrderView orders = 1;
   ProviderError error = 2;
 }
 
-message CancelProviderActivationRequest {
-  string activation_id = 1;
+message CancelProviderOrderRequest {
+  string order_id = 1;
   string request_id = 2;
 }
 
-message CancelProviderActivationResponse {
-  SmsActivationView activation = 1;
+message CancelProviderOrderResponse {
+  SmsOrderView order = 1;
   ProviderError error = 2;
-}
-
-message ProviderSmsApplicationInfo {
-  byte.v.forge.contracts.sms.v1.SmsApplicationInfo public_application = 1;
-  string upstream_service_key = 2;
-  google.protobuf.Struct raw_metadata = 20;
-}
-
-message ProviderSmsCountry {
-  byte.v.forge.contracts.sms.v1.SmsCountry public_country = 1;
-  string provider_country_id = 2;
-  google.protobuf.Struct raw_metadata = 20;
-}
-
-message ProviderSmsPriceOffer {
-  byte.v.forge.contracts.sms.v1.SmsPriceOffer public_offer = 1;
-  string provider_country_id = 2;
-  string upstream_provider_id = 3;
-  string upstream_provider_name = 4;
-  google.protobuf.Struct raw_metadata = 20;
-}
-
-message ProviderSmsCountryPriceSummary {
-  ProviderSmsCountry country = 1;
-  repeated ProviderSmsPriceOffer offers = 2;
-}
-
-message ListProviderApplicationsRequest {
-  string provider_config_id = 1;
-}
-
-message ListProviderApplicationsResponse {
-  repeated ProviderSmsApplicationInfo applications = 1;
-  ProviderError error = 2;
-}
-
-message ListProviderCountriesRequest {
-  string provider_config_id = 1;
-}
-
-message ListProviderCountriesResponse {
-  repeated ProviderSmsCountry countries = 1;
-  ProviderError error = 2;
-}
-
-message ListProviderPriceOffersRequest {
-  string provider_config_id = 1;
-  string application_key = 2;
-  string country_iso2 = 3;
-  string provider_country_id = 4;
-  bool include_upstream_provider_breakdown = 5;
-}
-
-message ListProviderPriceOffersResponse {
-  repeated ProviderSmsPriceOffer offers = 1;
-  ProviderError error = 2;
-}
-
-message ListTopProviderCountriesByApplicationRequest {
-  string provider_config_id = 1;
-  string application_key = 2;
-  int32 limit = 3;
-}
-
-message ListTopProviderCountriesByApplicationResponse {
-  repeated ProviderSmsCountryPriceSummary countries = 1;
-  ProviderError error = 2;
-}
-
-message InboundProviderMessage {
-  string provider_config_id = 1;
-  string provider_key = 2;
-  string upstream_activation_id = 3;
-  string application_key = 4;
-  string provider_country_id = 5;
-  string message_text = 6;
-  string code = 7;
-  google.protobuf.Timestamp received_at = 8;
-  google.protobuf.Struct raw_payload = 20;
-}
-
-message IngestInboundMessageRequest {
-  InboundProviderMessage message = 1;
-}
-
-message IngestInboundMessageResponse {
-  ProviderActivation activation = 1;
-  byte.v.forge.contracts.sms.v1.SmsCodeReceivedEvent public_event = 2;
-  ProviderError error = 3;
 }
 
 message ListProviderPluginsRequest {}

@@ -1,5 +1,5 @@
 import { MessageSquareText } from 'lucide-react';
-import { DashboardNavSection, type DashboardModuleRegistration } from '@/dashboard/module-kit';
+import { DashboardNavSection, type DashboardModuleRegistration } from '@byte-v-forge/common-ui';
 import { SmsPage } from './sms-page';
 
 const registration: DashboardModuleRegistration = {
@@ -10,8 +10,8 @@ const registration: DashboardModuleRegistration = {
         key: 'sms',
         label: 'SMS',
         icon: 'sms',
-        section: DashboardNavSection.DASHBOARD_NAV_SECTION_MAIN,
-        required_services: ['sms'],
+        section: DashboardNavSection.DASHBOARD_NAV_SECTION_INFRASTRUCTURE,
+        required_services: ['sms-service'],
         order: 30
       }
     ]

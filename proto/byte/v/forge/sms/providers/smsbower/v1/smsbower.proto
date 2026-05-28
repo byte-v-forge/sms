@@ -13,58 +13,44 @@ option java_outer_classname = "SmsBowerProto";
 option java_package = "com.bytevforge.sms.providers.smsbower.v1";
 option php_namespace = "ByteVForge\\Sms\\Providers\\SmsBower\\V1";
 
-enum SmsBowerActivationStatusCode {
-  SMS_BOWER_ACTIVATION_STATUS_CODE_UNSPECIFIED = 0;
-  SMS_BOWER_ACTIVATION_STATUS_CODE_READY = 1;
-  SMS_BOWER_ACTIVATION_STATUS_CODE_RETRY_GET = 3;
-  SMS_BOWER_ACTIVATION_STATUS_CODE_COMPLETE = 6;
-  SMS_BOWER_ACTIVATION_STATUS_CODE_CANCEL = 8;
+enum SmsBowerOrderStatusCode {
+  SMS_BOWER_ORDER_STATUS_CODE_UNSPECIFIED = 0;
+  SMS_BOWER_ORDER_STATUS_CODE_READY = 1;
+  SMS_BOWER_ORDER_STATUS_CODE_RETRY_GET = 3;
+  SMS_BOWER_ORDER_STATUS_CODE_COMPLETE = 6;
+  SMS_BOWER_ORDER_STATUS_CODE_CANCEL = 8;
 }
 
 message SmsBowerProviderConfig {
   byte.v.forge.sms.internal.v1.SmsProviderConfig config = 1;
-  string ref = 2;
-  string reseller_user_id = 3;
-}
-
-message SmsBowerProviderSelection {
-  repeated string include_provider_ids = 1;
-  repeated string exclude_provider_ids = 2;
-}
-
-message SmsBowerPhoneException {
-  string country_calling_code = 1;
-  string prefix_mask = 2;
+  reserved 2, 3;
 }
 
 message SmsBowerGetNumberRequest {
   string upstream_service_key = 1;
   int32 country_id = 2;
-  byte.v.forge.contracts.sms.v1.DecimalMoney min_price = 3;
-  byte.v.forge.contracts.sms.v1.DecimalMoney max_price = 4;
-  SmsBowerProviderSelection provider_selection = 5;
-  repeated SmsBowerPhoneException phone_exceptions = 6;
-  string ref = 7;
-  string reseller_user_id = 8;
+  reserved 3, 4;
+  string provider_id = 5;
+  reserved 6 to 8;
 }
 
 message SmsBowerAccessNumberResponse {
-  string activation_id = 1;
+  string order_id = 1;
   string phone_number = 2;
 }
 
 message SmsBowerGetNumberV2Response {
-  string activation_id = 1;
+  string order_id = 1;
   string phone_number = 2;
-  byte.v.forge.contracts.sms.v1.DecimalMoney activation_cost = 3;
+  byte.v.forge.contracts.sms.v1.DecimalMoney order_cost = 3;
   string country_code = 4;
   bool can_get_another_sms = 5;
-  google.protobuf.Timestamp activation_time = 6;
-  string activation_operator = 7;
+  google.protobuf.Timestamp order_time = 6;
+  string order_operator = 7;
 }
 
 message SmsBowerGetStatusRequest {
-  string activation_id = 1;
+  string order_id = 1;
 }
 
 message SmsBowerGetStatusResponse {
@@ -74,8 +60,8 @@ message SmsBowerGetStatusResponse {
 }
 
 message SmsBowerSetStatusRequest {
-  string activation_id = 1;
-  SmsBowerActivationStatusCode status = 2;
+  string order_id = 1;
+  SmsBowerOrderStatusCode status = 2;
 }
 
 message SmsBowerSetStatusResponse {
@@ -83,7 +69,7 @@ message SmsBowerSetStatusResponse {
 }
 
 message SmsBowerCountry {
-  byte.v.forge.sms.internal.v1.ProviderSmsCountry country = 1;
+  byte.v.forge.contracts.sms.v1.SmsCountry country = 1;
   int32 country_id = 2;
   string russian_name = 3;
   string english_name = 4;
@@ -91,13 +77,13 @@ message SmsBowerCountry {
 }
 
 message SmsBowerPriceOffer {
-  byte.v.forge.sms.internal.v1.ProviderSmsPriceOffer offer = 1;
+  byte.v.forge.contracts.sms.v1.SmsPriceOffer offer = 1;
   string provider_id = 2;
   int32 count = 3;
 }
 
 message SmsBowerInboundWebhookRequest {
-  string activation_id = 1;
+  string order_id = 1;
   string upstream_service_key = 2;
   string message_text = 3;
   string code = 4;

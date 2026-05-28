@@ -24,14 +24,9 @@ const (
 	SmsProviderAdminService_GetProviderConfig_FullMethodName    = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/GetProviderConfig"
 	SmsProviderAdminService_ListProviderConfigs_FullMethodName  = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/ListProviderConfigs"
 	SmsProviderAdminService_DeleteProviderConfig_FullMethodName = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/DeleteProviderConfig"
-	SmsProviderAdminService_ListRouteOptions_FullMethodName     = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/ListRouteOptions"
-	SmsProviderAdminService_UpsertRouteProfile_FullMethodName   = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/UpsertRouteProfile"
-	SmsProviderAdminService_GetRouteProfile_FullMethodName      = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/GetRouteProfile"
-	SmsProviderAdminService_ListRouteProfiles_FullMethodName    = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/ListRouteProfiles"
-	SmsProviderAdminService_DeleteRouteProfile_FullMethodName   = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/DeleteRouteProfile"
 	SmsProviderAdminService_GetProviderBalance_FullMethodName   = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/GetProviderBalance"
-	SmsProviderAdminService_ListActivations_FullMethodName      = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/ListActivations"
-	SmsProviderAdminService_CancelActivation_FullMethodName     = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/CancelActivation"
+	SmsProviderAdminService_ListOrders_FullMethodName           = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/ListOrders"
+	SmsProviderAdminService_CancelOrder_FullMethodName          = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/CancelOrder"
 )
 
 // SmsProviderAdminServiceClient is the client API for SmsProviderAdminService service.
@@ -43,14 +38,9 @@ type SmsProviderAdminServiceClient interface {
 	GetProviderConfig(ctx context.Context, in *GetProviderConfigRequest, opts ...grpc.CallOption) (*GetProviderConfigResponse, error)
 	ListProviderConfigs(ctx context.Context, in *ListProviderConfigsRequest, opts ...grpc.CallOption) (*ListProviderConfigsResponse, error)
 	DeleteProviderConfig(ctx context.Context, in *DeleteProviderConfigRequest, opts ...grpc.CallOption) (*DeleteProviderConfigResponse, error)
-	ListRouteOptions(ctx context.Context, in *ListRouteOptionsRequest, opts ...grpc.CallOption) (*ListRouteOptionsResponse, error)
-	UpsertRouteProfile(ctx context.Context, in *UpsertRouteProfileRequest, opts ...grpc.CallOption) (*UpsertRouteProfileResponse, error)
-	GetRouteProfile(ctx context.Context, in *GetRouteProfileRequest, opts ...grpc.CallOption) (*GetRouteProfileResponse, error)
-	ListRouteProfiles(ctx context.Context, in *ListRouteProfilesRequest, opts ...grpc.CallOption) (*ListRouteProfilesResponse, error)
-	DeleteRouteProfile(ctx context.Context, in *DeleteRouteProfileRequest, opts ...grpc.CallOption) (*DeleteRouteProfileResponse, error)
 	GetProviderBalance(ctx context.Context, in *GetProviderBalanceRequest, opts ...grpc.CallOption) (*GetProviderBalanceResponse, error)
-	ListActivations(ctx context.Context, in *ListActivationsRequest, opts ...grpc.CallOption) (*ListActivationsResponse, error)
-	CancelActivation(ctx context.Context, in *CancelProviderActivationRequest, opts ...grpc.CallOption) (*CancelProviderActivationResponse, error)
+	ListOrders(ctx context.Context, in *ListOrdersRequest, opts ...grpc.CallOption) (*ListOrdersResponse, error)
+	CancelOrder(ctx context.Context, in *CancelProviderOrderRequest, opts ...grpc.CallOption) (*CancelProviderOrderResponse, error)
 }
 
 type smsProviderAdminServiceClient struct {
@@ -111,56 +101,6 @@ func (c *smsProviderAdminServiceClient) DeleteProviderConfig(ctx context.Context
 	return out, nil
 }
 
-func (c *smsProviderAdminServiceClient) ListRouteOptions(ctx context.Context, in *ListRouteOptionsRequest, opts ...grpc.CallOption) (*ListRouteOptionsResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListRouteOptionsResponse)
-	err := c.cc.Invoke(ctx, SmsProviderAdminService_ListRouteOptions_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *smsProviderAdminServiceClient) UpsertRouteProfile(ctx context.Context, in *UpsertRouteProfileRequest, opts ...grpc.CallOption) (*UpsertRouteProfileResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpsertRouteProfileResponse)
-	err := c.cc.Invoke(ctx, SmsProviderAdminService_UpsertRouteProfile_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *smsProviderAdminServiceClient) GetRouteProfile(ctx context.Context, in *GetRouteProfileRequest, opts ...grpc.CallOption) (*GetRouteProfileResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetRouteProfileResponse)
-	err := c.cc.Invoke(ctx, SmsProviderAdminService_GetRouteProfile_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *smsProviderAdminServiceClient) ListRouteProfiles(ctx context.Context, in *ListRouteProfilesRequest, opts ...grpc.CallOption) (*ListRouteProfilesResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListRouteProfilesResponse)
-	err := c.cc.Invoke(ctx, SmsProviderAdminService_ListRouteProfiles_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *smsProviderAdminServiceClient) DeleteRouteProfile(ctx context.Context, in *DeleteRouteProfileRequest, opts ...grpc.CallOption) (*DeleteRouteProfileResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DeleteRouteProfileResponse)
-	err := c.cc.Invoke(ctx, SmsProviderAdminService_DeleteRouteProfile_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *smsProviderAdminServiceClient) GetProviderBalance(ctx context.Context, in *GetProviderBalanceRequest, opts ...grpc.CallOption) (*GetProviderBalanceResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetProviderBalanceResponse)
@@ -171,20 +111,20 @@ func (c *smsProviderAdminServiceClient) GetProviderBalance(ctx context.Context, 
 	return out, nil
 }
 
-func (c *smsProviderAdminServiceClient) ListActivations(ctx context.Context, in *ListActivationsRequest, opts ...grpc.CallOption) (*ListActivationsResponse, error) {
+func (c *smsProviderAdminServiceClient) ListOrders(ctx context.Context, in *ListOrdersRequest, opts ...grpc.CallOption) (*ListOrdersResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListActivationsResponse)
-	err := c.cc.Invoke(ctx, SmsProviderAdminService_ListActivations_FullMethodName, in, out, cOpts...)
+	out := new(ListOrdersResponse)
+	err := c.cc.Invoke(ctx, SmsProviderAdminService_ListOrders_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *smsProviderAdminServiceClient) CancelActivation(ctx context.Context, in *CancelProviderActivationRequest, opts ...grpc.CallOption) (*CancelProviderActivationResponse, error) {
+func (c *smsProviderAdminServiceClient) CancelOrder(ctx context.Context, in *CancelProviderOrderRequest, opts ...grpc.CallOption) (*CancelProviderOrderResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CancelProviderActivationResponse)
-	err := c.cc.Invoke(ctx, SmsProviderAdminService_CancelActivation_FullMethodName, in, out, cOpts...)
+	out := new(CancelProviderOrderResponse)
+	err := c.cc.Invoke(ctx, SmsProviderAdminService_CancelOrder_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -200,14 +140,9 @@ type SmsProviderAdminServiceServer interface {
 	GetProviderConfig(context.Context, *GetProviderConfigRequest) (*GetProviderConfigResponse, error)
 	ListProviderConfigs(context.Context, *ListProviderConfigsRequest) (*ListProviderConfigsResponse, error)
 	DeleteProviderConfig(context.Context, *DeleteProviderConfigRequest) (*DeleteProviderConfigResponse, error)
-	ListRouteOptions(context.Context, *ListRouteOptionsRequest) (*ListRouteOptionsResponse, error)
-	UpsertRouteProfile(context.Context, *UpsertRouteProfileRequest) (*UpsertRouteProfileResponse, error)
-	GetRouteProfile(context.Context, *GetRouteProfileRequest) (*GetRouteProfileResponse, error)
-	ListRouteProfiles(context.Context, *ListRouteProfilesRequest) (*ListRouteProfilesResponse, error)
-	DeleteRouteProfile(context.Context, *DeleteRouteProfileRequest) (*DeleteRouteProfileResponse, error)
 	GetProviderBalance(context.Context, *GetProviderBalanceRequest) (*GetProviderBalanceResponse, error)
-	ListActivations(context.Context, *ListActivationsRequest) (*ListActivationsResponse, error)
-	CancelActivation(context.Context, *CancelProviderActivationRequest) (*CancelProviderActivationResponse, error)
+	ListOrders(context.Context, *ListOrdersRequest) (*ListOrdersResponse, error)
+	CancelOrder(context.Context, *CancelProviderOrderRequest) (*CancelProviderOrderResponse, error)
 	mustEmbedUnimplementedSmsProviderAdminServiceServer()
 }
 
@@ -233,29 +168,14 @@ func (UnimplementedSmsProviderAdminServiceServer) ListProviderConfigs(context.Co
 func (UnimplementedSmsProviderAdminServiceServer) DeleteProviderConfig(context.Context, *DeleteProviderConfigRequest) (*DeleteProviderConfigResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteProviderConfig not implemented")
 }
-func (UnimplementedSmsProviderAdminServiceServer) ListRouteOptions(context.Context, *ListRouteOptionsRequest) (*ListRouteOptionsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method ListRouteOptions not implemented")
-}
-func (UnimplementedSmsProviderAdminServiceServer) UpsertRouteProfile(context.Context, *UpsertRouteProfileRequest) (*UpsertRouteProfileResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method UpsertRouteProfile not implemented")
-}
-func (UnimplementedSmsProviderAdminServiceServer) GetRouteProfile(context.Context, *GetRouteProfileRequest) (*GetRouteProfileResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetRouteProfile not implemented")
-}
-func (UnimplementedSmsProviderAdminServiceServer) ListRouteProfiles(context.Context, *ListRouteProfilesRequest) (*ListRouteProfilesResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method ListRouteProfiles not implemented")
-}
-func (UnimplementedSmsProviderAdminServiceServer) DeleteRouteProfile(context.Context, *DeleteRouteProfileRequest) (*DeleteRouteProfileResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method DeleteRouteProfile not implemented")
-}
 func (UnimplementedSmsProviderAdminServiceServer) GetProviderBalance(context.Context, *GetProviderBalanceRequest) (*GetProviderBalanceResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetProviderBalance not implemented")
 }
-func (UnimplementedSmsProviderAdminServiceServer) ListActivations(context.Context, *ListActivationsRequest) (*ListActivationsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method ListActivations not implemented")
+func (UnimplementedSmsProviderAdminServiceServer) ListOrders(context.Context, *ListOrdersRequest) (*ListOrdersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListOrders not implemented")
 }
-func (UnimplementedSmsProviderAdminServiceServer) CancelActivation(context.Context, *CancelProviderActivationRequest) (*CancelProviderActivationResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method CancelActivation not implemented")
+func (UnimplementedSmsProviderAdminServiceServer) CancelOrder(context.Context, *CancelProviderOrderRequest) (*CancelProviderOrderResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelOrder not implemented")
 }
 func (UnimplementedSmsProviderAdminServiceServer) mustEmbedUnimplementedSmsProviderAdminServiceServer() {
 }
@@ -369,96 +289,6 @@ func _SmsProviderAdminService_DeleteProviderConfig_Handler(srv interface{}, ctx 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _SmsProviderAdminService_ListRouteOptions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListRouteOptionsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SmsProviderAdminServiceServer).ListRouteOptions(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: SmsProviderAdminService_ListRouteOptions_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmsProviderAdminServiceServer).ListRouteOptions(ctx, req.(*ListRouteOptionsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _SmsProviderAdminService_UpsertRouteProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpsertRouteProfileRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SmsProviderAdminServiceServer).UpsertRouteProfile(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: SmsProviderAdminService_UpsertRouteProfile_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmsProviderAdminServiceServer).UpsertRouteProfile(ctx, req.(*UpsertRouteProfileRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _SmsProviderAdminService_GetRouteProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRouteProfileRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SmsProviderAdminServiceServer).GetRouteProfile(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: SmsProviderAdminService_GetRouteProfile_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmsProviderAdminServiceServer).GetRouteProfile(ctx, req.(*GetRouteProfileRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _SmsProviderAdminService_ListRouteProfiles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListRouteProfilesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SmsProviderAdminServiceServer).ListRouteProfiles(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: SmsProviderAdminService_ListRouteProfiles_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmsProviderAdminServiceServer).ListRouteProfiles(ctx, req.(*ListRouteProfilesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _SmsProviderAdminService_DeleteRouteProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteRouteProfileRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SmsProviderAdminServiceServer).DeleteRouteProfile(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: SmsProviderAdminService_DeleteRouteProfile_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmsProviderAdminServiceServer).DeleteRouteProfile(ctx, req.(*DeleteRouteProfileRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _SmsProviderAdminService_GetProviderBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetProviderBalanceRequest)
 	if err := dec(in); err != nil {
@@ -477,38 +307,38 @@ func _SmsProviderAdminService_GetProviderBalance_Handler(srv interface{}, ctx co
 	return interceptor(ctx, in, info, handler)
 }
 
-func _SmsProviderAdminService_ListActivations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListActivationsRequest)
+func _SmsProviderAdminService_ListOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListOrdersRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SmsProviderAdminServiceServer).ListActivations(ctx, in)
+		return srv.(SmsProviderAdminServiceServer).ListOrders(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: SmsProviderAdminService_ListActivations_FullMethodName,
+		FullMethod: SmsProviderAdminService_ListOrders_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmsProviderAdminServiceServer).ListActivations(ctx, req.(*ListActivationsRequest))
+		return srv.(SmsProviderAdminServiceServer).ListOrders(ctx, req.(*ListOrdersRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _SmsProviderAdminService_CancelActivation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CancelProviderActivationRequest)
+func _SmsProviderAdminService_CancelOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelProviderOrderRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SmsProviderAdminServiceServer).CancelActivation(ctx, in)
+		return srv.(SmsProviderAdminServiceServer).CancelOrder(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: SmsProviderAdminService_CancelActivation_FullMethodName,
+		FullMethod: SmsProviderAdminService_CancelOrder_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmsProviderAdminServiceServer).CancelActivation(ctx, req.(*CancelProviderActivationRequest))
+		return srv.(SmsProviderAdminServiceServer).CancelOrder(ctx, req.(*CancelProviderOrderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -541,356 +371,16 @@ var SmsProviderAdminService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _SmsProviderAdminService_DeleteProviderConfig_Handler,
 		},
 		{
-			MethodName: "ListRouteOptions",
-			Handler:    _SmsProviderAdminService_ListRouteOptions_Handler,
-		},
-		{
-			MethodName: "UpsertRouteProfile",
-			Handler:    _SmsProviderAdminService_UpsertRouteProfile_Handler,
-		},
-		{
-			MethodName: "GetRouteProfile",
-			Handler:    _SmsProviderAdminService_GetRouteProfile_Handler,
-		},
-		{
-			MethodName: "ListRouteProfiles",
-			Handler:    _SmsProviderAdminService_ListRouteProfiles_Handler,
-		},
-		{
-			MethodName: "DeleteRouteProfile",
-			Handler:    _SmsProviderAdminService_DeleteRouteProfile_Handler,
-		},
-		{
 			MethodName: "GetProviderBalance",
 			Handler:    _SmsProviderAdminService_GetProviderBalance_Handler,
 		},
 		{
-			MethodName: "ListActivations",
-			Handler:    _SmsProviderAdminService_ListActivations_Handler,
+			MethodName: "ListOrders",
+			Handler:    _SmsProviderAdminService_ListOrders_Handler,
 		},
 		{
-			MethodName: "CancelActivation",
-			Handler:    _SmsProviderAdminService_CancelActivation_Handler,
-		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "byte/v/forge/sms/internal/v1/sms_internal.proto",
-}
-
-const (
-	SmsProviderCatalogService_ListProviderApplications_FullMethodName              = "/byte.v.forge.sms.internal.v1.SmsProviderCatalogService/ListProviderApplications"
-	SmsProviderCatalogService_ListProviderCountries_FullMethodName                 = "/byte.v.forge.sms.internal.v1.SmsProviderCatalogService/ListProviderCountries"
-	SmsProviderCatalogService_ListProviderPriceOffers_FullMethodName               = "/byte.v.forge.sms.internal.v1.SmsProviderCatalogService/ListProviderPriceOffers"
-	SmsProviderCatalogService_ListTopProviderCountriesByApplication_FullMethodName = "/byte.v.forge.sms.internal.v1.SmsProviderCatalogService/ListTopProviderCountriesByApplication"
-)
-
-// SmsProviderCatalogServiceClient is the client API for SmsProviderCatalogService service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type SmsProviderCatalogServiceClient interface {
-	ListProviderApplications(ctx context.Context, in *ListProviderApplicationsRequest, opts ...grpc.CallOption) (*ListProviderApplicationsResponse, error)
-	ListProviderCountries(ctx context.Context, in *ListProviderCountriesRequest, opts ...grpc.CallOption) (*ListProviderCountriesResponse, error)
-	ListProviderPriceOffers(ctx context.Context, in *ListProviderPriceOffersRequest, opts ...grpc.CallOption) (*ListProviderPriceOffersResponse, error)
-	ListTopProviderCountriesByApplication(ctx context.Context, in *ListTopProviderCountriesByApplicationRequest, opts ...grpc.CallOption) (*ListTopProviderCountriesByApplicationResponse, error)
-}
-
-type smsProviderCatalogServiceClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewSmsProviderCatalogServiceClient(cc grpc.ClientConnInterface) SmsProviderCatalogServiceClient {
-	return &smsProviderCatalogServiceClient{cc}
-}
-
-func (c *smsProviderCatalogServiceClient) ListProviderApplications(ctx context.Context, in *ListProviderApplicationsRequest, opts ...grpc.CallOption) (*ListProviderApplicationsResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListProviderApplicationsResponse)
-	err := c.cc.Invoke(ctx, SmsProviderCatalogService_ListProviderApplications_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *smsProviderCatalogServiceClient) ListProviderCountries(ctx context.Context, in *ListProviderCountriesRequest, opts ...grpc.CallOption) (*ListProviderCountriesResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListProviderCountriesResponse)
-	err := c.cc.Invoke(ctx, SmsProviderCatalogService_ListProviderCountries_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *smsProviderCatalogServiceClient) ListProviderPriceOffers(ctx context.Context, in *ListProviderPriceOffersRequest, opts ...grpc.CallOption) (*ListProviderPriceOffersResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListProviderPriceOffersResponse)
-	err := c.cc.Invoke(ctx, SmsProviderCatalogService_ListProviderPriceOffers_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *smsProviderCatalogServiceClient) ListTopProviderCountriesByApplication(ctx context.Context, in *ListTopProviderCountriesByApplicationRequest, opts ...grpc.CallOption) (*ListTopProviderCountriesByApplicationResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListTopProviderCountriesByApplicationResponse)
-	err := c.cc.Invoke(ctx, SmsProviderCatalogService_ListTopProviderCountriesByApplication_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// SmsProviderCatalogServiceServer is the server API for SmsProviderCatalogService service.
-// All implementations must embed UnimplementedSmsProviderCatalogServiceServer
-// for forward compatibility.
-type SmsProviderCatalogServiceServer interface {
-	ListProviderApplications(context.Context, *ListProviderApplicationsRequest) (*ListProviderApplicationsResponse, error)
-	ListProviderCountries(context.Context, *ListProviderCountriesRequest) (*ListProviderCountriesResponse, error)
-	ListProviderPriceOffers(context.Context, *ListProviderPriceOffersRequest) (*ListProviderPriceOffersResponse, error)
-	ListTopProviderCountriesByApplication(context.Context, *ListTopProviderCountriesByApplicationRequest) (*ListTopProviderCountriesByApplicationResponse, error)
-	mustEmbedUnimplementedSmsProviderCatalogServiceServer()
-}
-
-// UnimplementedSmsProviderCatalogServiceServer must be embedded to have
-// forward compatible implementations.
-//
-// NOTE: this should be embedded by value instead of pointer to avoid a nil
-// pointer dereference when methods are called.
-type UnimplementedSmsProviderCatalogServiceServer struct{}
-
-func (UnimplementedSmsProviderCatalogServiceServer) ListProviderApplications(context.Context, *ListProviderApplicationsRequest) (*ListProviderApplicationsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method ListProviderApplications not implemented")
-}
-func (UnimplementedSmsProviderCatalogServiceServer) ListProviderCountries(context.Context, *ListProviderCountriesRequest) (*ListProviderCountriesResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method ListProviderCountries not implemented")
-}
-func (UnimplementedSmsProviderCatalogServiceServer) ListProviderPriceOffers(context.Context, *ListProviderPriceOffersRequest) (*ListProviderPriceOffersResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method ListProviderPriceOffers not implemented")
-}
-func (UnimplementedSmsProviderCatalogServiceServer) ListTopProviderCountriesByApplication(context.Context, *ListTopProviderCountriesByApplicationRequest) (*ListTopProviderCountriesByApplicationResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method ListTopProviderCountriesByApplication not implemented")
-}
-func (UnimplementedSmsProviderCatalogServiceServer) mustEmbedUnimplementedSmsProviderCatalogServiceServer() {
-}
-func (UnimplementedSmsProviderCatalogServiceServer) testEmbeddedByValue() {}
-
-// UnsafeSmsProviderCatalogServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to SmsProviderCatalogServiceServer will
-// result in compilation errors.
-type UnsafeSmsProviderCatalogServiceServer interface {
-	mustEmbedUnimplementedSmsProviderCatalogServiceServer()
-}
-
-func RegisterSmsProviderCatalogServiceServer(s grpc.ServiceRegistrar, srv SmsProviderCatalogServiceServer) {
-	// If the following call panics, it indicates UnimplementedSmsProviderCatalogServiceServer was
-	// embedded by pointer and is nil.  This will cause panics if an
-	// unimplemented method is ever invoked, so we test this at initialization
-	// time to prevent it from happening at runtime later due to I/O.
-	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
-		t.testEmbeddedByValue()
-	}
-	s.RegisterService(&SmsProviderCatalogService_ServiceDesc, srv)
-}
-
-func _SmsProviderCatalogService_ListProviderApplications_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListProviderApplicationsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SmsProviderCatalogServiceServer).ListProviderApplications(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: SmsProviderCatalogService_ListProviderApplications_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmsProviderCatalogServiceServer).ListProviderApplications(ctx, req.(*ListProviderApplicationsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _SmsProviderCatalogService_ListProviderCountries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListProviderCountriesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SmsProviderCatalogServiceServer).ListProviderCountries(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: SmsProviderCatalogService_ListProviderCountries_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmsProviderCatalogServiceServer).ListProviderCountries(ctx, req.(*ListProviderCountriesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _SmsProviderCatalogService_ListProviderPriceOffers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListProviderPriceOffersRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SmsProviderCatalogServiceServer).ListProviderPriceOffers(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: SmsProviderCatalogService_ListProviderPriceOffers_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmsProviderCatalogServiceServer).ListProviderPriceOffers(ctx, req.(*ListProviderPriceOffersRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _SmsProviderCatalogService_ListTopProviderCountriesByApplication_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListTopProviderCountriesByApplicationRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SmsProviderCatalogServiceServer).ListTopProviderCountriesByApplication(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: SmsProviderCatalogService_ListTopProviderCountriesByApplication_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmsProviderCatalogServiceServer).ListTopProviderCountriesByApplication(ctx, req.(*ListTopProviderCountriesByApplicationRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-// SmsProviderCatalogService_ServiceDesc is the grpc.ServiceDesc for SmsProviderCatalogService service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var SmsProviderCatalogService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "byte.v.forge.sms.internal.v1.SmsProviderCatalogService",
-	HandlerType: (*SmsProviderCatalogServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "ListProviderApplications",
-			Handler:    _SmsProviderCatalogService_ListProviderApplications_Handler,
-		},
-		{
-			MethodName: "ListProviderCountries",
-			Handler:    _SmsProviderCatalogService_ListProviderCountries_Handler,
-		},
-		{
-			MethodName: "ListProviderPriceOffers",
-			Handler:    _SmsProviderCatalogService_ListProviderPriceOffers_Handler,
-		},
-		{
-			MethodName: "ListTopProviderCountriesByApplication",
-			Handler:    _SmsProviderCatalogService_ListTopProviderCountriesByApplication_Handler,
-		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "byte/v/forge/sms/internal/v1/sms_internal.proto",
-}
-
-const (
-	SmsWebhookIngestService_IngestInboundMessage_FullMethodName = "/byte.v.forge.sms.internal.v1.SmsWebhookIngestService/IngestInboundMessage"
-)
-
-// SmsWebhookIngestServiceClient is the client API for SmsWebhookIngestService service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type SmsWebhookIngestServiceClient interface {
-	IngestInboundMessage(ctx context.Context, in *IngestInboundMessageRequest, opts ...grpc.CallOption) (*IngestInboundMessageResponse, error)
-}
-
-type smsWebhookIngestServiceClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewSmsWebhookIngestServiceClient(cc grpc.ClientConnInterface) SmsWebhookIngestServiceClient {
-	return &smsWebhookIngestServiceClient{cc}
-}
-
-func (c *smsWebhookIngestServiceClient) IngestInboundMessage(ctx context.Context, in *IngestInboundMessageRequest, opts ...grpc.CallOption) (*IngestInboundMessageResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(IngestInboundMessageResponse)
-	err := c.cc.Invoke(ctx, SmsWebhookIngestService_IngestInboundMessage_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// SmsWebhookIngestServiceServer is the server API for SmsWebhookIngestService service.
-// All implementations must embed UnimplementedSmsWebhookIngestServiceServer
-// for forward compatibility.
-type SmsWebhookIngestServiceServer interface {
-	IngestInboundMessage(context.Context, *IngestInboundMessageRequest) (*IngestInboundMessageResponse, error)
-	mustEmbedUnimplementedSmsWebhookIngestServiceServer()
-}
-
-// UnimplementedSmsWebhookIngestServiceServer must be embedded to have
-// forward compatible implementations.
-//
-// NOTE: this should be embedded by value instead of pointer to avoid a nil
-// pointer dereference when methods are called.
-type UnimplementedSmsWebhookIngestServiceServer struct{}
-
-func (UnimplementedSmsWebhookIngestServiceServer) IngestInboundMessage(context.Context, *IngestInboundMessageRequest) (*IngestInboundMessageResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method IngestInboundMessage not implemented")
-}
-func (UnimplementedSmsWebhookIngestServiceServer) mustEmbedUnimplementedSmsWebhookIngestServiceServer() {
-}
-func (UnimplementedSmsWebhookIngestServiceServer) testEmbeddedByValue() {}
-
-// UnsafeSmsWebhookIngestServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to SmsWebhookIngestServiceServer will
-// result in compilation errors.
-type UnsafeSmsWebhookIngestServiceServer interface {
-	mustEmbedUnimplementedSmsWebhookIngestServiceServer()
-}
-
-func RegisterSmsWebhookIngestServiceServer(s grpc.ServiceRegistrar, srv SmsWebhookIngestServiceServer) {
-	// If the following call panics, it indicates UnimplementedSmsWebhookIngestServiceServer was
-	// embedded by pointer and is nil.  This will cause panics if an
-	// unimplemented method is ever invoked, so we test this at initialization
-	// time to prevent it from happening at runtime later due to I/O.
-	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
-		t.testEmbeddedByValue()
-	}
-	s.RegisterService(&SmsWebhookIngestService_ServiceDesc, srv)
-}
-
-func _SmsWebhookIngestService_IngestInboundMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(IngestInboundMessageRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SmsWebhookIngestServiceServer).IngestInboundMessage(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: SmsWebhookIngestService_IngestInboundMessage_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmsWebhookIngestServiceServer).IngestInboundMessage(ctx, req.(*IngestInboundMessageRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-// SmsWebhookIngestService_ServiceDesc is the grpc.ServiceDesc for SmsWebhookIngestService service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var SmsWebhookIngestService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "byte.v.forge.sms.internal.v1.SmsWebhookIngestService",
-	HandlerType: (*SmsWebhookIngestServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "IngestInboundMessage",
-			Handler:    _SmsWebhookIngestService_IngestInboundMessage_Handler,
+			MethodName: "CancelOrder",
+			Handler:    _SmsProviderAdminService_CancelOrder_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

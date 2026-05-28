@@ -7,7 +7,7 @@
 package smsbowerv1
 
 import (
-	v11 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/sms/v1"
+	v11 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/sms/v1"
 	v1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -24,68 +24,66 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type SmsBowerActivationStatusCode int32
+type SmsBowerOrderStatusCode int32
 
 const (
-	SmsBowerActivationStatusCode_SMS_BOWER_ACTIVATION_STATUS_CODE_UNSPECIFIED SmsBowerActivationStatusCode = 0
-	SmsBowerActivationStatusCode_SMS_BOWER_ACTIVATION_STATUS_CODE_READY       SmsBowerActivationStatusCode = 1
-	SmsBowerActivationStatusCode_SMS_BOWER_ACTIVATION_STATUS_CODE_RETRY_GET   SmsBowerActivationStatusCode = 3
-	SmsBowerActivationStatusCode_SMS_BOWER_ACTIVATION_STATUS_CODE_COMPLETE    SmsBowerActivationStatusCode = 6
-	SmsBowerActivationStatusCode_SMS_BOWER_ACTIVATION_STATUS_CODE_CANCEL      SmsBowerActivationStatusCode = 8
+	SmsBowerOrderStatusCode_SMS_BOWER_ORDER_STATUS_CODE_UNSPECIFIED SmsBowerOrderStatusCode = 0
+	SmsBowerOrderStatusCode_SMS_BOWER_ORDER_STATUS_CODE_READY       SmsBowerOrderStatusCode = 1
+	SmsBowerOrderStatusCode_SMS_BOWER_ORDER_STATUS_CODE_RETRY_GET   SmsBowerOrderStatusCode = 3
+	SmsBowerOrderStatusCode_SMS_BOWER_ORDER_STATUS_CODE_COMPLETE    SmsBowerOrderStatusCode = 6
+	SmsBowerOrderStatusCode_SMS_BOWER_ORDER_STATUS_CODE_CANCEL      SmsBowerOrderStatusCode = 8
 )
 
-// Enum value maps for SmsBowerActivationStatusCode.
+// Enum value maps for SmsBowerOrderStatusCode.
 var (
-	SmsBowerActivationStatusCode_name = map[int32]string{
-		0: "SMS_BOWER_ACTIVATION_STATUS_CODE_UNSPECIFIED",
-		1: "SMS_BOWER_ACTIVATION_STATUS_CODE_READY",
-		3: "SMS_BOWER_ACTIVATION_STATUS_CODE_RETRY_GET",
-		6: "SMS_BOWER_ACTIVATION_STATUS_CODE_COMPLETE",
-		8: "SMS_BOWER_ACTIVATION_STATUS_CODE_CANCEL",
+	SmsBowerOrderStatusCode_name = map[int32]string{
+		0: "SMS_BOWER_ORDER_STATUS_CODE_UNSPECIFIED",
+		1: "SMS_BOWER_ORDER_STATUS_CODE_READY",
+		3: "SMS_BOWER_ORDER_STATUS_CODE_RETRY_GET",
+		6: "SMS_BOWER_ORDER_STATUS_CODE_COMPLETE",
+		8: "SMS_BOWER_ORDER_STATUS_CODE_CANCEL",
 	}
-	SmsBowerActivationStatusCode_value = map[string]int32{
-		"SMS_BOWER_ACTIVATION_STATUS_CODE_UNSPECIFIED": 0,
-		"SMS_BOWER_ACTIVATION_STATUS_CODE_READY":       1,
-		"SMS_BOWER_ACTIVATION_STATUS_CODE_RETRY_GET":   3,
-		"SMS_BOWER_ACTIVATION_STATUS_CODE_COMPLETE":    6,
-		"SMS_BOWER_ACTIVATION_STATUS_CODE_CANCEL":      8,
+	SmsBowerOrderStatusCode_value = map[string]int32{
+		"SMS_BOWER_ORDER_STATUS_CODE_UNSPECIFIED": 0,
+		"SMS_BOWER_ORDER_STATUS_CODE_READY":       1,
+		"SMS_BOWER_ORDER_STATUS_CODE_RETRY_GET":   3,
+		"SMS_BOWER_ORDER_STATUS_CODE_COMPLETE":    6,
+		"SMS_BOWER_ORDER_STATUS_CODE_CANCEL":      8,
 	}
 )
 
-func (x SmsBowerActivationStatusCode) Enum() *SmsBowerActivationStatusCode {
-	p := new(SmsBowerActivationStatusCode)
+func (x SmsBowerOrderStatusCode) Enum() *SmsBowerOrderStatusCode {
+	p := new(SmsBowerOrderStatusCode)
 	*p = x
 	return p
 }
 
-func (x SmsBowerActivationStatusCode) String() string {
+func (x SmsBowerOrderStatusCode) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (SmsBowerActivationStatusCode) Descriptor() protoreflect.EnumDescriptor {
+func (SmsBowerOrderStatusCode) Descriptor() protoreflect.EnumDescriptor {
 	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_enumTypes[0].Descriptor()
 }
 
-func (SmsBowerActivationStatusCode) Type() protoreflect.EnumType {
+func (SmsBowerOrderStatusCode) Type() protoreflect.EnumType {
 	return &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_enumTypes[0]
 }
 
-func (x SmsBowerActivationStatusCode) Number() protoreflect.EnumNumber {
+func (x SmsBowerOrderStatusCode) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use SmsBowerActivationStatusCode.Descriptor instead.
-func (SmsBowerActivationStatusCode) EnumDescriptor() ([]byte, []int) {
+// Deprecated: Use SmsBowerOrderStatusCode.Descriptor instead.
+func (SmsBowerOrderStatusCode) EnumDescriptor() ([]byte, []int) {
 	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{0}
 }
 
 type SmsBowerProviderConfig struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Config         *v1.SmsProviderConfig  `protobuf:"bytes,1,opt,name=config,proto3" json:"config,omitempty"`
-	Ref            string                 `protobuf:"bytes,2,opt,name=ref,proto3" json:"ref,omitempty"`
-	ResellerUserId string                 `protobuf:"bytes,3,opt,name=reseller_user_id,json=resellerUserId,proto3" json:"reseller_user_id,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Config        *v1.SmsProviderConfig  `protobuf:"bytes,1,opt,name=config,proto3" json:"config,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *SmsBowerProviderConfig) Reset() {
@@ -125,141 +123,18 @@ func (x *SmsBowerProviderConfig) GetConfig() *v1.SmsProviderConfig {
 	return nil
 }
 
-func (x *SmsBowerProviderConfig) GetRef() string {
-	if x != nil {
-		return x.Ref
-	}
-	return ""
-}
-
-func (x *SmsBowerProviderConfig) GetResellerUserId() string {
-	if x != nil {
-		return x.ResellerUserId
-	}
-	return ""
-}
-
-type SmsBowerProviderSelection struct {
-	state              protoimpl.MessageState `protogen:"open.v1"`
-	IncludeProviderIds []string               `protobuf:"bytes,1,rep,name=include_provider_ids,json=includeProviderIds,proto3" json:"include_provider_ids,omitempty"`
-	ExcludeProviderIds []string               `protobuf:"bytes,2,rep,name=exclude_provider_ids,json=excludeProviderIds,proto3" json:"exclude_provider_ids,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
-}
-
-func (x *SmsBowerProviderSelection) Reset() {
-	*x = SmsBowerProviderSelection{}
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *SmsBowerProviderSelection) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SmsBowerProviderSelection) ProtoMessage() {}
-
-func (x *SmsBowerProviderSelection) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SmsBowerProviderSelection.ProtoReflect.Descriptor instead.
-func (*SmsBowerProviderSelection) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *SmsBowerProviderSelection) GetIncludeProviderIds() []string {
-	if x != nil {
-		return x.IncludeProviderIds
-	}
-	return nil
-}
-
-func (x *SmsBowerProviderSelection) GetExcludeProviderIds() []string {
-	if x != nil {
-		return x.ExcludeProviderIds
-	}
-	return nil
-}
-
-type SmsBowerPhoneException struct {
-	state              protoimpl.MessageState `protogen:"open.v1"`
-	CountryCallingCode string                 `protobuf:"bytes,1,opt,name=country_calling_code,json=countryCallingCode,proto3" json:"country_calling_code,omitempty"`
-	PrefixMask         string                 `protobuf:"bytes,2,opt,name=prefix_mask,json=prefixMask,proto3" json:"prefix_mask,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
-}
-
-func (x *SmsBowerPhoneException) Reset() {
-	*x = SmsBowerPhoneException{}
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *SmsBowerPhoneException) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SmsBowerPhoneException) ProtoMessage() {}
-
-func (x *SmsBowerPhoneException) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SmsBowerPhoneException.ProtoReflect.Descriptor instead.
-func (*SmsBowerPhoneException) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *SmsBowerPhoneException) GetCountryCallingCode() string {
-	if x != nil {
-		return x.CountryCallingCode
-	}
-	return ""
-}
-
-func (x *SmsBowerPhoneException) GetPrefixMask() string {
-	if x != nil {
-		return x.PrefixMask
-	}
-	return ""
-}
-
 type SmsBowerGetNumberRequest struct {
-	state              protoimpl.MessageState     `protogen:"open.v1"`
-	UpstreamServiceKey string                     `protobuf:"bytes,1,opt,name=upstream_service_key,json=upstreamServiceKey,proto3" json:"upstream_service_key,omitempty"`
-	CountryId          int32                      `protobuf:"varint,2,opt,name=country_id,json=countryId,proto3" json:"country_id,omitempty"`
-	MinPrice           *v11.DecimalMoney          `protobuf:"bytes,3,opt,name=min_price,json=minPrice,proto3" json:"min_price,omitempty"`
-	MaxPrice           *v11.DecimalMoney          `protobuf:"bytes,4,opt,name=max_price,json=maxPrice,proto3" json:"max_price,omitempty"`
-	ProviderSelection  *SmsBowerProviderSelection `protobuf:"bytes,5,opt,name=provider_selection,json=providerSelection,proto3" json:"provider_selection,omitempty"`
-	PhoneExceptions    []*SmsBowerPhoneException  `protobuf:"bytes,6,rep,name=phone_exceptions,json=phoneExceptions,proto3" json:"phone_exceptions,omitempty"`
-	Ref                string                     `protobuf:"bytes,7,opt,name=ref,proto3" json:"ref,omitempty"`
-	ResellerUserId     string                     `protobuf:"bytes,8,opt,name=reseller_user_id,json=resellerUserId,proto3" json:"reseller_user_id,omitempty"`
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	UpstreamServiceKey string                 `protobuf:"bytes,1,opt,name=upstream_service_key,json=upstreamServiceKey,proto3" json:"upstream_service_key,omitempty"`
+	CountryId          int32                  `protobuf:"varint,2,opt,name=country_id,json=countryId,proto3" json:"country_id,omitempty"`
+	ProviderId         string                 `protobuf:"bytes,5,opt,name=provider_id,json=providerId,proto3" json:"provider_id,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
 
 func (x *SmsBowerGetNumberRequest) Reset() {
 	*x = SmsBowerGetNumberRequest{}
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[3]
+	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -271,7 +146,7 @@ func (x *SmsBowerGetNumberRequest) String() string {
 func (*SmsBowerGetNumberRequest) ProtoMessage() {}
 
 func (x *SmsBowerGetNumberRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[3]
+	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -284,7 +159,7 @@ func (x *SmsBowerGetNumberRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SmsBowerGetNumberRequest.ProtoReflect.Descriptor instead.
 func (*SmsBowerGetNumberRequest) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{3}
+	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *SmsBowerGetNumberRequest) GetUpstreamServiceKey() string {
@@ -301,51 +176,16 @@ func (x *SmsBowerGetNumberRequest) GetCountryId() int32 {
 	return 0
 }
 
-func (x *SmsBowerGetNumberRequest) GetMinPrice() *v11.DecimalMoney {
+func (x *SmsBowerGetNumberRequest) GetProviderId() string {
 	if x != nil {
-		return x.MinPrice
-	}
-	return nil
-}
-
-func (x *SmsBowerGetNumberRequest) GetMaxPrice() *v11.DecimalMoney {
-	if x != nil {
-		return x.MaxPrice
-	}
-	return nil
-}
-
-func (x *SmsBowerGetNumberRequest) GetProviderSelection() *SmsBowerProviderSelection {
-	if x != nil {
-		return x.ProviderSelection
-	}
-	return nil
-}
-
-func (x *SmsBowerGetNumberRequest) GetPhoneExceptions() []*SmsBowerPhoneException {
-	if x != nil {
-		return x.PhoneExceptions
-	}
-	return nil
-}
-
-func (x *SmsBowerGetNumberRequest) GetRef() string {
-	if x != nil {
-		return x.Ref
-	}
-	return ""
-}
-
-func (x *SmsBowerGetNumberRequest) GetResellerUserId() string {
-	if x != nil {
-		return x.ResellerUserId
+		return x.ProviderId
 	}
 	return ""
 }
 
 type SmsBowerAccessNumberResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ActivationId  string                 `protobuf:"bytes,1,opt,name=activation_id,json=activationId,proto3" json:"activation_id,omitempty"`
+	OrderId       string                 `protobuf:"bytes,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	PhoneNumber   string                 `protobuf:"bytes,2,opt,name=phone_number,json=phoneNumber,proto3" json:"phone_number,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -353,7 +193,7 @@ type SmsBowerAccessNumberResponse struct {
 
 func (x *SmsBowerAccessNumberResponse) Reset() {
 	*x = SmsBowerAccessNumberResponse{}
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[4]
+	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -365,7 +205,7 @@ func (x *SmsBowerAccessNumberResponse) String() string {
 func (*SmsBowerAccessNumberResponse) ProtoMessage() {}
 
 func (x *SmsBowerAccessNumberResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[4]
+	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -378,12 +218,12 @@ func (x *SmsBowerAccessNumberResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SmsBowerAccessNumberResponse.ProtoReflect.Descriptor instead.
 func (*SmsBowerAccessNumberResponse) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{4}
+	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *SmsBowerAccessNumberResponse) GetActivationId() string {
+func (x *SmsBowerAccessNumberResponse) GetOrderId() string {
 	if x != nil {
-		return x.ActivationId
+		return x.OrderId
 	}
 	return ""
 }
@@ -396,21 +236,21 @@ func (x *SmsBowerAccessNumberResponse) GetPhoneNumber() string {
 }
 
 type SmsBowerGetNumberV2Response struct {
-	state              protoimpl.MessageState `protogen:"open.v1"`
-	ActivationId       string                 `protobuf:"bytes,1,opt,name=activation_id,json=activationId,proto3" json:"activation_id,omitempty"`
-	PhoneNumber        string                 `protobuf:"bytes,2,opt,name=phone_number,json=phoneNumber,proto3" json:"phone_number,omitempty"`
-	ActivationCost     *v11.DecimalMoney      `protobuf:"bytes,3,opt,name=activation_cost,json=activationCost,proto3" json:"activation_cost,omitempty"`
-	CountryCode        string                 `protobuf:"bytes,4,opt,name=country_code,json=countryCode,proto3" json:"country_code,omitempty"`
-	CanGetAnotherSms   bool                   `protobuf:"varint,5,opt,name=can_get_another_sms,json=canGetAnotherSms,proto3" json:"can_get_another_sms,omitempty"`
-	ActivationTime     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=activation_time,json=activationTime,proto3" json:"activation_time,omitempty"`
-	ActivationOperator string                 `protobuf:"bytes,7,opt,name=activation_operator,json=activationOperator,proto3" json:"activation_operator,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	OrderId          string                 `protobuf:"bytes,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	PhoneNumber      string                 `protobuf:"bytes,2,opt,name=phone_number,json=phoneNumber,proto3" json:"phone_number,omitempty"`
+	OrderCost        *v11.DecimalMoney      `protobuf:"bytes,3,opt,name=order_cost,json=orderCost,proto3" json:"order_cost,omitempty"`
+	CountryCode      string                 `protobuf:"bytes,4,opt,name=country_code,json=countryCode,proto3" json:"country_code,omitempty"`
+	CanGetAnotherSms bool                   `protobuf:"varint,5,opt,name=can_get_another_sms,json=canGetAnotherSms,proto3" json:"can_get_another_sms,omitempty"`
+	OrderTime        *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=order_time,json=orderTime,proto3" json:"order_time,omitempty"`
+	OrderOperator    string                 `protobuf:"bytes,7,opt,name=order_operator,json=orderOperator,proto3" json:"order_operator,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *SmsBowerGetNumberV2Response) Reset() {
 	*x = SmsBowerGetNumberV2Response{}
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[5]
+	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -422,7 +262,7 @@ func (x *SmsBowerGetNumberV2Response) String() string {
 func (*SmsBowerGetNumberV2Response) ProtoMessage() {}
 
 func (x *SmsBowerGetNumberV2Response) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[5]
+	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -435,12 +275,12 @@ func (x *SmsBowerGetNumberV2Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SmsBowerGetNumberV2Response.ProtoReflect.Descriptor instead.
 func (*SmsBowerGetNumberV2Response) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{5}
+	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *SmsBowerGetNumberV2Response) GetActivationId() string {
+func (x *SmsBowerGetNumberV2Response) GetOrderId() string {
 	if x != nil {
-		return x.ActivationId
+		return x.OrderId
 	}
 	return ""
 }
@@ -452,9 +292,9 @@ func (x *SmsBowerGetNumberV2Response) GetPhoneNumber() string {
 	return ""
 }
 
-func (x *SmsBowerGetNumberV2Response) GetActivationCost() *v11.DecimalMoney {
+func (x *SmsBowerGetNumberV2Response) GetOrderCost() *v11.DecimalMoney {
 	if x != nil {
-		return x.ActivationCost
+		return x.OrderCost
 	}
 	return nil
 }
@@ -473,30 +313,30 @@ func (x *SmsBowerGetNumberV2Response) GetCanGetAnotherSms() bool {
 	return false
 }
 
-func (x *SmsBowerGetNumberV2Response) GetActivationTime() *timestamppb.Timestamp {
+func (x *SmsBowerGetNumberV2Response) GetOrderTime() *timestamppb.Timestamp {
 	if x != nil {
-		return x.ActivationTime
+		return x.OrderTime
 	}
 	return nil
 }
 
-func (x *SmsBowerGetNumberV2Response) GetActivationOperator() string {
+func (x *SmsBowerGetNumberV2Response) GetOrderOperator() string {
 	if x != nil {
-		return x.ActivationOperator
+		return x.OrderOperator
 	}
 	return ""
 }
 
 type SmsBowerGetStatusRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ActivationId  string                 `protobuf:"bytes,1,opt,name=activation_id,json=activationId,proto3" json:"activation_id,omitempty"`
+	OrderId       string                 `protobuf:"bytes,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *SmsBowerGetStatusRequest) Reset() {
 	*x = SmsBowerGetStatusRequest{}
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[6]
+	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -508,7 +348,7 @@ func (x *SmsBowerGetStatusRequest) String() string {
 func (*SmsBowerGetStatusRequest) ProtoMessage() {}
 
 func (x *SmsBowerGetStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[6]
+	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -521,12 +361,12 @@ func (x *SmsBowerGetStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SmsBowerGetStatusRequest.ProtoReflect.Descriptor instead.
 func (*SmsBowerGetStatusRequest) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{6}
+	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *SmsBowerGetStatusRequest) GetActivationId() string {
+func (x *SmsBowerGetStatusRequest) GetOrderId() string {
 	if x != nil {
-		return x.ActivationId
+		return x.OrderId
 	}
 	return ""
 }
@@ -542,7 +382,7 @@ type SmsBowerGetStatusResponse struct {
 
 func (x *SmsBowerGetStatusResponse) Reset() {
 	*x = SmsBowerGetStatusResponse{}
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[7]
+	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -554,7 +394,7 @@ func (x *SmsBowerGetStatusResponse) String() string {
 func (*SmsBowerGetStatusResponse) ProtoMessage() {}
 
 func (x *SmsBowerGetStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[7]
+	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -567,7 +407,7 @@ func (x *SmsBowerGetStatusResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SmsBowerGetStatusResponse.ProtoReflect.Descriptor instead.
 func (*SmsBowerGetStatusResponse) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{7}
+	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *SmsBowerGetStatusResponse) GetRawStatus() string {
@@ -592,16 +432,16 @@ func (x *SmsBowerGetStatusResponse) GetLastCode() string {
 }
 
 type SmsBowerSetStatusRequest struct {
-	state         protoimpl.MessageState       `protogen:"open.v1"`
-	ActivationId  string                       `protobuf:"bytes,1,opt,name=activation_id,json=activationId,proto3" json:"activation_id,omitempty"`
-	Status        SmsBowerActivationStatusCode `protobuf:"varint,2,opt,name=status,proto3,enum=byte.v.forge.sms.providers.smsbower.v1.SmsBowerActivationStatusCode" json:"status,omitempty"`
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	OrderId       string                  `protobuf:"bytes,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	Status        SmsBowerOrderStatusCode `protobuf:"varint,2,opt,name=status,proto3,enum=byte.v.forge.sms.providers.smsbower.v1.SmsBowerOrderStatusCode" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *SmsBowerSetStatusRequest) Reset() {
 	*x = SmsBowerSetStatusRequest{}
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[8]
+	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -613,7 +453,7 @@ func (x *SmsBowerSetStatusRequest) String() string {
 func (*SmsBowerSetStatusRequest) ProtoMessage() {}
 
 func (x *SmsBowerSetStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[8]
+	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -626,21 +466,21 @@ func (x *SmsBowerSetStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SmsBowerSetStatusRequest.ProtoReflect.Descriptor instead.
 func (*SmsBowerSetStatusRequest) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{8}
+	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *SmsBowerSetStatusRequest) GetActivationId() string {
+func (x *SmsBowerSetStatusRequest) GetOrderId() string {
 	if x != nil {
-		return x.ActivationId
+		return x.OrderId
 	}
 	return ""
 }
 
-func (x *SmsBowerSetStatusRequest) GetStatus() SmsBowerActivationStatusCode {
+func (x *SmsBowerSetStatusRequest) GetStatus() SmsBowerOrderStatusCode {
 	if x != nil {
 		return x.Status
 	}
-	return SmsBowerActivationStatusCode_SMS_BOWER_ACTIVATION_STATUS_CODE_UNSPECIFIED
+	return SmsBowerOrderStatusCode_SMS_BOWER_ORDER_STATUS_CODE_UNSPECIFIED
 }
 
 type SmsBowerSetStatusResponse struct {
@@ -652,7 +492,7 @@ type SmsBowerSetStatusResponse struct {
 
 func (x *SmsBowerSetStatusResponse) Reset() {
 	*x = SmsBowerSetStatusResponse{}
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[9]
+	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -664,7 +504,7 @@ func (x *SmsBowerSetStatusResponse) String() string {
 func (*SmsBowerSetStatusResponse) ProtoMessage() {}
 
 func (x *SmsBowerSetStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[9]
+	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -677,7 +517,7 @@ func (x *SmsBowerSetStatusResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SmsBowerSetStatusResponse.ProtoReflect.Descriptor instead.
 func (*SmsBowerSetStatusResponse) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{9}
+	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *SmsBowerSetStatusResponse) GetRawStatus() string {
@@ -689,7 +529,7 @@ func (x *SmsBowerSetStatusResponse) GetRawStatus() string {
 
 type SmsBowerCountry struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Country       *v1.ProviderSmsCountry `protobuf:"bytes,1,opt,name=country,proto3" json:"country,omitempty"`
+	Country       *v11.SmsCountry        `protobuf:"bytes,1,opt,name=country,proto3" json:"country,omitempty"`
 	CountryId     int32                  `protobuf:"varint,2,opt,name=country_id,json=countryId,proto3" json:"country_id,omitempty"`
 	RussianName   string                 `protobuf:"bytes,3,opt,name=russian_name,json=russianName,proto3" json:"russian_name,omitempty"`
 	EnglishName   string                 `protobuf:"bytes,4,opt,name=english_name,json=englishName,proto3" json:"english_name,omitempty"`
@@ -700,7 +540,7 @@ type SmsBowerCountry struct {
 
 func (x *SmsBowerCountry) Reset() {
 	*x = SmsBowerCountry{}
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[10]
+	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -712,7 +552,7 @@ func (x *SmsBowerCountry) String() string {
 func (*SmsBowerCountry) ProtoMessage() {}
 
 func (x *SmsBowerCountry) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[10]
+	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -725,10 +565,10 @@ func (x *SmsBowerCountry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SmsBowerCountry.ProtoReflect.Descriptor instead.
 func (*SmsBowerCountry) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{10}
+	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *SmsBowerCountry) GetCountry() *v1.ProviderSmsCountry {
+func (x *SmsBowerCountry) GetCountry() *v11.SmsCountry {
 	if x != nil {
 		return x.Country
 	}
@@ -764,17 +604,17 @@ func (x *SmsBowerCountry) GetChineseName() string {
 }
 
 type SmsBowerPriceOffer struct {
-	state         protoimpl.MessageState    `protogen:"open.v1"`
-	Offer         *v1.ProviderSmsPriceOffer `protobuf:"bytes,1,opt,name=offer,proto3" json:"offer,omitempty"`
-	ProviderId    string                    `protobuf:"bytes,2,opt,name=provider_id,json=providerId,proto3" json:"provider_id,omitempty"`
-	Count         int32                     `protobuf:"varint,3,opt,name=count,proto3" json:"count,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Offer         *v11.SmsPriceOffer     `protobuf:"bytes,1,opt,name=offer,proto3" json:"offer,omitempty"`
+	ProviderId    string                 `protobuf:"bytes,2,opt,name=provider_id,json=providerId,proto3" json:"provider_id,omitempty"`
+	Count         int32                  `protobuf:"varint,3,opt,name=count,proto3" json:"count,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *SmsBowerPriceOffer) Reset() {
 	*x = SmsBowerPriceOffer{}
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[11]
+	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -786,7 +626,7 @@ func (x *SmsBowerPriceOffer) String() string {
 func (*SmsBowerPriceOffer) ProtoMessage() {}
 
 func (x *SmsBowerPriceOffer) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[11]
+	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -799,10 +639,10 @@ func (x *SmsBowerPriceOffer) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SmsBowerPriceOffer.ProtoReflect.Descriptor instead.
 func (*SmsBowerPriceOffer) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{11}
+	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *SmsBowerPriceOffer) GetOffer() *v1.ProviderSmsPriceOffer {
+func (x *SmsBowerPriceOffer) GetOffer() *v11.SmsPriceOffer {
 	if x != nil {
 		return x.Offer
 	}
@@ -825,7 +665,7 @@ func (x *SmsBowerPriceOffer) GetCount() int32 {
 
 type SmsBowerInboundWebhookRequest struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
-	ActivationId       string                 `protobuf:"bytes,1,opt,name=activation_id,json=activationId,proto3" json:"activation_id,omitempty"`
+	OrderId            string                 `protobuf:"bytes,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	UpstreamServiceKey string                 `protobuf:"bytes,2,opt,name=upstream_service_key,json=upstreamServiceKey,proto3" json:"upstream_service_key,omitempty"`
 	MessageText        string                 `protobuf:"bytes,3,opt,name=message_text,json=messageText,proto3" json:"message_text,omitempty"`
 	Code               string                 `protobuf:"bytes,4,opt,name=code,proto3" json:"code,omitempty"`
@@ -837,7 +677,7 @@ type SmsBowerInboundWebhookRequest struct {
 
 func (x *SmsBowerInboundWebhookRequest) Reset() {
 	*x = SmsBowerInboundWebhookRequest{}
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[12]
+	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -849,7 +689,7 @@ func (x *SmsBowerInboundWebhookRequest) String() string {
 func (*SmsBowerInboundWebhookRequest) ProtoMessage() {}
 
 func (x *SmsBowerInboundWebhookRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[12]
+	mi := &file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -862,12 +702,12 @@ func (x *SmsBowerInboundWebhookRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SmsBowerInboundWebhookRequest.ProtoReflect.Descriptor instead.
 func (*SmsBowerInboundWebhookRequest) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{12}
+	return file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP(), []int{10}
 }
 
-func (x *SmsBowerInboundWebhookRequest) GetActivationId() string {
+func (x *SmsBowerInboundWebhookRequest) GetOrderId() string {
 	if x != nil {
-		return x.ActivationId
+		return x.OrderId
 	}
 	return ""
 }
@@ -911,79 +751,68 @@ var File_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto protoreflect.File
 
 const file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDesc = "" +
 	"\n" +
-	"5byte/v/forge/sms/providers/smsbower/v1/smsbower.proto\x12&byte.v.forge.sms.providers.smsbower.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a'byte/v/forge/contracts/sms/v1/sms.proto\x1a/byte/v/forge/sms/internal/v1/sms_internal.proto\"\x9d\x01\n" +
+	"5byte/v/forge/sms/providers/smsbower/v1/smsbower.proto\x12&byte.v.forge.sms.providers.smsbower.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a'byte/v/forge/contracts/sms/v1/sms.proto\x1a/byte/v/forge/sms/internal/v1/sms_internal.proto\"m\n" +
 	"\x16SmsBowerProviderConfig\x12G\n" +
-	"\x06config\x18\x01 \x01(\v2/.byte.v.forge.sms.internal.v1.SmsProviderConfigR\x06config\x12\x10\n" +
-	"\x03ref\x18\x02 \x01(\tR\x03ref\x12(\n" +
-	"\x10reseller_user_id\x18\x03 \x01(\tR\x0eresellerUserId\"\x7f\n" +
-	"\x19SmsBowerProviderSelection\x120\n" +
-	"\x14include_provider_ids\x18\x01 \x03(\tR\x12includeProviderIds\x120\n" +
-	"\x14exclude_provider_ids\x18\x02 \x03(\tR\x12excludeProviderIds\"k\n" +
-	"\x16SmsBowerPhoneException\x120\n" +
-	"\x14country_calling_code\x18\x01 \x01(\tR\x12countryCallingCode\x12\x1f\n" +
-	"\vprefix_mask\x18\x02 \x01(\tR\n" +
-	"prefixMask\"\x98\x04\n" +
+	"\x06config\x18\x01 \x01(\v2/.byte.v.forge.sms.internal.v1.SmsProviderConfigR\x06configJ\x04\b\x02\x10\x03J\x04\b\x03\x10\x04\"\x9e\x01\n" +
 	"\x18SmsBowerGetNumberRequest\x120\n" +
 	"\x14upstream_service_key\x18\x01 \x01(\tR\x12upstreamServiceKey\x12\x1d\n" +
 	"\n" +
-	"country_id\x18\x02 \x01(\x05R\tcountryId\x12H\n" +
-	"\tmin_price\x18\x03 \x01(\v2+.byte.v.forge.contracts.sms.v1.DecimalMoneyR\bminPrice\x12H\n" +
-	"\tmax_price\x18\x04 \x01(\v2+.byte.v.forge.contracts.sms.v1.DecimalMoneyR\bmaxPrice\x12p\n" +
-	"\x12provider_selection\x18\x05 \x01(\v2A.byte.v.forge.sms.providers.smsbower.v1.SmsBowerProviderSelectionR\x11providerSelection\x12i\n" +
-	"\x10phone_exceptions\x18\x06 \x03(\v2>.byte.v.forge.sms.providers.smsbower.v1.SmsBowerPhoneExceptionR\x0fphoneExceptions\x12\x10\n" +
-	"\x03ref\x18\a \x01(\tR\x03ref\x12(\n" +
-	"\x10reseller_user_id\x18\b \x01(\tR\x0eresellerUserId\"f\n" +
-	"\x1cSmsBowerAccessNumberResponse\x12#\n" +
-	"\ractivation_id\x18\x01 \x01(\tR\factivationId\x12!\n" +
-	"\fphone_number\x18\x02 \x01(\tR\vphoneNumber\"\x83\x03\n" +
-	"\x1bSmsBowerGetNumberV2Response\x12#\n" +
-	"\ractivation_id\x18\x01 \x01(\tR\factivationId\x12!\n" +
-	"\fphone_number\x18\x02 \x01(\tR\vphoneNumber\x12T\n" +
-	"\x0factivation_cost\x18\x03 \x01(\v2+.byte.v.forge.contracts.sms.v1.DecimalMoneyR\x0eactivationCost\x12!\n" +
+	"country_id\x18\x02 \x01(\x05R\tcountryId\x12\x1f\n" +
+	"\vprovider_id\x18\x05 \x01(\tR\n" +
+	"providerIdJ\x04\b\x03\x10\x04J\x04\b\x04\x10\x05J\x04\b\x06\x10\t\"\\\n" +
+	"\x1cSmsBowerAccessNumberResponse\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\tR\aorderId\x12!\n" +
+	"\fphone_number\x18\x02 \x01(\tR\vphoneNumber\"\xdb\x02\n" +
+	"\x1bSmsBowerGetNumberV2Response\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\tR\aorderId\x12!\n" +
+	"\fphone_number\x18\x02 \x01(\tR\vphoneNumber\x12J\n" +
+	"\n" +
+	"order_cost\x18\x03 \x01(\v2+.byte.v.forge.contracts.sms.v1.DecimalMoneyR\torderCost\x12!\n" +
 	"\fcountry_code\x18\x04 \x01(\tR\vcountryCode\x12-\n" +
-	"\x13can_get_another_sms\x18\x05 \x01(\bR\x10canGetAnotherSms\x12C\n" +
-	"\x0factivation_time\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\x0eactivationTime\x12/\n" +
-	"\x13activation_operator\x18\a \x01(\tR\x12activationOperator\"?\n" +
-	"\x18SmsBowerGetStatusRequest\x12#\n" +
-	"\ractivation_id\x18\x01 \x01(\tR\factivationId\"k\n" +
+	"\x13can_get_another_sms\x18\x05 \x01(\bR\x10canGetAnotherSms\x129\n" +
+	"\n" +
+	"order_time\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\torderTime\x12%\n" +
+	"\x0eorder_operator\x18\a \x01(\tR\rorderOperator\"5\n" +
+	"\x18SmsBowerGetStatusRequest\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\tR\aorderId\"k\n" +
 	"\x19SmsBowerGetStatusResponse\x12\x1d\n" +
 	"\n" +
 	"raw_status\x18\x01 \x01(\tR\trawStatus\x12\x12\n" +
 	"\x04code\x18\x02 \x01(\tR\x04code\x12\x1b\n" +
-	"\tlast_code\x18\x03 \x01(\tR\blastCode\"\x9d\x01\n" +
-	"\x18SmsBowerSetStatusRequest\x12#\n" +
-	"\ractivation_id\x18\x01 \x01(\tR\factivationId\x12\\\n" +
-	"\x06status\x18\x02 \x01(\x0e2D.byte.v.forge.sms.providers.smsbower.v1.SmsBowerActivationStatusCodeR\x06status\":\n" +
+	"\tlast_code\x18\x03 \x01(\tR\blastCode\"\x8e\x01\n" +
+	"\x18SmsBowerSetStatusRequest\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\tR\aorderId\x12W\n" +
+	"\x06status\x18\x02 \x01(\x0e2?.byte.v.forge.sms.providers.smsbower.v1.SmsBowerOrderStatusCodeR\x06status\":\n" +
 	"\x19SmsBowerSetStatusResponse\x12\x1d\n" +
 	"\n" +
-	"raw_status\x18\x01 \x01(\tR\trawStatus\"\xe5\x01\n" +
-	"\x0fSmsBowerCountry\x12J\n" +
-	"\acountry\x18\x01 \x01(\v20.byte.v.forge.sms.internal.v1.ProviderSmsCountryR\acountry\x12\x1d\n" +
+	"raw_status\x18\x01 \x01(\tR\trawStatus\"\xde\x01\n" +
+	"\x0fSmsBowerCountry\x12C\n" +
+	"\acountry\x18\x01 \x01(\v2).byte.v.forge.contracts.sms.v1.SmsCountryR\acountry\x12\x1d\n" +
 	"\n" +
 	"country_id\x18\x02 \x01(\x05R\tcountryId\x12!\n" +
 	"\frussian_name\x18\x03 \x01(\tR\vrussianName\x12!\n" +
 	"\fenglish_name\x18\x04 \x01(\tR\venglishName\x12!\n" +
-	"\fchinese_name\x18\x05 \x01(\tR\vchineseName\"\x96\x01\n" +
-	"\x12SmsBowerPriceOffer\x12I\n" +
-	"\x05offer\x18\x01 \x01(\v23.byte.v.forge.sms.internal.v1.ProviderSmsPriceOfferR\x05offer\x12\x1f\n" +
+	"\fchinese_name\x18\x05 \x01(\tR\vchineseName\"\x8f\x01\n" +
+	"\x12SmsBowerPriceOffer\x12B\n" +
+	"\x05offer\x18\x01 \x01(\v2,.byte.v.forge.contracts.sms.v1.SmsPriceOfferR\x05offer\x12\x1f\n" +
 	"\vprovider_id\x18\x02 \x01(\tR\n" +
 	"providerId\x12\x14\n" +
-	"\x05count\x18\x03 \x01(\x05R\x05count\"\x89\x02\n" +
-	"\x1dSmsBowerInboundWebhookRequest\x12#\n" +
-	"\ractivation_id\x18\x01 \x01(\tR\factivationId\x120\n" +
+	"\x05count\x18\x03 \x01(\x05R\x05count\"\xff\x01\n" +
+	"\x1dSmsBowerInboundWebhookRequest\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\tR\aorderId\x120\n" +
 	"\x14upstream_service_key\x18\x02 \x01(\tR\x12upstreamServiceKey\x12!\n" +
 	"\fmessage_text\x18\x03 \x01(\tR\vmessageText\x12\x12\n" +
 	"\x04code\x18\x04 \x01(\tR\x04code\x12\x1d\n" +
 	"\n" +
 	"country_id\x18\x05 \x01(\x05R\tcountryId\x12;\n" +
 	"\vreceived_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"receivedAt*\x88\x02\n" +
-	"\x1cSmsBowerActivationStatusCode\x120\n" +
-	",SMS_BOWER_ACTIVATION_STATUS_CODE_UNSPECIFIED\x10\x00\x12*\n" +
-	"&SMS_BOWER_ACTIVATION_STATUS_CODE_READY\x10\x01\x12.\n" +
-	"*SMS_BOWER_ACTIVATION_STATUS_CODE_RETRY_GET\x10\x03\x12-\n" +
-	")SMS_BOWER_ACTIVATION_STATUS_CODE_COMPLETE\x10\x06\x12+\n" +
-	"'SMS_BOWER_ACTIVATION_STATUS_CODE_CANCEL\x10\bB\xdf\x01\n" +
+	"receivedAt*\xea\x01\n" +
+	"\x17SmsBowerOrderStatusCode\x12+\n" +
+	"'SMS_BOWER_ORDER_STATUS_CODE_UNSPECIFIED\x10\x00\x12%\n" +
+	"!SMS_BOWER_ORDER_STATUS_CODE_READY\x10\x01\x12)\n" +
+	"%SMS_BOWER_ORDER_STATUS_CODE_RETRY_GET\x10\x03\x12(\n" +
+	"$SMS_BOWER_ORDER_STATUS_CODE_COMPLETE\x10\x06\x12&\n" +
+	"\"SMS_BOWER_ORDER_STATUS_CODE_CANCEL\x10\bB\xdf\x01\n" +
 	"(com.bytevforge.sms.providers.smsbower.v1B\rSmsBowerProtoP\x01ZTgithub.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/providers/smsbower/v1;smsbowerv1\xaa\x02$ByteVForge.Sms.Providers.SmsBower.V1\xca\x02$ByteVForge\\Sms\\Providers\\SmsBower\\V1b\x06proto3"
 
 var (
@@ -999,45 +828,39 @@ func file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDescGZIP() []
 }
 
 var file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_goTypes = []any{
-	(SmsBowerActivationStatusCode)(0),     // 0: byte.v.forge.sms.providers.smsbower.v1.SmsBowerActivationStatusCode
+	(SmsBowerOrderStatusCode)(0),          // 0: byte.v.forge.sms.providers.smsbower.v1.SmsBowerOrderStatusCode
 	(*SmsBowerProviderConfig)(nil),        // 1: byte.v.forge.sms.providers.smsbower.v1.SmsBowerProviderConfig
-	(*SmsBowerProviderSelection)(nil),     // 2: byte.v.forge.sms.providers.smsbower.v1.SmsBowerProviderSelection
-	(*SmsBowerPhoneException)(nil),        // 3: byte.v.forge.sms.providers.smsbower.v1.SmsBowerPhoneException
-	(*SmsBowerGetNumberRequest)(nil),      // 4: byte.v.forge.sms.providers.smsbower.v1.SmsBowerGetNumberRequest
-	(*SmsBowerAccessNumberResponse)(nil),  // 5: byte.v.forge.sms.providers.smsbower.v1.SmsBowerAccessNumberResponse
-	(*SmsBowerGetNumberV2Response)(nil),   // 6: byte.v.forge.sms.providers.smsbower.v1.SmsBowerGetNumberV2Response
-	(*SmsBowerGetStatusRequest)(nil),      // 7: byte.v.forge.sms.providers.smsbower.v1.SmsBowerGetStatusRequest
-	(*SmsBowerGetStatusResponse)(nil),     // 8: byte.v.forge.sms.providers.smsbower.v1.SmsBowerGetStatusResponse
-	(*SmsBowerSetStatusRequest)(nil),      // 9: byte.v.forge.sms.providers.smsbower.v1.SmsBowerSetStatusRequest
-	(*SmsBowerSetStatusResponse)(nil),     // 10: byte.v.forge.sms.providers.smsbower.v1.SmsBowerSetStatusResponse
-	(*SmsBowerCountry)(nil),               // 11: byte.v.forge.sms.providers.smsbower.v1.SmsBowerCountry
-	(*SmsBowerPriceOffer)(nil),            // 12: byte.v.forge.sms.providers.smsbower.v1.SmsBowerPriceOffer
-	(*SmsBowerInboundWebhookRequest)(nil), // 13: byte.v.forge.sms.providers.smsbower.v1.SmsBowerInboundWebhookRequest
-	(*v1.SmsProviderConfig)(nil),          // 14: byte.v.forge.sms.internal.v1.SmsProviderConfig
-	(*v11.DecimalMoney)(nil),              // 15: byte.v.forge.contracts.sms.v1.DecimalMoney
-	(*timestamppb.Timestamp)(nil),         // 16: google.protobuf.Timestamp
-	(*v1.ProviderSmsCountry)(nil),         // 17: byte.v.forge.sms.internal.v1.ProviderSmsCountry
-	(*v1.ProviderSmsPriceOffer)(nil),      // 18: byte.v.forge.sms.internal.v1.ProviderSmsPriceOffer
+	(*SmsBowerGetNumberRequest)(nil),      // 2: byte.v.forge.sms.providers.smsbower.v1.SmsBowerGetNumberRequest
+	(*SmsBowerAccessNumberResponse)(nil),  // 3: byte.v.forge.sms.providers.smsbower.v1.SmsBowerAccessNumberResponse
+	(*SmsBowerGetNumberV2Response)(nil),   // 4: byte.v.forge.sms.providers.smsbower.v1.SmsBowerGetNumberV2Response
+	(*SmsBowerGetStatusRequest)(nil),      // 5: byte.v.forge.sms.providers.smsbower.v1.SmsBowerGetStatusRequest
+	(*SmsBowerGetStatusResponse)(nil),     // 6: byte.v.forge.sms.providers.smsbower.v1.SmsBowerGetStatusResponse
+	(*SmsBowerSetStatusRequest)(nil),      // 7: byte.v.forge.sms.providers.smsbower.v1.SmsBowerSetStatusRequest
+	(*SmsBowerSetStatusResponse)(nil),     // 8: byte.v.forge.sms.providers.smsbower.v1.SmsBowerSetStatusResponse
+	(*SmsBowerCountry)(nil),               // 9: byte.v.forge.sms.providers.smsbower.v1.SmsBowerCountry
+	(*SmsBowerPriceOffer)(nil),            // 10: byte.v.forge.sms.providers.smsbower.v1.SmsBowerPriceOffer
+	(*SmsBowerInboundWebhookRequest)(nil), // 11: byte.v.forge.sms.providers.smsbower.v1.SmsBowerInboundWebhookRequest
+	(*v1.SmsProviderConfig)(nil),          // 12: byte.v.forge.sms.internal.v1.SmsProviderConfig
+	(*v11.DecimalMoney)(nil),              // 13: byte.v.forge.contracts.sms.v1.DecimalMoney
+	(*timestamppb.Timestamp)(nil),         // 14: google.protobuf.Timestamp
+	(*v11.SmsCountry)(nil),                // 15: byte.v.forge.contracts.sms.v1.SmsCountry
+	(*v11.SmsPriceOffer)(nil),             // 16: byte.v.forge.contracts.sms.v1.SmsPriceOffer
 }
 var file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_depIdxs = []int32{
-	14, // 0: byte.v.forge.sms.providers.smsbower.v1.SmsBowerProviderConfig.config:type_name -> byte.v.forge.sms.internal.v1.SmsProviderConfig
-	15, // 1: byte.v.forge.sms.providers.smsbower.v1.SmsBowerGetNumberRequest.min_price:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
-	15, // 2: byte.v.forge.sms.providers.smsbower.v1.SmsBowerGetNumberRequest.max_price:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
-	2,  // 3: byte.v.forge.sms.providers.smsbower.v1.SmsBowerGetNumberRequest.provider_selection:type_name -> byte.v.forge.sms.providers.smsbower.v1.SmsBowerProviderSelection
-	3,  // 4: byte.v.forge.sms.providers.smsbower.v1.SmsBowerGetNumberRequest.phone_exceptions:type_name -> byte.v.forge.sms.providers.smsbower.v1.SmsBowerPhoneException
-	15, // 5: byte.v.forge.sms.providers.smsbower.v1.SmsBowerGetNumberV2Response.activation_cost:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
-	16, // 6: byte.v.forge.sms.providers.smsbower.v1.SmsBowerGetNumberV2Response.activation_time:type_name -> google.protobuf.Timestamp
-	0,  // 7: byte.v.forge.sms.providers.smsbower.v1.SmsBowerSetStatusRequest.status:type_name -> byte.v.forge.sms.providers.smsbower.v1.SmsBowerActivationStatusCode
-	17, // 8: byte.v.forge.sms.providers.smsbower.v1.SmsBowerCountry.country:type_name -> byte.v.forge.sms.internal.v1.ProviderSmsCountry
-	18, // 9: byte.v.forge.sms.providers.smsbower.v1.SmsBowerPriceOffer.offer:type_name -> byte.v.forge.sms.internal.v1.ProviderSmsPriceOffer
-	16, // 10: byte.v.forge.sms.providers.smsbower.v1.SmsBowerInboundWebhookRequest.received_at:type_name -> google.protobuf.Timestamp
-	11, // [11:11] is the sub-list for method output_type
-	11, // [11:11] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	12, // 0: byte.v.forge.sms.providers.smsbower.v1.SmsBowerProviderConfig.config:type_name -> byte.v.forge.sms.internal.v1.SmsProviderConfig
+	13, // 1: byte.v.forge.sms.providers.smsbower.v1.SmsBowerGetNumberV2Response.order_cost:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
+	14, // 2: byte.v.forge.sms.providers.smsbower.v1.SmsBowerGetNumberV2Response.order_time:type_name -> google.protobuf.Timestamp
+	0,  // 3: byte.v.forge.sms.providers.smsbower.v1.SmsBowerSetStatusRequest.status:type_name -> byte.v.forge.sms.providers.smsbower.v1.SmsBowerOrderStatusCode
+	15, // 4: byte.v.forge.sms.providers.smsbower.v1.SmsBowerCountry.country:type_name -> byte.v.forge.contracts.sms.v1.SmsCountry
+	16, // 5: byte.v.forge.sms.providers.smsbower.v1.SmsBowerPriceOffer.offer:type_name -> byte.v.forge.contracts.sms.v1.SmsPriceOffer
+	14, // 6: byte.v.forge.sms.providers.smsbower.v1.SmsBowerInboundWebhookRequest.received_at:type_name -> google.protobuf.Timestamp
+	7,  // [7:7] is the sub-list for method output_type
+	7,  // [7:7] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_init() }
@@ -1051,7 +874,7 @@ func file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDesc), len(file_byte_v_forge_sms_providers_smsbower_v1_smsbower_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   13,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

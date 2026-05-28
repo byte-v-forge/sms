@@ -7,7 +7,7 @@
 package fivesimv1
 
 import (
-	v11 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/sms/v1"
+	v11 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/sms/v1"
 	v1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -86,17 +86,10 @@ func (FiveSimOrderStatus) EnumDescriptor() ([]byte, []int) {
 }
 
 type FiveSimProviderConfig struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	Config           *v1.SmsProviderConfig  `protobuf:"bytes,1,opt,name=config,proto3" json:"config,omitempty"`
-	DefaultOperator  string                 `protobuf:"bytes,2,opt,name=default_operator,json=defaultOperator,proto3" json:"default_operator,omitempty"`
-	Ref              string                 `protobuf:"bytes,3,opt,name=ref,proto3" json:"ref,omitempty"`
-	CurrencyCode     string                 `protobuf:"bytes,4,opt,name=currency_code,json=currencyCode,proto3" json:"currency_code,omitempty"`
-	Reuse            bool                   `protobuf:"varint,5,opt,name=reuse,proto3" json:"reuse,omitempty"`
-	Voice            bool                   `protobuf:"varint,6,opt,name=voice,proto3" json:"voice,omitempty"`
-	Forwarding       bool                   `protobuf:"varint,7,opt,name=forwarding,proto3" json:"forwarding,omitempty"`
-	ForwardingNumber string                 `protobuf:"bytes,8,opt,name=forwarding_number,json=forwardingNumber,proto3" json:"forwarding_number,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Config        *v1.SmsProviderConfig  `protobuf:"bytes,1,opt,name=config,proto3" json:"config,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *FiveSimProviderConfig) Reset() {
@@ -136,84 +129,29 @@ func (x *FiveSimProviderConfig) GetConfig() *v1.SmsProviderConfig {
 	return nil
 }
 
-func (x *FiveSimProviderConfig) GetDefaultOperator() string {
-	if x != nil {
-		return x.DefaultOperator
-	}
-	return ""
+type FiveSimBuyOrderRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Country       string                 `protobuf:"bytes,1,opt,name=country,proto3" json:"country,omitempty"`
+	Operator      string                 `protobuf:"bytes,2,opt,name=operator,proto3" json:"operator,omitempty"`
+	Product       string                 `protobuf:"bytes,3,opt,name=product,proto3" json:"product,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
-func (x *FiveSimProviderConfig) GetRef() string {
-	if x != nil {
-		return x.Ref
-	}
-	return ""
-}
-
-func (x *FiveSimProviderConfig) GetCurrencyCode() string {
-	if x != nil {
-		return x.CurrencyCode
-	}
-	return ""
-}
-
-func (x *FiveSimProviderConfig) GetReuse() bool {
-	if x != nil {
-		return x.Reuse
-	}
-	return false
-}
-
-func (x *FiveSimProviderConfig) GetVoice() bool {
-	if x != nil {
-		return x.Voice
-	}
-	return false
-}
-
-func (x *FiveSimProviderConfig) GetForwarding() bool {
-	if x != nil {
-		return x.Forwarding
-	}
-	return false
-}
-
-func (x *FiveSimProviderConfig) GetForwardingNumber() string {
-	if x != nil {
-		return x.ForwardingNumber
-	}
-	return ""
-}
-
-type FiveSimBuyActivationRequest struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	Country          string                 `protobuf:"bytes,1,opt,name=country,proto3" json:"country,omitempty"`
-	Operator         string                 `protobuf:"bytes,2,opt,name=operator,proto3" json:"operator,omitempty"`
-	Product          string                 `protobuf:"bytes,3,opt,name=product,proto3" json:"product,omitempty"`
-	MaxPrice         *v11.DecimalMoney      `protobuf:"bytes,4,opt,name=max_price,json=maxPrice,proto3" json:"max_price,omitempty"`
-	Reuse            bool                   `protobuf:"varint,5,opt,name=reuse,proto3" json:"reuse,omitempty"`
-	Voice            bool                   `protobuf:"varint,6,opt,name=voice,proto3" json:"voice,omitempty"`
-	Forwarding       bool                   `protobuf:"varint,7,opt,name=forwarding,proto3" json:"forwarding,omitempty"`
-	ForwardingNumber string                 `protobuf:"bytes,8,opt,name=forwarding_number,json=forwardingNumber,proto3" json:"forwarding_number,omitempty"`
-	Ref              string                 `protobuf:"bytes,9,opt,name=ref,proto3" json:"ref,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
-}
-
-func (x *FiveSimBuyActivationRequest) Reset() {
-	*x = FiveSimBuyActivationRequest{}
+func (x *FiveSimBuyOrderRequest) Reset() {
+	*x = FiveSimBuyOrderRequest{}
 	mi := &file_byte_v_forge_sms_providers_fivesim_v1_fivesim_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *FiveSimBuyActivationRequest) String() string {
+func (x *FiveSimBuyOrderRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*FiveSimBuyActivationRequest) ProtoMessage() {}
+func (*FiveSimBuyOrderRequest) ProtoMessage() {}
 
-func (x *FiveSimBuyActivationRequest) ProtoReflect() protoreflect.Message {
+func (x *FiveSimBuyOrderRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_byte_v_forge_sms_providers_fivesim_v1_fivesim_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -225,70 +163,28 @@ func (x *FiveSimBuyActivationRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use FiveSimBuyActivationRequest.ProtoReflect.Descriptor instead.
-func (*FiveSimBuyActivationRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use FiveSimBuyOrderRequest.ProtoReflect.Descriptor instead.
+func (*FiveSimBuyOrderRequest) Descriptor() ([]byte, []int) {
 	return file_byte_v_forge_sms_providers_fivesim_v1_fivesim_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *FiveSimBuyActivationRequest) GetCountry() string {
+func (x *FiveSimBuyOrderRequest) GetCountry() string {
 	if x != nil {
 		return x.Country
 	}
 	return ""
 }
 
-func (x *FiveSimBuyActivationRequest) GetOperator() string {
+func (x *FiveSimBuyOrderRequest) GetOperator() string {
 	if x != nil {
 		return x.Operator
 	}
 	return ""
 }
 
-func (x *FiveSimBuyActivationRequest) GetProduct() string {
+func (x *FiveSimBuyOrderRequest) GetProduct() string {
 	if x != nil {
 		return x.Product
-	}
-	return ""
-}
-
-func (x *FiveSimBuyActivationRequest) GetMaxPrice() *v11.DecimalMoney {
-	if x != nil {
-		return x.MaxPrice
-	}
-	return nil
-}
-
-func (x *FiveSimBuyActivationRequest) GetReuse() bool {
-	if x != nil {
-		return x.Reuse
-	}
-	return false
-}
-
-func (x *FiveSimBuyActivationRequest) GetVoice() bool {
-	if x != nil {
-		return x.Voice
-	}
-	return false
-}
-
-func (x *FiveSimBuyActivationRequest) GetForwarding() bool {
-	if x != nil {
-		return x.Forwarding
-	}
-	return false
-}
-
-func (x *FiveSimBuyActivationRequest) GetForwardingNumber() string {
-	if x != nil {
-		return x.ForwardingNumber
-	}
-	return ""
-}
-
-func (x *FiveSimBuyActivationRequest) GetRef() string {
-	if x != nil {
-		return x.Ref
 	}
 	return ""
 }
@@ -510,13 +406,13 @@ func (x *FiveSimOrder) GetCountry() string {
 }
 
 type FiveSimPriceOffer struct {
-	state         protoimpl.MessageState    `protogen:"open.v1"`
-	Offer         *v1.ProviderSmsPriceOffer `protobuf:"bytes,1,opt,name=offer,proto3" json:"offer,omitempty"`
-	Country       string                    `protobuf:"bytes,2,opt,name=country,proto3" json:"country,omitempty"`
-	Product       string                    `protobuf:"bytes,3,opt,name=product,proto3" json:"product,omitempty"`
-	Operator      string                    `protobuf:"bytes,4,opt,name=operator,proto3" json:"operator,omitempty"`
-	Count         int32                     `protobuf:"varint,5,opt,name=count,proto3" json:"count,omitempty"`
-	SuccessRate   float64                   `protobuf:"fixed64,6,opt,name=success_rate,json=successRate,proto3" json:"success_rate,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Offer         *v11.SmsPriceOffer     `protobuf:"bytes,1,opt,name=offer,proto3" json:"offer,omitempty"`
+	Country       string                 `protobuf:"bytes,2,opt,name=country,proto3" json:"country,omitempty"`
+	Product       string                 `protobuf:"bytes,3,opt,name=product,proto3" json:"product,omitempty"`
+	Operator      string                 `protobuf:"bytes,4,opt,name=operator,proto3" json:"operator,omitempty"`
+	Count         int32                  `protobuf:"varint,5,opt,name=count,proto3" json:"count,omitempty"`
+	SuccessRate   float64                `protobuf:"fixed64,6,opt,name=success_rate,json=successRate,proto3" json:"success_rate,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -551,7 +447,7 @@ func (*FiveSimPriceOffer) Descriptor() ([]byte, []int) {
 	return file_byte_v_forge_sms_providers_fivesim_v1_fivesim_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *FiveSimPriceOffer) GetOffer() *v1.ProviderSmsPriceOffer {
+func (x *FiveSimPriceOffer) GetOffer() *v11.SmsPriceOffer {
 	if x != nil {
 		return x.Offer
 	}
@@ -597,30 +493,14 @@ var File_byte_v_forge_sms_providers_fivesim_v1_fivesim_proto protoreflect.FileDe
 
 const file_byte_v_forge_sms_providers_fivesim_v1_fivesim_proto_rawDesc = "" +
 	"\n" +
-	"3byte/v/forge/sms/providers/fivesim/v1/fivesim.proto\x12%byte.v.forge.sms.providers.fivesim.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a'byte/v/forge/contracts/sms/v1/sms.proto\x1a/byte/v/forge/sms/internal/v1/sms_internal.proto\"\xbb\x02\n" +
+	"3byte/v/forge/sms/providers/fivesim/v1/fivesim.proto\x12%byte.v.forge.sms.providers.fivesim.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a'byte/v/forge/contracts/sms/v1/sms.proto\x1a/byte/v/forge/sms/internal/v1/sms_internal.proto\"f\n" +
 	"\x15FiveSimProviderConfig\x12G\n" +
-	"\x06config\x18\x01 \x01(\v2/.byte.v.forge.sms.internal.v1.SmsProviderConfigR\x06config\x12)\n" +
-	"\x10default_operator\x18\x02 \x01(\tR\x0fdefaultOperator\x12\x10\n" +
-	"\x03ref\x18\x03 \x01(\tR\x03ref\x12#\n" +
-	"\rcurrency_code\x18\x04 \x01(\tR\fcurrencyCode\x12\x14\n" +
-	"\x05reuse\x18\x05 \x01(\bR\x05reuse\x12\x14\n" +
-	"\x05voice\x18\x06 \x01(\bR\x05voice\x12\x1e\n" +
-	"\n" +
-	"forwarding\x18\a \x01(\bR\n" +
-	"forwarding\x12+\n" +
-	"\x11forwarding_number\x18\b \x01(\tR\x10forwardingNumber\"\xc2\x02\n" +
-	"\x1bFiveSimBuyActivationRequest\x12\x18\n" +
+	"\x06config\x18\x01 \x01(\v2/.byte.v.forge.sms.internal.v1.SmsProviderConfigR\x06configJ\x04\b\x02\x10\t\"t\n" +
+	"\x16FiveSimBuyOrderRequest\x12\x18\n" +
 	"\acountry\x18\x01 \x01(\tR\acountry\x12\x1a\n" +
 	"\boperator\x18\x02 \x01(\tR\boperator\x12\x18\n" +
-	"\aproduct\x18\x03 \x01(\tR\aproduct\x12H\n" +
-	"\tmax_price\x18\x04 \x01(\v2+.byte.v.forge.contracts.sms.v1.DecimalMoneyR\bmaxPrice\x12\x14\n" +
-	"\x05reuse\x18\x05 \x01(\bR\x05reuse\x12\x14\n" +
-	"\x05voice\x18\x06 \x01(\bR\x05voice\x12\x1e\n" +
-	"\n" +
-	"forwarding\x18\a \x01(\bR\n" +
-	"forwarding\x12+\n" +
-	"\x11forwarding_number\x18\b \x01(\tR\x10forwardingNumber\x12\x10\n" +
-	"\x03ref\x18\t \x01(\tR\x03ref\"\xd3\x01\n" +
+	"\aproduct\x18\x03 \x01(\tR\aproductJ\x04\b\x04\x10\x05J\x04\b\x05\x10\n" +
+	"\"\xd3\x01\n" +
 	"\n" +
 	"FiveSimSms\x12\x15\n" +
 	"\x06sms_id\x18\x01 \x01(\x03R\x05smsId\x129\n" +
@@ -647,9 +527,9 @@ const file_byte_v_forge_sms_providers_fivesim_v1_fivesim_proto_rawDesc = "" +
 	" \x01(\bR\n" +
 	"forwarding\x12+\n" +
 	"\x11forwarding_number\x18\v \x01(\tR\x10forwardingNumber\x12\x18\n" +
-	"\acountry\x18\f \x01(\tR\acountry\"\xe7\x01\n" +
-	"\x11FiveSimPriceOffer\x12I\n" +
-	"\x05offer\x18\x01 \x01(\v23.byte.v.forge.sms.internal.v1.ProviderSmsPriceOfferR\x05offer\x12\x18\n" +
+	"\acountry\x18\f \x01(\tR\acountry\"\xe0\x01\n" +
+	"\x11FiveSimPriceOffer\x12B\n" +
+	"\x05offer\x18\x01 \x01(\v2,.byte.v.forge.contracts.sms.v1.SmsPriceOfferR\x05offer\x12\x18\n" +
 	"\acountry\x18\x02 \x01(\tR\acountry\x12\x18\n" +
 	"\aproduct\x18\x03 \x01(\tR\aproduct\x12\x1a\n" +
 	"\boperator\x18\x04 \x01(\tR\boperator\x12\x14\n" +
@@ -680,33 +560,32 @@ func file_byte_v_forge_sms_providers_fivesim_v1_fivesim_proto_rawDescGZIP() []by
 var file_byte_v_forge_sms_providers_fivesim_v1_fivesim_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_byte_v_forge_sms_providers_fivesim_v1_fivesim_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_byte_v_forge_sms_providers_fivesim_v1_fivesim_proto_goTypes = []any{
-	(FiveSimOrderStatus)(0),             // 0: byte.v.forge.sms.providers.fivesim.v1.FiveSimOrderStatus
-	(*FiveSimProviderConfig)(nil),       // 1: byte.v.forge.sms.providers.fivesim.v1.FiveSimProviderConfig
-	(*FiveSimBuyActivationRequest)(nil), // 2: byte.v.forge.sms.providers.fivesim.v1.FiveSimBuyActivationRequest
-	(*FiveSimSms)(nil),                  // 3: byte.v.forge.sms.providers.fivesim.v1.FiveSimSms
-	(*FiveSimOrder)(nil),                // 4: byte.v.forge.sms.providers.fivesim.v1.FiveSimOrder
-	(*FiveSimPriceOffer)(nil),           // 5: byte.v.forge.sms.providers.fivesim.v1.FiveSimPriceOffer
-	(*v1.SmsProviderConfig)(nil),        // 6: byte.v.forge.sms.internal.v1.SmsProviderConfig
-	(*v11.DecimalMoney)(nil),            // 7: byte.v.forge.contracts.sms.v1.DecimalMoney
-	(*timestamppb.Timestamp)(nil),       // 8: google.protobuf.Timestamp
-	(*v1.ProviderSmsPriceOffer)(nil),    // 9: byte.v.forge.sms.internal.v1.ProviderSmsPriceOffer
+	(FiveSimOrderStatus)(0),        // 0: byte.v.forge.sms.providers.fivesim.v1.FiveSimOrderStatus
+	(*FiveSimProviderConfig)(nil),  // 1: byte.v.forge.sms.providers.fivesim.v1.FiveSimProviderConfig
+	(*FiveSimBuyOrderRequest)(nil), // 2: byte.v.forge.sms.providers.fivesim.v1.FiveSimBuyOrderRequest
+	(*FiveSimSms)(nil),             // 3: byte.v.forge.sms.providers.fivesim.v1.FiveSimSms
+	(*FiveSimOrder)(nil),           // 4: byte.v.forge.sms.providers.fivesim.v1.FiveSimOrder
+	(*FiveSimPriceOffer)(nil),      // 5: byte.v.forge.sms.providers.fivesim.v1.FiveSimPriceOffer
+	(*v1.SmsProviderConfig)(nil),   // 6: byte.v.forge.sms.internal.v1.SmsProviderConfig
+	(*timestamppb.Timestamp)(nil),  // 7: google.protobuf.Timestamp
+	(*v11.DecimalMoney)(nil),       // 8: byte.v.forge.contracts.sms.v1.DecimalMoney
+	(*v11.SmsPriceOffer)(nil),      // 9: byte.v.forge.contracts.sms.v1.SmsPriceOffer
 }
 var file_byte_v_forge_sms_providers_fivesim_v1_fivesim_proto_depIdxs = []int32{
-	6,  // 0: byte.v.forge.sms.providers.fivesim.v1.FiveSimProviderConfig.config:type_name -> byte.v.forge.sms.internal.v1.SmsProviderConfig
-	7,  // 1: byte.v.forge.sms.providers.fivesim.v1.FiveSimBuyActivationRequest.max_price:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
-	8,  // 2: byte.v.forge.sms.providers.fivesim.v1.FiveSimSms.created_at:type_name -> google.protobuf.Timestamp
-	8,  // 3: byte.v.forge.sms.providers.fivesim.v1.FiveSimSms.sent_at:type_name -> google.protobuf.Timestamp
-	8,  // 4: byte.v.forge.sms.providers.fivesim.v1.FiveSimOrder.created_at:type_name -> google.protobuf.Timestamp
-	7,  // 5: byte.v.forge.sms.providers.fivesim.v1.FiveSimOrder.price:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
-	0,  // 6: byte.v.forge.sms.providers.fivesim.v1.FiveSimOrder.status:type_name -> byte.v.forge.sms.providers.fivesim.v1.FiveSimOrderStatus
-	8,  // 7: byte.v.forge.sms.providers.fivesim.v1.FiveSimOrder.expires_at:type_name -> google.protobuf.Timestamp
-	3,  // 8: byte.v.forge.sms.providers.fivesim.v1.FiveSimOrder.sms:type_name -> byte.v.forge.sms.providers.fivesim.v1.FiveSimSms
-	9,  // 9: byte.v.forge.sms.providers.fivesim.v1.FiveSimPriceOffer.offer:type_name -> byte.v.forge.sms.internal.v1.ProviderSmsPriceOffer
-	10, // [10:10] is the sub-list for method output_type
-	10, // [10:10] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	6, // 0: byte.v.forge.sms.providers.fivesim.v1.FiveSimProviderConfig.config:type_name -> byte.v.forge.sms.internal.v1.SmsProviderConfig
+	7, // 1: byte.v.forge.sms.providers.fivesim.v1.FiveSimSms.created_at:type_name -> google.protobuf.Timestamp
+	7, // 2: byte.v.forge.sms.providers.fivesim.v1.FiveSimSms.sent_at:type_name -> google.protobuf.Timestamp
+	7, // 3: byte.v.forge.sms.providers.fivesim.v1.FiveSimOrder.created_at:type_name -> google.protobuf.Timestamp
+	8, // 4: byte.v.forge.sms.providers.fivesim.v1.FiveSimOrder.price:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
+	0, // 5: byte.v.forge.sms.providers.fivesim.v1.FiveSimOrder.status:type_name -> byte.v.forge.sms.providers.fivesim.v1.FiveSimOrderStatus
+	7, // 6: byte.v.forge.sms.providers.fivesim.v1.FiveSimOrder.expires_at:type_name -> google.protobuf.Timestamp
+	3, // 7: byte.v.forge.sms.providers.fivesim.v1.FiveSimOrder.sms:type_name -> byte.v.forge.sms.providers.fivesim.v1.FiveSimSms
+	9, // 8: byte.v.forge.sms.providers.fivesim.v1.FiveSimPriceOffer.offer:type_name -> byte.v.forge.contracts.sms.v1.SmsPriceOffer
+	9, // [9:9] is the sub-list for method output_type
+	9, // [9:9] is the sub-list for method input_type
+	9, // [9:9] is the sub-list for extension type_name
+	9, // [9:9] is the sub-list for extension extendee
+	0, // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_byte_v_forge_sms_providers_fivesim_v1_fivesim_proto_init() }

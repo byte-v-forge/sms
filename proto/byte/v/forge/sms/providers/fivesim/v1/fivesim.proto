@@ -25,25 +25,15 @@ enum FiveSimOrderStatus {
 
 message FiveSimProviderConfig {
   byte.v.forge.sms.internal.v1.SmsProviderConfig config = 1;
-  string default_operator = 2;
-  string ref = 3;
-  string currency_code = 4;
-  bool reuse = 5;
-  bool voice = 6;
-  bool forwarding = 7;
-  string forwarding_number = 8;
+  reserved 2 to 8;
 }
 
-message FiveSimBuyActivationRequest {
+message FiveSimBuyOrderRequest {
   string country = 1;
   string operator = 2;
   string product = 3;
-  byte.v.forge.contracts.sms.v1.DecimalMoney max_price = 4;
-  bool reuse = 5;
-  bool voice = 6;
-  bool forwarding = 7;
-  string forwarding_number = 8;
-  string ref = 9;
+  reserved 4;
+  reserved 5 to 9;
 }
 
 message FiveSimSms {
@@ -71,7 +61,7 @@ message FiveSimOrder {
 }
 
 message FiveSimPriceOffer {
-  byte.v.forge.sms.internal.v1.ProviderSmsPriceOffer offer = 1;
+  byte.v.forge.contracts.sms.v1.SmsPriceOffer offer = 1;
   string country = 2;
   string product = 3;
   string operator = 4;

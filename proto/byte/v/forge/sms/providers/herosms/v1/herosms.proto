@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package byte.v.forge.sms.providers.herosms.v1;
 
-import "byte/v/forge/contracts/sms/v1/sms.proto";
 import "byte/v/forge/sms/internal/v1/sms_internal.proto";
 
 option csharp_namespace = "ByteVForge.Sms.Providers.HeroSms.V1";
@@ -12,35 +11,32 @@ option java_outer_classname = "HeroSmsProto";
 option java_package = "com.bytevforge.sms.providers.herosms.v1";
 option php_namespace = "ByteVForge\\Sms\\Providers\\HeroSms\\V1";
 
-enum HeroSmsActivationStatusCode {
-  HERO_SMS_ACTIVATION_STATUS_CODE_UNSPECIFIED = 0;
-  HERO_SMS_ACTIVATION_STATUS_CODE_READY = 1;
-  HERO_SMS_ACTIVATION_STATUS_CODE_RETRY_GET = 3;
-  HERO_SMS_ACTIVATION_STATUS_CODE_COMPLETE = 6;
-  HERO_SMS_ACTIVATION_STATUS_CODE_CANCEL = 8;
+enum HeroSmsOrderStatusCode {
+  HERO_SMS_ORDER_STATUS_CODE_UNSPECIFIED = 0;
+  HERO_SMS_ORDER_STATUS_CODE_READY = 1;
+  HERO_SMS_ORDER_STATUS_CODE_RETRY_GET = 3;
+  HERO_SMS_ORDER_STATUS_CODE_COMPLETE = 6;
+  HERO_SMS_ORDER_STATUS_CODE_CANCEL = 8;
 }
 
 message HeroSmsProviderConfig {
   byte.v.forge.sms.internal.v1.SmsProviderConfig config = 1;
-  int32 default_country_id = 2;
-  string default_country_calling_code = 3;
-  string default_upstream_service_key = 4;
-  byte.v.forge.contracts.sms.v1.DecimalMoney default_max_price = 5;
+  reserved 2 to 5;
 }
 
 message HeroSmsGetNumberRequest {
   string upstream_service_key = 1;
   int32 country_id = 2;
-  byte.v.forge.contracts.sms.v1.DecimalMoney max_price = 3;
+  reserved 3;
 }
 
 message HeroSmsAccessNumberResponse {
-  string activation_id = 1;
+  string order_id = 1;
   string phone_number = 2;
 }
 
 message HeroSmsGetStatusRequest {
-  string activation_id = 1;
+  string order_id = 1;
 }
 
 message HeroSmsGetStatusResponse {
@@ -49,8 +45,8 @@ message HeroSmsGetStatusResponse {
 }
 
 message HeroSmsSetStatusRequest {
-  string activation_id = 1;
-  HeroSmsActivationStatusCode status = 2;
+  string order_id = 1;
+  HeroSmsOrderStatusCode status = 2;
 }
 
 message HeroSmsSetStatusResponse {
