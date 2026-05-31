@@ -12,6 +12,11 @@ export function remainingText(expiresAt?: string) {
   return `${minutes}:${String(seconds % 60).padStart(2, '0')}`;
 }
 
+export function dateTimeText(value?: string) {
+  if (!value) return '-';
+  return new Date(value).toLocaleString();
+}
+
 export function statusText(status?: string) {
   const labels: Record<string, string> = {
     SMS_ORDER_STATUS_ACQUIRE_REQUESTED: '取号中',

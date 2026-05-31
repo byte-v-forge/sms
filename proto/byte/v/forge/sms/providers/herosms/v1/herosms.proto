@@ -27,7 +27,7 @@ message HeroSmsProviderConfig {
 message HeroSmsGetNumberRequest {
   string upstream_service_key = 1;
   int32 country_id = 2;
-  reserved 3;
+  string operator = 3;
 }
 
 message HeroSmsAccessNumberResponse {

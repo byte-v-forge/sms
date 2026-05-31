@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/byte-v-forge/common-lib/eventbus"
@@ -21,48 +20,29 @@ type OrderCancelWorker struct {
 
 func RunOrderCancelWorker(ctx context.Context, consumer eventbus.Consumer, service *app.OrderService) error {
 	worker := &OrderCancelWorker{service: service}
-	return eventbus.RunConsumerWorker(ctx, eventbus.ConsumerWorkerConfig{
-		Name:     "sms order cancel requests",
-		Consumer: consumer,
-		Handler:  worker.handle,
+	return eventbus.RunTypedConsumerWorker(ctx, eventbus.TypedConsumerWorkerConfig[*smsinternalv1.SmsOrderCancelRequest]{
+		Name:           "sms order cancel requests",
+		Consumer:       consumer,
+		NewMessage:     func() *smsinternalv1.SmsOrderCancelRequest { return &smsinternalv1.SmsOrderCancelRequest{} },
+		Validate:       func(request *smsinternalv1.SmsOrderCancelRequest) error { return validateOrderID(request.GetOrderId()) },
+		Handler:        worker.handle,
+		MalformedLabel: "terminate malformed sms order cancel request",
 	})
 }
 
-func (w *OrderCancelWorker) handle(ctx context.Context, message eventbus.ReceivedMessage) {
-	request, ok := decodeCancelRequest(message)
-	if !ok {
-		eventbus.TermMessage(ctx, message, "terminate malformed sms order cancel request", nil)
-		return
-	}
+func (w *OrderCancelWorker) handle(ctx context.Context, request *smsinternalv1.SmsOrderCancelRequest, _ eventbus.ReceivedMessage) eventbus.HandlerResult {
 	order, err := w.service.RunCancelRequest(ctx, request.GetOrderId(), request.GetRequestId())
 	if err == nil {
-		eventbus.AckMessage(ctx, message, "ack sms order cancel request", nil)
-		return
+		return eventbus.AckResult("ack sms order cancel request")
 	}
 	log.Printf("sms order cancel failed: order_id=%s error=%v", request.GetOrderId(), err)
 	if delay, ok := cancelRetryDelay(err, time.Now()); ok {
-		eventbus.NakMessageDelay(ctx, message, delay, "delay sms order cancel retry", nil)
-		return
+		return eventbus.NakResult(delay, "delay sms order cancel retry")
 	}
 	if cancelErrorRetryable(err) {
-		delay := w.cancelDelay(order)
-		eventbus.NakMessageDelay(ctx, message, delay, "retry sms order cancel", nil)
-		return
+		return eventbus.NakResult(w.cancelDelay(order), "retry sms order cancel")
 	}
-	eventbus.TermMessage(ctx, message, "terminate non-retryable sms order cancel request", nil)
-}
-
-func decodeCancelRequest(message eventbus.ReceivedMessage) (*smsinternalv1.SmsOrderCancelRequest, bool) {
-	request := &smsinternalv1.SmsOrderCancelRequest{}
-	if err := eventbus.UnmarshalPayload(message, request); err != nil {
-		log.Printf("decode sms order cancel request failed: event_id=%s error=%v", eventbus.EventID(message), err)
-		return nil, false
-	}
-	if strings.TrimSpace(request.GetOrderId()) == "" {
-		log.Printf("sms order cancel request missing order_id: event_id=%s", eventbus.EventID(message))
-		return nil, false
-	}
-	return request, true
+	return eventbus.TermResult("terminate non-retryable sms order cancel request")
 }
 
 func cancelRetryDelay(err error, now time.Time) (time.Duration, bool) {

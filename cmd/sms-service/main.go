@@ -2,24 +2,18 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
-	"github.com/byte-v-forge/common-lib/envx"
 	"github.com/byte-v-forge/common-lib/eventcatalog"
 	"github.com/byte-v-forge/common-lib/eventoutbox"
 	smsv1 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/sms/v1"
 	"github.com/byte-v-forge/common-lib/grpcclient"
 	"github.com/byte-v-forge/common-lib/grpchealth"
-	"github.com/byte-v-forge/common-lib/hotstream"
-	"github.com/byte-v-forge/common-lib/hotstreamnats"
-	"github.com/byte-v-forge/common-lib/natseventbus"
 	"github.com/byte-v-forge/common-lib/redisx"
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	eventbusadapter "github.com/byte-v-forge/sms/internal/adapters/eventbus"
@@ -28,18 +22,6 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 )
-
-type config struct {
-	ListenAddr         string
-	PGDSN              string
-	HTTPTimeoutSeconds int
-	ProviderHTTPProxy  string
-	DashboardHTTPAddr  string
-	DashboardStaticDir string
-	PlatformNATSURL    string
-	PlatformRedisURL   string
-	EventStreamName    string
-}
 
 func main() {
 	cfg := loadConfig()
@@ -64,6 +46,7 @@ func main() {
 	defer redisClient.Close()
 	activeStore := app.NewRedisOrderStore(redisx.NewStringStore(redisClient, "sms:order", 30*time.Minute), app.SystemClock{})
 	orderStore := app.NewCompositeOrderStore(activeStore, orderHistoryStore)
+	routeHealthStore := app.NewRedisRouteHealthStore(redisClient)
 
 	platformEventBus, closePlatformEventBus, err := newPlatformEventBus(ctx, cfg)
 	if err != nil {
@@ -78,7 +61,7 @@ func main() {
 
 	httpTimeout := time.Duration(cfg.HTTPTimeoutSeconds) * time.Second
 	orderEvents := eventbusadapter.NewOrderEventRecorder("sms-service")
-	catalogService := app.NewCatalogService(configStore, httpTimeout, cfg.ProviderHTTPProxy, app.SystemClock{})
+	catalogService := app.NewCatalogService(configStore, routeHealthStore, httpTimeout, cfg.ProviderHTTPProxy, app.SystemClock{})
 	orderService := app.NewOrderService(
 		orderStore,
 		app.NewConfiguredProviders(configStore, httpTimeout, cfg.ProviderHTTPProxy),
@@ -86,6 +69,7 @@ func main() {
 		app.RandomIDGenerator{},
 		orderEvents,
 		hotStream,
+		routeHealthStore,
 	)
 	acquireConsumer, err := platformEventBus.PullWorkerConsumer(cfg.EventStreamName, eventcatalog.SMSOrderAcquireRequested.Subject, eventcatalog.SMSOrderAcquireRequested.ConsumerDurable, 10, 60*time.Second)
 	if err != nil {
@@ -161,59 +145,4 @@ func main() {
 		stop()
 		log.Fatalf("sms-service failed: %v", err)
 	}
-}
-
-func loadConfig() config {
-	cfg := config{
-		ListenAddr:         envx.StringDefault("SMS_LISTEN_ADDR", ":50051"),
-		PGDSN:              envx.StringDefault("SMS_PG_DSN", envx.StringDefault("PG_DSN", "")),
-		HTTPTimeoutSeconds: mustEnvInt("SMS_HTTP_TIMEOUT_SECONDS", 20),
-		ProviderHTTPProxy:  envx.StringDefault("SMS_PROVIDER_HTTP_PROXY", ""),
-		DashboardHTTPAddr:  envx.StringDefault("SMS_DASHBOARD_HTTP_ADDR", ":8080"),
-		DashboardStaticDir: envx.StringDefault("SMS_DASHBOARD_STATIC_DIR", "/app/dashboard/sms"),
-		PlatformNATSURL:    envx.StringDefault("PLATFORM_NATS_URL", ""),
-		PlatformRedisURL:   envx.StringDefault("PLATFORM_REDIS_URL", ""),
-		EventStreamName:    envx.StringDefault("PLATFORM_EVENT_STREAM_NAME", natseventbus.DefaultStream),
-	}
-	if cfg.HTTPTimeoutSeconds <= 0 {
-		cfg.HTTPTimeoutSeconds = 20
-	}
-	return cfg
-}
-
-func newPlatformEventBus(ctx context.Context, cfg config) (*natseventbus.Bus, func(), error) {
-	if strings.TrimSpace(cfg.PlatformNATSURL) == "" {
-		return nil, nil, fmt.Errorf("PLATFORM_NATS_URL is required for SMS order polling")
-	}
-	bus, err := natseventbus.Connect(natseventbus.Config{
-		URL:        cfg.PlatformNATSURL,
-		ClientName: "sms-service",
-	})
-	if err != nil {
-		return nil, nil, err
-	}
-	return bus, bus.Close, nil
-}
-
-func newSMSHotStreamBus(ctx context.Context, cfg config) (hotstream.Bus, func(), error) {
-	if strings.TrimSpace(cfg.PlatformNATSURL) == "" {
-		return nil, nil, fmt.Errorf("PLATFORM_NATS_URL is required for SMS hotstream")
-	}
-	bus, err := hotstreamnats.Connect(ctx, hotstreamnats.Config{
-		URL:        cfg.PlatformNATSURL,
-		ClientName: "sms-service",
-		Subject:    hotstream.ServiceStateSubject("sms"),
-	})
-	if err != nil {
-		return nil, nil, err
-	}
-	return bus, bus.Close, nil
-}
-
-func mustEnvInt(name string, fallback int) int {
-	parsed, err := envx.IntStrict(name, fallback)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return parsed
 }

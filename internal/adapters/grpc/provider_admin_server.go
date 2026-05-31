@@ -76,6 +76,18 @@ func (s *ProviderAdminServer) ListOrders(ctx context.Context, request *smsintern
 	return &smsinternalv1.ListOrdersResponse{Orders: out}, nil
 }
 
+func (s *ProviderAdminServer) ListOrderCodes(ctx context.Context, request *smsinternalv1.ListOrderCodesRequest) (*smsinternalv1.ListOrderCodesResponse, error) {
+	codes, err := s.service.ListOrderCodes(ctx, request.GetOrderIds(), int(request.GetLimitPerOrder()))
+	if err != nil {
+		return &smsinternalv1.ListOrderCodesResponse{Error: toProviderError(err)}, nil
+	}
+	out := make([]*smsinternalv1.SmsOrderCodeView, 0, len(codes))
+	for _, code := range codes {
+		out = append(out, toOrderCodeView(code))
+	}
+	return &smsinternalv1.ListOrderCodesResponse{Codes: out}, nil
+}
+
 func (s *ProviderAdminServer) CancelOrder(ctx context.Context, request *smsinternalv1.CancelProviderOrderRequest) (*smsinternalv1.CancelProviderOrderResponse, error) {
 	order, err := s.service.CancelOrder(ctx, request.GetOrderId(), request.GetRequestId())
 	if err != nil {
@@ -91,6 +103,13 @@ func toOrderView(order core.Order) *smsinternalv1.SmsOrderView {
 	return &smsinternalv1.SmsOrderView{
 		Order:       toProtoOrder(order),
 		ProviderKey: order.ProviderKey,
+	}
+}
+
+func toOrderCodeView(code core.OrderCode) *smsinternalv1.SmsOrderCodeView {
+	return &smsinternalv1.SmsOrderCodeView{
+		OrderId: code.OrderID,
+		Code:    toProtoCode(&code.Code),
 	}
 }
 

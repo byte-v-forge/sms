@@ -1,22 +1,24 @@
 import { useState } from 'react';
 import { Ban, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@byte-v-forge/common-ui';
-import type { SmsOrderView } from '../proto/byte/v/forge/sms/internal/v1/sms_internal';
-import { canCancelStatus, moneyText, remainingText, statusText } from './sms-format';
+import type { SmsOrderCodeView, SmsOrderView } from '../proto/byte/v/forge/sms/internal/v1/sms_internal';
+import { canCancelStatus, dateTimeText, moneyText, remainingText, statusText } from './sms-format';
 
 type OrdersTabProps = {
   orders: SmsOrderView[];
+  codes: SmsOrderCodeView[];
   cancelingId?: string;
   onCancel: (id: string) => void;
 };
 
-export function OrdersTab({ orders, cancelingId, onCancel }: OrdersTabProps) {
+export function OrdersTab({ orders, codes, cancelingId, onCancel }: OrdersTabProps) {
   const [mode, setMode] = useState<'active' | 'history'>('active');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const rows = orders.filter((item) => mode === 'active' ? canCancelStatus(item.order?.status) : !canCancelStatus(item.order?.status));
   const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
   const visible = rows.slice(page * pageSize, page * pageSize + pageSize);
+  const codesByOrder = groupCodes(codes);
 
   function changeMode(next: 'active' | 'history') {
     setMode(next);
@@ -48,7 +50,7 @@ export function OrdersTab({ orders, cancelingId, onCancel }: OrdersTabProps) {
         <Table>
           <TableHeader><TableRow><TableHead>号码</TableHead><TableHead>Provider</TableHead><TableHead>状态</TableHead><TableHead>剩余</TableHead><TableHead>最新OTP</TableHead><TableHead>价格</TableHead><TableHead /></TableRow></TableHeader>
           <TableBody>
-            {visible.map((item) => <OrderRow key={item.order?.order_id || item.provider_key} item={item} cancelingId={cancelingId} onCancel={onCancel} />)}
+            {visible.map((item) => <OrderRow key={item.order?.order_id || item.provider_key} item={item} codes={codesByOrder.get(item.order?.order_id || '') || []} cancelingId={cancelingId} onCancel={onCancel} />)}
             {visible.length === 0 && <TableRow><TableCell colSpan={7} className="h-24 text-center text-muted-foreground">暂无订单</TableCell></TableRow>}
           </TableBody>
         </Table>
@@ -57,7 +59,7 @@ export function OrdersTab({ orders, cancelingId, onCancel }: OrdersTabProps) {
   );
 }
 
-function OrderRow({ item, cancelingId, onCancel }: { item: SmsOrderView; cancelingId?: string; onCancel: (id: string) => void }) {
+function OrderRow({ item, codes, cancelingId, onCancel }: { item: SmsOrderView; codes: SmsOrderCodeView[]; cancelingId?: string; onCancel: (id: string) => void }) {
   const order = item.order;
   const id = order?.order_id || '';
   const cancelable = canCancelStatus(order?.status);
@@ -67,11 +69,36 @@ function OrderRow({ item, cancelingId, onCancel }: { item: SmsOrderView; canceli
       <TableCell>{item.provider_key || '-'}</TableCell>
       <TableCell>{statusText(order?.status)}</TableCell>
       <TableCell>{remainingText(order?.expires_at)}</TableCell>
-      <TableCell className="font-mono text-xs">-</TableCell>
+      <TableCell><CodesCell codes={codes} /></TableCell>
       <TableCell>{moneyText(order?.price)}</TableCell>
       <TableCell className="text-right">
         <Button size="icon-sm" variant="outline" disabled={!cancelable || cancelingId === id} onClick={() => onCancel(id)}><Ban className="size-4" /></Button>
       </TableCell>
     </TableRow>
   );
+}
+
+function CodesCell({ codes }: { codes: SmsOrderCodeView[] }) {
+  if (codes.length === 0) return <span className="text-muted-foreground">-</span>;
+  return (
+    <div className="grid gap-1">
+      {codes.slice(0, 3).map((item) => (
+        <div key={`${item.order_id}-${item.code?.value}-${item.code?.received_at}`} className="flex items-center gap-2">
+          <span className="font-mono text-xs">{item.code?.value || '-'}</span>
+          <span className="text-[11px] text-muted-foreground">{dateTimeText(item.code?.received_at)}</span>
+        </div>
+      ))}
+      {codes.length > 3 && <div className="text-[11px] text-muted-foreground">+{codes.length - 3} 条历史</div>}
+    </div>
+  );
+}
+
+function groupCodes(codes: SmsOrderCodeView[]) {
+  const grouped = new Map<string, SmsOrderCodeView[]>();
+  for (const item of codes) {
+    const id = item.order_id || '';
+    if (!id) continue;
+    grouped.set(id, [...(grouped.get(id) || []), item]);
+  }
+  return grouped;
 }

@@ -14,9 +14,9 @@ import (
 
 const (
 	SMSHotStreamSource        = "sms-service"
-	SMSOrderResource     = "sms.order"
+	SMSOrderResource          = "sms.order"
 	SMSProviderConfigResource = "sms.provider_config"
-	SMSOrderUpdatedEvent = "sms.order.updated"
+	SMSOrderUpdatedEvent      = "sms.order.updated"
 	SMSProviderConfigUpdated  = "sms.provider_config.updated"
 	SMSProviderConfigDeleted  = "sms.provider_config.deleted"
 )
@@ -33,6 +33,14 @@ func (s *OrderService) saveOrder(ctx context.Context, order core.Order, records 
 
 func (s *OrderService) updateOrder(ctx context.Context, order core.Order, records ...eventoutbox.Record) error {
 	if err := s.store.Update(ctx, order, records...); err != nil {
+		return err
+	}
+	s.publishOrder(ctx, order)
+	return nil
+}
+
+func (s *OrderService) recordCode(ctx context.Context, order core.Order, code core.SMSCode, records ...eventoutbox.Record) error {
+	if err := s.store.RecordCode(ctx, order, code, records...); err != nil {
 		return err
 	}
 	s.publishOrder(ctx, order)
@@ -57,10 +65,10 @@ func (s *OrderService) publishOrder(ctx context.Context, order core.Order) {
 		OccurredAt:    updatedAt,
 		CorrelationID: order.RequestID,
 		Attributes: map[string]string{
-			"order_id": order.ID,
-			"request_id":    order.RequestID,
-			"provider_key":  order.ProviderKey,
-			"status":        string(order.Status),
+			"order_id":     order.ID,
+			"request_id":   order.RequestID,
+			"provider_key": order.ProviderKey,
+			"status":       string(order.Status),
 		},
 	})
 	if err := s.hot.Publish(context.WithoutCancel(ctx), event); err != nil {

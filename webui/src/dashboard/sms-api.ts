@@ -3,6 +3,7 @@ import type {
   CancelProviderOrderResponse,
   DeleteProviderConfigResponse,
   GetProviderBalanceResponse,
+  ListOrderCodesResponse,
   ListOrdersResponse,
   SmsProviderConfig,
   SmsProviderPluginDescriptor
@@ -28,6 +29,8 @@ export type SaveSmsProviderSettingResponse = {
 export const smsKeys = {
   settingsProviders: ['sms', 'settings', 'providers'] as const,
   orders: ['sms', 'orders'] as const,
+  orderCodesRoot: ['sms', 'order-codes'] as const,
+  orderCodes: (orderIds: string[]) => ['sms', 'order-codes', orderIds.join(',')] as const,
   balance: (providerKey: string) => ['sms', 'balance', providerKey] as const
 };
 
@@ -48,7 +51,13 @@ export function getSmsProviderBalance(providerKey: string) {
 }
 
 export function listSmsOrders() {
-  return api<ListOrdersResponse>('/api/sms/orders?limit=200');
+  return api<ListOrdersResponse>('/api/sms/orders?include_final=true&limit=200');
+}
+
+export function listSmsOrderCodes(orderIds: string[], limitPerOrder = 5) {
+  const params = new URLSearchParams({ limit_per_order: String(limitPerOrder) });
+  orderIds.forEach((id) => params.append('order_id', id));
+  return api<ListOrderCodesResponse>(`/api/sms/order-codes?${params.toString()}`);
 }
 
 export function cancelSmsOrder(id: string) {

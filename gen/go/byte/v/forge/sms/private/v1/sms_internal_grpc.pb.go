@@ -26,6 +26,7 @@ const (
 	SmsProviderAdminService_DeleteProviderConfig_FullMethodName = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/DeleteProviderConfig"
 	SmsProviderAdminService_GetProviderBalance_FullMethodName   = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/GetProviderBalance"
 	SmsProviderAdminService_ListOrders_FullMethodName           = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/ListOrders"
+	SmsProviderAdminService_ListOrderCodes_FullMethodName       = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/ListOrderCodes"
 	SmsProviderAdminService_CancelOrder_FullMethodName          = "/byte.v.forge.sms.internal.v1.SmsProviderAdminService/CancelOrder"
 )
 
@@ -40,6 +41,7 @@ type SmsProviderAdminServiceClient interface {
 	DeleteProviderConfig(ctx context.Context, in *DeleteProviderConfigRequest, opts ...grpc.CallOption) (*DeleteProviderConfigResponse, error)
 	GetProviderBalance(ctx context.Context, in *GetProviderBalanceRequest, opts ...grpc.CallOption) (*GetProviderBalanceResponse, error)
 	ListOrders(ctx context.Context, in *ListOrdersRequest, opts ...grpc.CallOption) (*ListOrdersResponse, error)
+	ListOrderCodes(ctx context.Context, in *ListOrderCodesRequest, opts ...grpc.CallOption) (*ListOrderCodesResponse, error)
 	CancelOrder(ctx context.Context, in *CancelProviderOrderRequest, opts ...grpc.CallOption) (*CancelProviderOrderResponse, error)
 }
 
@@ -121,6 +123,16 @@ func (c *smsProviderAdminServiceClient) ListOrders(ctx context.Context, in *List
 	return out, nil
 }
 
+func (c *smsProviderAdminServiceClient) ListOrderCodes(ctx context.Context, in *ListOrderCodesRequest, opts ...grpc.CallOption) (*ListOrderCodesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListOrderCodesResponse)
+	err := c.cc.Invoke(ctx, SmsProviderAdminService_ListOrderCodes_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *smsProviderAdminServiceClient) CancelOrder(ctx context.Context, in *CancelProviderOrderRequest, opts ...grpc.CallOption) (*CancelProviderOrderResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CancelProviderOrderResponse)
@@ -142,6 +154,7 @@ type SmsProviderAdminServiceServer interface {
 	DeleteProviderConfig(context.Context, *DeleteProviderConfigRequest) (*DeleteProviderConfigResponse, error)
 	GetProviderBalance(context.Context, *GetProviderBalanceRequest) (*GetProviderBalanceResponse, error)
 	ListOrders(context.Context, *ListOrdersRequest) (*ListOrdersResponse, error)
+	ListOrderCodes(context.Context, *ListOrderCodesRequest) (*ListOrderCodesResponse, error)
 	CancelOrder(context.Context, *CancelProviderOrderRequest) (*CancelProviderOrderResponse, error)
 	mustEmbedUnimplementedSmsProviderAdminServiceServer()
 }
@@ -173,6 +186,9 @@ func (UnimplementedSmsProviderAdminServiceServer) GetProviderBalance(context.Con
 }
 func (UnimplementedSmsProviderAdminServiceServer) ListOrders(context.Context, *ListOrdersRequest) (*ListOrdersResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListOrders not implemented")
+}
+func (UnimplementedSmsProviderAdminServiceServer) ListOrderCodes(context.Context, *ListOrderCodesRequest) (*ListOrderCodesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListOrderCodes not implemented")
 }
 func (UnimplementedSmsProviderAdminServiceServer) CancelOrder(context.Context, *CancelProviderOrderRequest) (*CancelProviderOrderResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CancelOrder not implemented")
@@ -325,6 +341,24 @@ func _SmsProviderAdminService_ListOrders_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SmsProviderAdminService_ListOrderCodes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListOrderCodesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SmsProviderAdminServiceServer).ListOrderCodes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SmsProviderAdminService_ListOrderCodes_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SmsProviderAdminServiceServer).ListOrderCodes(ctx, req.(*ListOrderCodesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _SmsProviderAdminService_CancelOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CancelProviderOrderRequest)
 	if err := dec(in); err != nil {
@@ -377,6 +411,10 @@ var SmsProviderAdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListOrders",
 			Handler:    _SmsProviderAdminService_ListOrders_Handler,
+		},
+		{
+			MethodName: "ListOrderCodes",
+			Handler:    _SmsProviderAdminService_ListOrderCodes_Handler,
 		},
 		{
 			MethodName: "CancelOrder",

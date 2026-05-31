@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/byte-v-forge/common-lib/eventbus"
@@ -21,48 +20,30 @@ type OrderPollWorker struct {
 
 func RunOrderPollWorker(ctx context.Context, consumer eventbus.Consumer, service *app.OrderService) error {
 	worker := &OrderPollWorker{service: service}
-	return eventbus.RunConsumerWorker(ctx, eventbus.ConsumerWorkerConfig{
-		Name:     "sms order poll requests",
-		Consumer: consumer,
-		Handler:  worker.handle,
+	return eventbus.RunTypedConsumerWorker(ctx, eventbus.TypedConsumerWorkerConfig[*smsinternalv1.SmsOrderPollRequest]{
+		Name:           "sms order poll requests",
+		Consumer:       consumer,
+		NewMessage:     func() *smsinternalv1.SmsOrderPollRequest { return &smsinternalv1.SmsOrderPollRequest{} },
+		Validate:       func(request *smsinternalv1.SmsOrderPollRequest) error { return validateOrderID(request.GetOrderId()) },
+		Handler:        worker.handle,
+		MalformedLabel: "terminate malformed sms order poll request",
 	})
 }
 
-func (w *OrderPollWorker) handle(ctx context.Context, message eventbus.ReceivedMessage) {
-	request, ok := decodePollRequest(message)
-	if !ok {
-		eventbus.TermMessage(ctx, message, "terminate malformed sms order poll request", nil)
-		return
-	}
+func (w *OrderPollWorker) handle(ctx context.Context, request *smsinternalv1.SmsOrderPollRequest, _ eventbus.ReceivedMessage) eventbus.HandlerResult {
 	order, code, err := w.service.CheckCode(ctx, request.GetOrderId())
 	if err != nil {
 		log.Printf("sms order poll failed: order_id=%s error=%v", request.GetOrderId(), err)
 		if pollErrorRetryable(err) {
 			delay := w.pollDelay(ctx, order)
-			eventbus.NakMessageDelay(ctx, message, delay, "delay sms order poll retry", nil)
-			return
+			return eventbus.NakResult(delay, "delay sms order poll retry")
 		}
-		eventbus.TermMessage(ctx, message, "terminate non-retryable sms order poll request", nil)
-		return
+		return eventbus.TermResult("terminate non-retryable sms order poll request")
 	}
 	if code != nil || order.Status == core.StatusCodeReceived || order.Status.IsFinal() {
-		eventbus.AckMessage(ctx, message, "ack sms order poll request", nil)
-		return
+		return eventbus.AckResult("ack sms order poll request")
 	}
-	eventbus.NakMessageDelay(ctx, message, w.pollDelay(ctx, order), "delay sms order poll", nil)
-}
-
-func decodePollRequest(message eventbus.ReceivedMessage) (*smsinternalv1.SmsOrderPollRequest, bool) {
-	request := &smsinternalv1.SmsOrderPollRequest{}
-	if err := eventbus.UnmarshalPayload(message, request); err != nil {
-		log.Printf("decode sms order poll request failed: event_id=%s error=%v", eventbus.EventID(message), err)
-		return nil, false
-	}
-	if strings.TrimSpace(request.GetOrderId()) == "" {
-		log.Printf("sms order poll request missing order_id: event_id=%s", eventbus.EventID(message))
-		return nil, false
-	}
-	return request, true
+	return eventbus.NakResult(w.pollDelay(ctx, order), "delay sms order poll")
 }
 
 func (w *OrderPollWorker) pollDelay(ctx context.Context, order core.Order) time.Duration {

@@ -1,35 +1,52 @@
-import { useEffect, useMemo, useState } from 'react';
 import { MessageSquareText } from 'lucide-react';
-import { createHotStreamURL, ToastMessage, useHotStreamInvalidation, WorkspaceTabbedPanel, useMutation, useQuery, useQueryClient, useToastMessage } from '@byte-v-forge/common-ui';
-import { cancelSmsOrder, deleteSmsProviderSetting, listSmsOrders, listSmsProviderSettings, saveSmsProviderSetting, smsKeys, type SaveSmsProviderSettingResponse, type SmsProviderSetting } from './sms-api';
+import {
+  createHotStreamURL,
+  ToastMessage,
+  useHotStreamInvalidation,
+  WorkspaceTabbedPanel,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useToastMessage
+} from '@byte-v-forge/common-ui';
+import {
+  cancelSmsOrder,
+  deleteSmsProviderSetting,
+  listSmsOrderCodes,
+  listSmsOrders,
+  listSmsProviderSettings,
+  saveSmsProviderSetting,
+  smsKeys
+} from './sms-api';
 import { OrdersTab } from './orders-tab';
 import { SmsSettingsTab } from './sms-settings-tab';
 
 export function SmsPage() {
   const queryClient = useQueryClient();
   const toast = useToastMessage();
-  const [selectedProviderKey, setSelectedProviderKey] = useState('');
   const settingsQuery = useQuery({ queryKey: smsKeys.settingsProviders, queryFn: listSmsProviderSettings });
   const ordersQuery = useQuery({ queryKey: smsKeys.orders, queryFn: listSmsOrders });
+  const orderIds = (ordersQuery.data?.orders || []).map((item) => item.order?.order_id || '').filter(Boolean);
+  const codesQuery = useQuery({
+    queryKey: smsKeys.orderCodes(orderIds),
+    queryFn: () => listSmsOrderCodes(orderIds, 5),
+    enabled: orderIds.length > 0
+  });
   const configs = settingsQuery.data?.providers || [];
   const options = settingsQuery.data?.provider_options || [];
-  const selectedConfig = useMemo(() => configs.find((item: SmsProviderSetting) => item.provider_key === selectedProviderKey) || null, [configs, selectedProviderKey]);
 
-  useEffect(() => {
-    if (!selectedProviderKey && configs[0]?.provider_key) setSelectedProviderKey(configs[0].provider_key);
-  }, [configs, selectedProviderKey]);
   useHotStreamInvalidation({
     url: createHotStreamURL('/api/sms', { eventTypes: ['sms.order.updated', 'sms.provider_config.updated', 'sms.provider_config.deleted'] }),
     rules: [
       { queryKey: smsKeys.orders, eventTypes: ['sms.order.updated'], resourceTypes: ['sms.order'] },
+      { queryKey: smsKeys.orderCodesRoot, eventTypes: ['sms.order.updated'], resourceTypes: ['sms.order'] },
       { queryKey: smsKeys.settingsProviders, eventTypes: ['sms.provider_config.updated', 'sms.provider_config.deleted'], resourceTypes: ['sms.provider_config'] }
     ]
   });
 
   const saveMutation = useMutation({
     mutationFn: saveSmsProviderSetting,
-    onSuccess: async (resp: SaveSmsProviderSettingResponse) => {
-      if (resp.provider?.provider_key) setSelectedProviderKey(resp.provider.provider_key);
+    onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: smsKeys.settingsProviders });
       toast.showOK('接码源已保存');
     },
@@ -38,7 +55,6 @@ export function SmsPage() {
   const deleteMutation = useMutation({
     mutationFn: deleteSmsProviderSetting,
     onSuccess: async () => {
-      setSelectedProviderKey('');
       await queryClient.invalidateQueries({ queryKey: smsKeys.settingsProviders });
       toast.showOK('接码源已删除');
     },
@@ -64,12 +80,29 @@ export function SmsPage() {
           {
             value: 'orders',
             label: '号码订单',
-            content: <OrdersTab orders={ordersQuery.data?.orders || []} cancelingId={cancelMutation.variables} onCancel={(id) => cancelMutation.mutate(id)} />
+            content: (
+              <OrdersTab
+                orders={ordersQuery.data?.orders || []}
+                codes={codesQuery.data?.codes || []}
+                cancelingId={cancelMutation.variables}
+                onCancel={(id) => cancelMutation.mutate(id)}
+              />
+            )
           },
           {
             value: 'settings',
             label: '设置',
-            content: <SmsSettingsTab providerOptions={options} configs={configs} selected={selectedConfig} busy={settingsQuery.isLoading} saving={saveMutation.isPending} deleting={deleteMutation.isPending} onSelect={setSelectedProviderKey} onNew={() => setSelectedProviderKey('new')} onSave={(input) => saveMutation.mutate(input)} onDelete={(id) => deleteMutation.mutate(id)} />
+            content: (
+              <SmsSettingsTab
+                providerOptions={options}
+                configs={configs}
+                busy={settingsQuery.isLoading}
+                savingProviderKey={saveMutation.variables?.provider_key}
+                deletingProviderKey={deleteMutation.variables}
+                onSave={(input) => saveMutation.mutate(input)}
+                onDelete={(id) => deleteMutation.mutate(id)}
+              />
+            )
           }
         ]}
       />

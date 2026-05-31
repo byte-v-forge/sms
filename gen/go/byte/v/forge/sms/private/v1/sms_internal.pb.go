@@ -1059,6 +1059,58 @@ func (x *SmsOrderView) GetProviderKey() string {
 	return ""
 }
 
+type SmsOrderCodeView struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrderId       string                 `protobuf:"bytes,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	Code          *v1.SmsCode            `protobuf:"bytes,2,opt,name=code,proto3" json:"code,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SmsOrderCodeView) Reset() {
+	*x = SmsOrderCodeView{}
+	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SmsOrderCodeView) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SmsOrderCodeView) ProtoMessage() {}
+
+func (x *SmsOrderCodeView) ProtoReflect() protoreflect.Message {
+	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SmsOrderCodeView.ProtoReflect.Descriptor instead.
+func (*SmsOrderCodeView) Descriptor() ([]byte, []int) {
+	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *SmsOrderCodeView) GetOrderId() string {
+	if x != nil {
+		return x.OrderId
+	}
+	return ""
+}
+
+func (x *SmsOrderCodeView) GetCode() *v1.SmsCode {
+	if x != nil {
+		return x.Code
+	}
+	return nil
+}
+
 type ListOrdersRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	IncludeFinal  bool                   `protobuf:"varint,1,opt,name=include_final,json=includeFinal,proto3" json:"include_final,omitempty"`
@@ -1069,7 +1121,7 @@ type ListOrdersRequest struct {
 
 func (x *ListOrdersRequest) Reset() {
 	*x = ListOrdersRequest{}
-	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[18]
+	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1081,7 +1133,7 @@ func (x *ListOrdersRequest) String() string {
 func (*ListOrdersRequest) ProtoMessage() {}
 
 func (x *ListOrdersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[18]
+	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1094,7 +1146,7 @@ func (x *ListOrdersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListOrdersRequest.ProtoReflect.Descriptor instead.
 func (*ListOrdersRequest) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{18}
+	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ListOrdersRequest) GetIncludeFinal() bool {
@@ -1121,7 +1173,7 @@ type ListOrdersResponse struct {
 
 func (x *ListOrdersResponse) Reset() {
 	*x = ListOrdersResponse{}
-	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[19]
+	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1133,7 +1185,7 @@ func (x *ListOrdersResponse) String() string {
 func (*ListOrdersResponse) ProtoMessage() {}
 
 func (x *ListOrdersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[19]
+	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1146,7 +1198,7 @@ func (x *ListOrdersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListOrdersResponse.ProtoReflect.Descriptor instead.
 func (*ListOrdersResponse) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{19}
+	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *ListOrdersResponse) GetOrders() []*SmsOrderView {
@@ -1163,6 +1215,110 @@ func (x *ListOrdersResponse) GetError() *ProviderError {
 	return nil
 }
 
+type ListOrderCodesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrderIds      []string               `protobuf:"bytes,1,rep,name=order_ids,json=orderIds,proto3" json:"order_ids,omitempty"`
+	LimitPerOrder int32                  `protobuf:"varint,2,opt,name=limit_per_order,json=limitPerOrder,proto3" json:"limit_per_order,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListOrderCodesRequest) Reset() {
+	*x = ListOrderCodesRequest{}
+	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListOrderCodesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListOrderCodesRequest) ProtoMessage() {}
+
+func (x *ListOrderCodesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListOrderCodesRequest.ProtoReflect.Descriptor instead.
+func (*ListOrderCodesRequest) Descriptor() ([]byte, []int) {
+	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *ListOrderCodesRequest) GetOrderIds() []string {
+	if x != nil {
+		return x.OrderIds
+	}
+	return nil
+}
+
+func (x *ListOrderCodesRequest) GetLimitPerOrder() int32 {
+	if x != nil {
+		return x.LimitPerOrder
+	}
+	return 0
+}
+
+type ListOrderCodesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Codes         []*SmsOrderCodeView    `protobuf:"bytes,1,rep,name=codes,proto3" json:"codes,omitempty"`
+	Error         *ProviderError         `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListOrderCodesResponse) Reset() {
+	*x = ListOrderCodesResponse{}
+	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListOrderCodesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListOrderCodesResponse) ProtoMessage() {}
+
+func (x *ListOrderCodesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListOrderCodesResponse.ProtoReflect.Descriptor instead.
+func (*ListOrderCodesResponse) Descriptor() ([]byte, []int) {
+	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *ListOrderCodesResponse) GetCodes() []*SmsOrderCodeView {
+	if x != nil {
+		return x.Codes
+	}
+	return nil
+}
+
+func (x *ListOrderCodesResponse) GetError() *ProviderError {
+	if x != nil {
+		return x.Error
+	}
+	return nil
+}
+
 type CancelProviderOrderRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	OrderId       string                 `protobuf:"bytes,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
@@ -1173,7 +1329,7 @@ type CancelProviderOrderRequest struct {
 
 func (x *CancelProviderOrderRequest) Reset() {
 	*x = CancelProviderOrderRequest{}
-	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[20]
+	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1185,7 +1341,7 @@ func (x *CancelProviderOrderRequest) String() string {
 func (*CancelProviderOrderRequest) ProtoMessage() {}
 
 func (x *CancelProviderOrderRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[20]
+	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1198,7 +1354,7 @@ func (x *CancelProviderOrderRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancelProviderOrderRequest.ProtoReflect.Descriptor instead.
 func (*CancelProviderOrderRequest) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{20}
+	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *CancelProviderOrderRequest) GetOrderId() string {
@@ -1225,7 +1381,7 @@ type CancelProviderOrderResponse struct {
 
 func (x *CancelProviderOrderResponse) Reset() {
 	*x = CancelProviderOrderResponse{}
-	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[21]
+	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1237,7 +1393,7 @@ func (x *CancelProviderOrderResponse) String() string {
 func (*CancelProviderOrderResponse) ProtoMessage() {}
 
 func (x *CancelProviderOrderResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[21]
+	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1250,7 +1406,7 @@ func (x *CancelProviderOrderResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancelProviderOrderResponse.ProtoReflect.Descriptor instead.
 func (*CancelProviderOrderResponse) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{21}
+	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *CancelProviderOrderResponse) GetOrder() *SmsOrderView {
@@ -1275,7 +1431,7 @@ type ListProviderPluginsRequest struct {
 
 func (x *ListProviderPluginsRequest) Reset() {
 	*x = ListProviderPluginsRequest{}
-	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[22]
+	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1287,7 +1443,7 @@ func (x *ListProviderPluginsRequest) String() string {
 func (*ListProviderPluginsRequest) ProtoMessage() {}
 
 func (x *ListProviderPluginsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[22]
+	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1300,7 +1456,7 @@ func (x *ListProviderPluginsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListProviderPluginsRequest.ProtoReflect.Descriptor instead.
 func (*ListProviderPluginsRequest) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{22}
+	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{25}
 }
 
 type ListProviderPluginsResponse struct {
@@ -1313,7 +1469,7 @@ type ListProviderPluginsResponse struct {
 
 func (x *ListProviderPluginsResponse) Reset() {
 	*x = ListProviderPluginsResponse{}
-	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[23]
+	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1325,7 +1481,7 @@ func (x *ListProviderPluginsResponse) String() string {
 func (*ListProviderPluginsResponse) ProtoMessage() {}
 
 func (x *ListProviderPluginsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[23]
+	mi := &file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1338,7 +1494,7 @@ func (x *ListProviderPluginsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListProviderPluginsResponse.ProtoReflect.Descriptor instead.
 func (*ListProviderPluginsResponse) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{23}
+	return file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *ListProviderPluginsResponse) GetPlugins() []*SmsProviderPluginDescriptor {
@@ -1424,12 +1580,21 @@ const file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDesc = "" +
 	"\x05error\x18\x02 \x01(\v2+.byte.v.forge.sms.internal.v1.ProviderErrorR\x05error\"p\n" +
 	"\fSmsOrderView\x12=\n" +
 	"\x05order\x18\x01 \x01(\v2'.byte.v.forge.contracts.sms.v1.SmsOrderR\x05order\x12!\n" +
-	"\fprovider_key\x18\x02 \x01(\tR\vproviderKey\"N\n" +
+	"\fprovider_key\x18\x02 \x01(\tR\vproviderKey\"i\n" +
+	"\x10SmsOrderCodeView\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\tR\aorderId\x12:\n" +
+	"\x04code\x18\x02 \x01(\v2&.byte.v.forge.contracts.sms.v1.SmsCodeR\x04code\"N\n" +
 	"\x11ListOrdersRequest\x12#\n" +
 	"\rinclude_final\x18\x01 \x01(\bR\fincludeFinal\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\x05R\x05limit\"\x9b\x01\n" +
 	"\x12ListOrdersResponse\x12B\n" +
 	"\x06orders\x18\x01 \x03(\v2*.byte.v.forge.sms.internal.v1.SmsOrderViewR\x06orders\x12A\n" +
+	"\x05error\x18\x02 \x01(\v2+.byte.v.forge.sms.internal.v1.ProviderErrorR\x05error\"\\\n" +
+	"\x15ListOrderCodesRequest\x12\x1b\n" +
+	"\torder_ids\x18\x01 \x03(\tR\borderIds\x12&\n" +
+	"\x0flimit_per_order\x18\x02 \x01(\x05R\rlimitPerOrder\"\xa1\x01\n" +
+	"\x16ListOrderCodesResponse\x12D\n" +
+	"\x05codes\x18\x01 \x03(\v2..byte.v.forge.sms.internal.v1.SmsOrderCodeViewR\x05codes\x12A\n" +
 	"\x05error\x18\x02 \x01(\v2+.byte.v.forge.sms.internal.v1.ProviderErrorR\x05error\"V\n" +
 	"\x1aCancelProviderOrderRequest\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\tR\aorderId\x12\x1d\n" +
@@ -1446,7 +1611,7 @@ const file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDesc = "" +
 	"\x1fSMS_PROVIDER_ACTION_UNSPECIFIED\x10\x00\x12)\n" +
 	"%SMS_PROVIDER_ACTION_MARK_MESSAGE_SENT\x10\x01\x12/\n" +
 	"+SMS_PROVIDER_ACTION_REQUEST_ADDITIONAL_CODE\x10\x02\x12&\n" +
-	"\"SMS_PROVIDER_ACTION_COMPLETE_ORDER\x10\x032\xda\b\n" +
+	"\"SMS_PROVIDER_ACTION_COMPLETE_ORDER\x10\x032\xd7\t\n" +
 	"\x17SmsProviderAdminService\x12\x8a\x01\n" +
 	"\x13ListProviderPlugins\x128.byte.v.forge.sms.internal.v1.ListProviderPluginsRequest\x1a9.byte.v.forge.sms.internal.v1.ListProviderPluginsResponse\x12\x8d\x01\n" +
 	"\x14UpsertProviderConfig\x129.byte.v.forge.sms.internal.v1.UpsertProviderConfigRequest\x1a:.byte.v.forge.sms.internal.v1.UpsertProviderConfigResponse\x12\x84\x01\n" +
@@ -1455,7 +1620,8 @@ const file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDesc = "" +
 	"\x14DeleteProviderConfig\x129.byte.v.forge.sms.internal.v1.DeleteProviderConfigRequest\x1a:.byte.v.forge.sms.internal.v1.DeleteProviderConfigResponse\x12\x87\x01\n" +
 	"\x12GetProviderBalance\x127.byte.v.forge.sms.internal.v1.GetProviderBalanceRequest\x1a8.byte.v.forge.sms.internal.v1.GetProviderBalanceResponse\x12o\n" +
 	"\n" +
-	"ListOrders\x12/.byte.v.forge.sms.internal.v1.ListOrdersRequest\x1a0.byte.v.forge.sms.internal.v1.ListOrdersResponse\x12\x82\x01\n" +
+	"ListOrders\x12/.byte.v.forge.sms.internal.v1.ListOrdersRequest\x1a0.byte.v.forge.sms.internal.v1.ListOrdersResponse\x12{\n" +
+	"\x0eListOrderCodes\x123.byte.v.forge.sms.internal.v1.ListOrderCodesRequest\x1a4.byte.v.forge.sms.internal.v1.ListOrderCodesResponse\x12\x82\x01\n" +
 	"\vCancelOrder\x128.byte.v.forge.sms.internal.v1.CancelProviderOrderRequest\x1a9.byte.v.forge.sms.internal.v1.CancelProviderOrderResponseB\xbc\x01\n" +
 	"\x1ecom.bytevforge.sms.internal.v1B\x10SmsInternalProtoP\x01ZLgithub.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1;smsinternalv1\xaa\x02\x1aByteVForge.Sms.Internal.V1\xca\x02\x1aByteVForge\\Sms\\Internal\\V1b\x06proto3"
 
@@ -1472,7 +1638,7 @@ func file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDescGZIP() []byte {
 }
 
 var file_byte_v_forge_sms_internal_v1_sms_internal_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
+var file_byte_v_forge_sms_internal_v1_sms_internal_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
 var file_byte_v_forge_sms_internal_v1_sms_internal_proto_goTypes = []any{
 	(SmsProviderAction)(0),               // 0: byte.v.forge.sms.internal.v1.SmsProviderAction
 	(*SmsOrderAcquireRequest)(nil),       // 1: byte.v.forge.sms.internal.v1.SmsOrderAcquireRequest
@@ -1493,23 +1659,27 @@ var file_byte_v_forge_sms_internal_v1_sms_internal_proto_goTypes = []any{
 	(*GetProviderBalanceRequest)(nil),    // 16: byte.v.forge.sms.internal.v1.GetProviderBalanceRequest
 	(*GetProviderBalanceResponse)(nil),   // 17: byte.v.forge.sms.internal.v1.GetProviderBalanceResponse
 	(*SmsOrderView)(nil),                 // 18: byte.v.forge.sms.internal.v1.SmsOrderView
-	(*ListOrdersRequest)(nil),            // 19: byte.v.forge.sms.internal.v1.ListOrdersRequest
-	(*ListOrdersResponse)(nil),           // 20: byte.v.forge.sms.internal.v1.ListOrdersResponse
-	(*CancelProviderOrderRequest)(nil),   // 21: byte.v.forge.sms.internal.v1.CancelProviderOrderRequest
-	(*CancelProviderOrderResponse)(nil),  // 22: byte.v.forge.sms.internal.v1.CancelProviderOrderResponse
-	(*ListProviderPluginsRequest)(nil),   // 23: byte.v.forge.sms.internal.v1.ListProviderPluginsRequest
-	(*ListProviderPluginsResponse)(nil),  // 24: byte.v.forge.sms.internal.v1.ListProviderPluginsResponse
-	(*v1.SmsNumberAcquireParams)(nil),    // 25: byte.v.forge.contracts.sms.v1.SmsNumberAcquireParams
-	(*v1.SmsError)(nil),                  // 26: byte.v.forge.contracts.sms.v1.SmsError
-	(*timestamppb.Timestamp)(nil),        // 27: google.protobuf.Timestamp
-	(*v1.DecimalMoney)(nil),              // 28: byte.v.forge.contracts.sms.v1.DecimalMoney
-	(*v1.SmsOrder)(nil),                  // 29: byte.v.forge.contracts.sms.v1.SmsOrder
+	(*SmsOrderCodeView)(nil),             // 19: byte.v.forge.sms.internal.v1.SmsOrderCodeView
+	(*ListOrdersRequest)(nil),            // 20: byte.v.forge.sms.internal.v1.ListOrdersRequest
+	(*ListOrdersResponse)(nil),           // 21: byte.v.forge.sms.internal.v1.ListOrdersResponse
+	(*ListOrderCodesRequest)(nil),        // 22: byte.v.forge.sms.internal.v1.ListOrderCodesRequest
+	(*ListOrderCodesResponse)(nil),       // 23: byte.v.forge.sms.internal.v1.ListOrderCodesResponse
+	(*CancelProviderOrderRequest)(nil),   // 24: byte.v.forge.sms.internal.v1.CancelProviderOrderRequest
+	(*CancelProviderOrderResponse)(nil),  // 25: byte.v.forge.sms.internal.v1.CancelProviderOrderResponse
+	(*ListProviderPluginsRequest)(nil),   // 26: byte.v.forge.sms.internal.v1.ListProviderPluginsRequest
+	(*ListProviderPluginsResponse)(nil),  // 27: byte.v.forge.sms.internal.v1.ListProviderPluginsResponse
+	(*v1.SmsNumberAcquireParams)(nil),    // 28: byte.v.forge.contracts.sms.v1.SmsNumberAcquireParams
+	(*v1.SmsError)(nil),                  // 29: byte.v.forge.contracts.sms.v1.SmsError
+	(*timestamppb.Timestamp)(nil),        // 30: google.protobuf.Timestamp
+	(*v1.DecimalMoney)(nil),              // 31: byte.v.forge.contracts.sms.v1.DecimalMoney
+	(*v1.SmsOrder)(nil),                  // 32: byte.v.forge.contracts.sms.v1.SmsOrder
+	(*v1.SmsCode)(nil),                   // 33: byte.v.forge.contracts.sms.v1.SmsCode
 }
 var file_byte_v_forge_sms_internal_v1_sms_internal_proto_depIdxs = []int32{
-	25, // 0: byte.v.forge.sms.internal.v1.SmsOrderAcquireRequest.acquire_params:type_name -> byte.v.forge.contracts.sms.v1.SmsNumberAcquireParams
-	26, // 1: byte.v.forge.sms.internal.v1.ProviderError.public_error:type_name -> byte.v.forge.contracts.sms.v1.SmsError
-	27, // 2: byte.v.forge.sms.internal.v1.SmsProviderConfig.created_at:type_name -> google.protobuf.Timestamp
-	27, // 3: byte.v.forge.sms.internal.v1.SmsProviderConfig.updated_at:type_name -> google.protobuf.Timestamp
+	28, // 0: byte.v.forge.sms.internal.v1.SmsOrderAcquireRequest.acquire_params:type_name -> byte.v.forge.contracts.sms.v1.SmsNumberAcquireParams
+	29, // 1: byte.v.forge.sms.internal.v1.ProviderError.public_error:type_name -> byte.v.forge.contracts.sms.v1.SmsError
+	30, // 2: byte.v.forge.sms.internal.v1.SmsProviderConfig.created_at:type_name -> google.protobuf.Timestamp
+	30, // 3: byte.v.forge.sms.internal.v1.SmsProviderConfig.updated_at:type_name -> google.protobuf.Timestamp
 	6,  // 4: byte.v.forge.sms.internal.v1.SmsProviderPluginDescriptor.capabilities:type_name -> byte.v.forge.sms.internal.v1.SmsProviderCapabilities
 	5,  // 5: byte.v.forge.sms.internal.v1.UpsertProviderConfigRequest.config:type_name -> byte.v.forge.sms.internal.v1.SmsProviderConfig
 	5,  // 6: byte.v.forge.sms.internal.v1.UpsertProviderConfigResponse.config:type_name -> byte.v.forge.sms.internal.v1.SmsProviderConfig
@@ -1519,36 +1689,41 @@ var file_byte_v_forge_sms_internal_v1_sms_internal_proto_depIdxs = []int32{
 	5,  // 10: byte.v.forge.sms.internal.v1.ListProviderConfigsResponse.configs:type_name -> byte.v.forge.sms.internal.v1.SmsProviderConfig
 	4,  // 11: byte.v.forge.sms.internal.v1.ListProviderConfigsResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
 	4,  // 12: byte.v.forge.sms.internal.v1.DeleteProviderConfigResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	28, // 13: byte.v.forge.sms.internal.v1.GetProviderBalanceResponse.balance:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
+	31, // 13: byte.v.forge.sms.internal.v1.GetProviderBalanceResponse.balance:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
 	4,  // 14: byte.v.forge.sms.internal.v1.GetProviderBalanceResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	29, // 15: byte.v.forge.sms.internal.v1.SmsOrderView.order:type_name -> byte.v.forge.contracts.sms.v1.SmsOrder
-	18, // 16: byte.v.forge.sms.internal.v1.ListOrdersResponse.orders:type_name -> byte.v.forge.sms.internal.v1.SmsOrderView
-	4,  // 17: byte.v.forge.sms.internal.v1.ListOrdersResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	18, // 18: byte.v.forge.sms.internal.v1.CancelProviderOrderResponse.order:type_name -> byte.v.forge.sms.internal.v1.SmsOrderView
-	4,  // 19: byte.v.forge.sms.internal.v1.CancelProviderOrderResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	7,  // 20: byte.v.forge.sms.internal.v1.ListProviderPluginsResponse.plugins:type_name -> byte.v.forge.sms.internal.v1.SmsProviderPluginDescriptor
-	4,  // 21: byte.v.forge.sms.internal.v1.ListProviderPluginsResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
-	23, // 22: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListProviderPlugins:input_type -> byte.v.forge.sms.internal.v1.ListProviderPluginsRequest
-	8,  // 23: byte.v.forge.sms.internal.v1.SmsProviderAdminService.UpsertProviderConfig:input_type -> byte.v.forge.sms.internal.v1.UpsertProviderConfigRequest
-	10, // 24: byte.v.forge.sms.internal.v1.SmsProviderAdminService.GetProviderConfig:input_type -> byte.v.forge.sms.internal.v1.GetProviderConfigRequest
-	12, // 25: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListProviderConfigs:input_type -> byte.v.forge.sms.internal.v1.ListProviderConfigsRequest
-	14, // 26: byte.v.forge.sms.internal.v1.SmsProviderAdminService.DeleteProviderConfig:input_type -> byte.v.forge.sms.internal.v1.DeleteProviderConfigRequest
-	16, // 27: byte.v.forge.sms.internal.v1.SmsProviderAdminService.GetProviderBalance:input_type -> byte.v.forge.sms.internal.v1.GetProviderBalanceRequest
-	19, // 28: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListOrders:input_type -> byte.v.forge.sms.internal.v1.ListOrdersRequest
-	21, // 29: byte.v.forge.sms.internal.v1.SmsProviderAdminService.CancelOrder:input_type -> byte.v.forge.sms.internal.v1.CancelProviderOrderRequest
-	24, // 30: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListProviderPlugins:output_type -> byte.v.forge.sms.internal.v1.ListProviderPluginsResponse
-	9,  // 31: byte.v.forge.sms.internal.v1.SmsProviderAdminService.UpsertProviderConfig:output_type -> byte.v.forge.sms.internal.v1.UpsertProviderConfigResponse
-	11, // 32: byte.v.forge.sms.internal.v1.SmsProviderAdminService.GetProviderConfig:output_type -> byte.v.forge.sms.internal.v1.GetProviderConfigResponse
-	13, // 33: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListProviderConfigs:output_type -> byte.v.forge.sms.internal.v1.ListProviderConfigsResponse
-	15, // 34: byte.v.forge.sms.internal.v1.SmsProviderAdminService.DeleteProviderConfig:output_type -> byte.v.forge.sms.internal.v1.DeleteProviderConfigResponse
-	17, // 35: byte.v.forge.sms.internal.v1.SmsProviderAdminService.GetProviderBalance:output_type -> byte.v.forge.sms.internal.v1.GetProviderBalanceResponse
-	20, // 36: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListOrders:output_type -> byte.v.forge.sms.internal.v1.ListOrdersResponse
-	22, // 37: byte.v.forge.sms.internal.v1.SmsProviderAdminService.CancelOrder:output_type -> byte.v.forge.sms.internal.v1.CancelProviderOrderResponse
-	30, // [30:38] is the sub-list for method output_type
-	22, // [22:30] is the sub-list for method input_type
-	22, // [22:22] is the sub-list for extension type_name
-	22, // [22:22] is the sub-list for extension extendee
-	0,  // [0:22] is the sub-list for field type_name
+	32, // 15: byte.v.forge.sms.internal.v1.SmsOrderView.order:type_name -> byte.v.forge.contracts.sms.v1.SmsOrder
+	33, // 16: byte.v.forge.sms.internal.v1.SmsOrderCodeView.code:type_name -> byte.v.forge.contracts.sms.v1.SmsCode
+	18, // 17: byte.v.forge.sms.internal.v1.ListOrdersResponse.orders:type_name -> byte.v.forge.sms.internal.v1.SmsOrderView
+	4,  // 18: byte.v.forge.sms.internal.v1.ListOrdersResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	19, // 19: byte.v.forge.sms.internal.v1.ListOrderCodesResponse.codes:type_name -> byte.v.forge.sms.internal.v1.SmsOrderCodeView
+	4,  // 20: byte.v.forge.sms.internal.v1.ListOrderCodesResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	18, // 21: byte.v.forge.sms.internal.v1.CancelProviderOrderResponse.order:type_name -> byte.v.forge.sms.internal.v1.SmsOrderView
+	4,  // 22: byte.v.forge.sms.internal.v1.CancelProviderOrderResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	7,  // 23: byte.v.forge.sms.internal.v1.ListProviderPluginsResponse.plugins:type_name -> byte.v.forge.sms.internal.v1.SmsProviderPluginDescriptor
+	4,  // 24: byte.v.forge.sms.internal.v1.ListProviderPluginsResponse.error:type_name -> byte.v.forge.sms.internal.v1.ProviderError
+	26, // 25: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListProviderPlugins:input_type -> byte.v.forge.sms.internal.v1.ListProviderPluginsRequest
+	8,  // 26: byte.v.forge.sms.internal.v1.SmsProviderAdminService.UpsertProviderConfig:input_type -> byte.v.forge.sms.internal.v1.UpsertProviderConfigRequest
+	10, // 27: byte.v.forge.sms.internal.v1.SmsProviderAdminService.GetProviderConfig:input_type -> byte.v.forge.sms.internal.v1.GetProviderConfigRequest
+	12, // 28: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListProviderConfigs:input_type -> byte.v.forge.sms.internal.v1.ListProviderConfigsRequest
+	14, // 29: byte.v.forge.sms.internal.v1.SmsProviderAdminService.DeleteProviderConfig:input_type -> byte.v.forge.sms.internal.v1.DeleteProviderConfigRequest
+	16, // 30: byte.v.forge.sms.internal.v1.SmsProviderAdminService.GetProviderBalance:input_type -> byte.v.forge.sms.internal.v1.GetProviderBalanceRequest
+	20, // 31: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListOrders:input_type -> byte.v.forge.sms.internal.v1.ListOrdersRequest
+	22, // 32: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListOrderCodes:input_type -> byte.v.forge.sms.internal.v1.ListOrderCodesRequest
+	24, // 33: byte.v.forge.sms.internal.v1.SmsProviderAdminService.CancelOrder:input_type -> byte.v.forge.sms.internal.v1.CancelProviderOrderRequest
+	27, // 34: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListProviderPlugins:output_type -> byte.v.forge.sms.internal.v1.ListProviderPluginsResponse
+	9,  // 35: byte.v.forge.sms.internal.v1.SmsProviderAdminService.UpsertProviderConfig:output_type -> byte.v.forge.sms.internal.v1.UpsertProviderConfigResponse
+	11, // 36: byte.v.forge.sms.internal.v1.SmsProviderAdminService.GetProviderConfig:output_type -> byte.v.forge.sms.internal.v1.GetProviderConfigResponse
+	13, // 37: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListProviderConfigs:output_type -> byte.v.forge.sms.internal.v1.ListProviderConfigsResponse
+	15, // 38: byte.v.forge.sms.internal.v1.SmsProviderAdminService.DeleteProviderConfig:output_type -> byte.v.forge.sms.internal.v1.DeleteProviderConfigResponse
+	17, // 39: byte.v.forge.sms.internal.v1.SmsProviderAdminService.GetProviderBalance:output_type -> byte.v.forge.sms.internal.v1.GetProviderBalanceResponse
+	21, // 40: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListOrders:output_type -> byte.v.forge.sms.internal.v1.ListOrdersResponse
+	23, // 41: byte.v.forge.sms.internal.v1.SmsProviderAdminService.ListOrderCodes:output_type -> byte.v.forge.sms.internal.v1.ListOrderCodesResponse
+	25, // 42: byte.v.forge.sms.internal.v1.SmsProviderAdminService.CancelOrder:output_type -> byte.v.forge.sms.internal.v1.CancelProviderOrderResponse
+	34, // [34:43] is the sub-list for method output_type
+	25, // [25:34] is the sub-list for method input_type
+	25, // [25:25] is the sub-list for extension type_name
+	25, // [25:25] is the sub-list for extension extendee
+	0,  // [0:25] is the sub-list for field type_name
 }
 
 func init() { file_byte_v_forge_sms_internal_v1_sms_internal_proto_init() }
@@ -1562,7 +1737,7 @@ func file_byte_v_forge_sms_internal_v1_sms_internal_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDesc), len(file_byte_v_forge_sms_internal_v1_sms_internal_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   24,
+			NumMessages:   27,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

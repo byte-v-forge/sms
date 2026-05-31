@@ -20,6 +20,7 @@ service SmsProviderAdminService {
   rpc DeleteProviderConfig(DeleteProviderConfigRequest) returns (DeleteProviderConfigResponse);
   rpc GetProviderBalance(GetProviderBalanceRequest) returns (GetProviderBalanceResponse);
   rpc ListOrders(ListOrdersRequest) returns (ListOrdersResponse);
+  rpc ListOrderCodes(ListOrderCodesRequest) returns (ListOrderCodesResponse);
   rpc CancelOrder(CancelProviderOrderRequest) returns (CancelProviderOrderResponse);
 }
 
@@ -126,6 +127,11 @@ message SmsOrderView {
   string provider_key = 2;
 }
 
+message SmsOrderCodeView {
+  string order_id = 1;
+  byte.v.forge.contracts.sms.v1.SmsCode code = 2;
+}
+
 message ListOrdersRequest {
   bool include_final = 1;
   int32 limit = 2;
@@ -133,6 +139,16 @@ message ListOrdersRequest {
 
 message ListOrdersResponse {
   repeated SmsOrderView orders = 1;
+  ProviderError error = 2;
+}
+
+message ListOrderCodesRequest {
+  repeated string order_ids = 1;
+  int32 limit_per_order = 2;
+}
+
+message ListOrderCodesResponse {
+  repeated SmsOrderCodeView codes = 1;
   ProviderError error = 2;
 }
 

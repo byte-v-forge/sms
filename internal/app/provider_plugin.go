@@ -97,7 +97,7 @@ func heroSMSPlugin() smsProviderPlugin {
 	return smsProviderPluginDefinition{
 		key:          herosms.ProviderKey,
 		displayName:  "HeroSMS",
-		capabilities: baseCapabilities(false),
+		capabilities: baseCapabilities(true),
 		policy:       core.ProviderPolicy{OrderTTL: 20 * time.Minute, PollInterval: 5 * time.Second, CancelAllowedAfter: 2 * time.Minute},
 		newProvider: func(config *smsinternalv1.SmsProviderConfig, client *http.Client) (core.Provider, error) {
 			return herosms.New(herosms.Config{APIKey: config.GetCredentialSecret()}, client)

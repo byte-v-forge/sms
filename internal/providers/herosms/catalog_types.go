@@ -1,0 +1,30 @@
+package herosms
+
+import "github.com/byte-v-forge/sms/internal/core"
+
+type PriceOffer struct {
+	CountryID          string
+	UpstreamServiceKey string
+	Operator           string
+	Price              core.Money
+	AvailableCount     int
+}
+
+type countryMetadata struct {
+	ID          string
+	Name        string
+	ISO2        string
+	CallingCode string
+}
+
+var heroSMSCountries = []countryMetadata{
+	{ID: "6", Name: "Indonesia", ISO2: "ID", CallingCode: "62"},
+}
+
+var heroSMSServiceAliases = map[string][]string{
+	"gojek": {"gojek", "ni"},
+}
+
+var heroSMSServiceNames = map[string]string{
+	"ni": "Gojek",
+}

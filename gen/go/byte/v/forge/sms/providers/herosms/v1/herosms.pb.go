@@ -125,6 +125,7 @@ type HeroSmsGetNumberRequest struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
 	UpstreamServiceKey string                 `protobuf:"bytes,1,opt,name=upstream_service_key,json=upstreamServiceKey,proto3" json:"upstream_service_key,omitempty"`
 	CountryId          int32                  `protobuf:"varint,2,opt,name=country_id,json=countryId,proto3" json:"country_id,omitempty"`
+	Operator           string                 `protobuf:"bytes,3,opt,name=operator,proto3" json:"operator,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -171,6 +172,13 @@ func (x *HeroSmsGetNumberRequest) GetCountryId() int32 {
 		return x.CountryId
 	}
 	return 0
+}
+
+func (x *HeroSmsGetNumberRequest) GetOperator() string {
+	if x != nil {
+		return x.Operator
+	}
+	return ""
 }
 
 type HeroSmsAccessNumberResponse struct {
@@ -423,11 +431,12 @@ const file_byte_v_forge_sms_providers_herosms_v1_herosms_proto_rawDesc = "" +
 	"\n" +
 	"3byte/v/forge/sms/providers/herosms/v1/herosms.proto\x12%byte.v.forge.sms.providers.herosms.v1\x1a/byte/v/forge/sms/internal/v1/sms_internal.proto\"f\n" +
 	"\x15HeroSmsProviderConfig\x12G\n" +
-	"\x06config\x18\x01 \x01(\v2/.byte.v.forge.sms.internal.v1.SmsProviderConfigR\x06configJ\x04\b\x02\x10\x06\"p\n" +
+	"\x06config\x18\x01 \x01(\v2/.byte.v.forge.sms.internal.v1.SmsProviderConfigR\x06configJ\x04\b\x02\x10\x06\"\x86\x01\n" +
 	"\x17HeroSmsGetNumberRequest\x120\n" +
 	"\x14upstream_service_key\x18\x01 \x01(\tR\x12upstreamServiceKey\x12\x1d\n" +
 	"\n" +
-	"country_id\x18\x02 \x01(\x05R\tcountryIdJ\x04\b\x03\x10\x04\"[\n" +
+	"country_id\x18\x02 \x01(\x05R\tcountryId\x12\x1a\n" +
+	"\boperator\x18\x03 \x01(\tR\boperator\"[\n" +
 	"\x1bHeroSmsAccessNumberResponse\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\tR\aorderId\x12!\n" +
 	"\fphone_number\x18\x02 \x01(\tR\vphoneNumber\"4\n" +

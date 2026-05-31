@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/byte-v-forge/common-lib/eventbus"
@@ -21,43 +20,28 @@ type OrderAcquireWorker struct {
 
 func RunOrderAcquireWorker(ctx context.Context, consumer eventbus.Consumer, service *app.OrderService) error {
 	worker := &OrderAcquireWorker{service: service}
-	return eventbus.RunConsumerWorker(ctx, eventbus.ConsumerWorkerConfig{
-		Name:     "sms order acquire requests",
-		Consumer: consumer,
-		Handler:  worker.handle,
+	return eventbus.RunTypedConsumerWorker(ctx, eventbus.TypedConsumerWorkerConfig[*smsinternalv1.SmsOrderAcquireRequest]{
+		Name:       "sms order acquire requests",
+		Consumer:   consumer,
+		NewMessage: func() *smsinternalv1.SmsOrderAcquireRequest { return &smsinternalv1.SmsOrderAcquireRequest{} },
+		Validate: func(request *smsinternalv1.SmsOrderAcquireRequest) error {
+			return validateOrderID(request.GetOrderId())
+		},
+		Handler:        worker.handle,
+		MalformedLabel: "terminate malformed sms order acquire request",
 	})
 }
 
-func (w *OrderAcquireWorker) handle(ctx context.Context, message eventbus.ReceivedMessage) {
-	request, ok := decodeAcquireRequest(message)
-	if !ok {
-		eventbus.TermMessage(ctx, message, "terminate malformed sms order acquire request", nil)
-		return
-	}
+func (w *OrderAcquireWorker) handle(ctx context.Context, request *smsinternalv1.SmsOrderAcquireRequest, _ eventbus.ReceivedMessage) eventbus.HandlerResult {
 	_, err := w.service.RunAcquireRequest(ctx, request.GetOrderId(), request.GetRequestId(), app.RouteFromPublicAcquireParams(request.GetAcquireParams()))
 	if err == nil {
-		eventbus.AckMessage(ctx, message, "ack sms order acquire request", nil)
-		return
+		return eventbus.AckResult("ack sms order acquire request")
 	}
 	log.Printf("sms order acquire failed: order_id=%s error=%v", request.GetOrderId(), err)
 	if acquireErrorRetryable(err) {
-		eventbus.NakMessageDelay(ctx, message, defaultAcquireRetryDelay, "retry sms order acquire", nil)
-		return
+		return eventbus.NakResult(defaultAcquireRetryDelay, "retry sms order acquire")
 	}
-	eventbus.TermMessage(ctx, message, "terminate non-retryable sms order acquire request", nil)
-}
-
-func decodeAcquireRequest(message eventbus.ReceivedMessage) (*smsinternalv1.SmsOrderAcquireRequest, bool) {
-	request := &smsinternalv1.SmsOrderAcquireRequest{}
-	if err := eventbus.UnmarshalPayload(message, request); err != nil {
-		log.Printf("decode sms order acquire request failed: event_id=%s error=%v", eventbus.EventID(message), err)
-		return nil, false
-	}
-	if strings.TrimSpace(request.GetOrderId()) == "" {
-		log.Printf("sms order acquire request missing order_id: event_id=%s", eventbus.EventID(message))
-		return nil, false
-	}
-	return request, true
+	return eventbus.TermResult("terminate non-retryable sms order acquire request")
 }
 
 func acquireErrorRetryable(err error) bool {

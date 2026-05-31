@@ -12,7 +12,7 @@ import (
 func PublicOrder(order core.Order) *smsv1.SmsOrder {
 	return &smsv1.SmsOrder{
 		OrderId:   order.ID,
-		RequestId:    order.RequestID,
+		RequestId: order.RequestID,
 		Target: &smsv1.SmsTarget{
 			ApplicationKey:     order.Target.ApplicationKey,
 			CountryIso2:        order.Target.CountryISO2,

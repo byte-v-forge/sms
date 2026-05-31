@@ -22,6 +22,7 @@ type ProviderConfigStore interface {
 
 type OrderListStore interface {
 	List(context.Context, bool, int) ([]core.Order, error)
+	ListCodes(context.Context, []string, int) ([]core.OrderCode, error)
 }
 
 type ConfiguredProvider struct {
@@ -119,7 +120,7 @@ func httpClientFromConfig(timeout time.Duration, defaultHTTPProxy string) (*http
 	if timeout <= 0 {
 		timeout = 20 * time.Second
 	}
-	client, err := httpclient.NewWithSchemes(timeout, strings.TrimSpace(defaultHTTPProxy), httpclient.HTTPProxySchemes...)
+	client, err := httpclient.New(timeout, strings.TrimSpace(defaultHTTPProxy))
 	if err != nil {
 		return nil, core.NewError(core.CodeValidationFailed, "invalid sms provider proxy", false)
 	}
