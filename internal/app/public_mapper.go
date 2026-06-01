@@ -54,7 +54,11 @@ func PublicError(err error) *smsv1.SmsError {
 		return nil
 	}
 	var smsErr *core.Error
-	if !errors.As(err, &smsErr) {
+	if errors.As(err, &smsErr) {
+		if smsErr == nil {
+			return nil
+		}
+	} else {
 		smsErr = runtimeCoreError(err)
 	}
 	if smsErr == nil {
