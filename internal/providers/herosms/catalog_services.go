@@ -10,8 +10,10 @@ func heroSMSServiceCandidates(applicationKey string) []string {
 	if normalized == "" {
 		return []string{""}
 	}
+	if aliases := heroSMSServiceAliases[normalized]; len(aliases) > 0 {
+		return uniqueHeroSMSStrings(aliases)
+	}
 	candidates := []string{strings.TrimSpace(applicationKey)}
-	candidates = append(candidates, heroSMSServiceAliases[normalized]...)
 	return uniqueHeroSMSStrings(candidates)
 }
 
@@ -37,6 +39,17 @@ func heroSMSApplicationName(serviceKey string) string {
 		return name
 	}
 	return strings.TrimSpace(serviceKey)
+}
+
+func heroSMSPublicApplicationKey(serviceKey string) string {
+	switch normalizeHeroSMSServiceKey(serviceKey) {
+	case "ni":
+		return "gojek"
+	case "wa":
+		return "whatsapp"
+	default:
+		return strings.TrimSpace(serviceKey)
+	}
 }
 
 func uniqueHeroSMSOffers(offers []PriceOffer) []PriceOffer {

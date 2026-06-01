@@ -1,6 +1,8 @@
 package herosms
 
 import (
+	"net/http"
+	"strings"
 	"time"
 
 	"github.com/byte-v-forge/sms/internal/core"
@@ -8,18 +10,24 @@ import (
 )
 
 const (
-	DefaultEndpoint = "https://hero-sms.com/stubs/handler_api.php"
-	ProviderKey     = "herosms"
+	DefaultEndpoint        = "https://hero-sms.com/stubs/handler_api.php"
+	DefaultOpenAPIEndpoint = "https://hero-sms.com/api/v1"
+	ProviderKey            = "herosms"
 )
 
 type Config struct {
-	Endpoint string
-	APIKey   string
+	Endpoint        string
+	OpenAPIEndpoint string
+	APIKey          string
 }
 
 type Client struct {
-	api    *handlerapi.Client
-	policy core.ProviderPolicy
+	api             *handlerapi.Client
+	apiKey          string
+	openAPIEndpoint string
+	httpClient      handlerapi.HTTPDoer
+	userAgent       string
+	policy          core.ProviderPolicy
 }
 
 func New(config Config, httpClient handlerapi.HTTPDoer) (*Client, error) {
@@ -27,12 +35,23 @@ func New(config Config, httpClient handlerapi.HTTPDoer) (*Client, error) {
 	if endpoint == "" {
 		endpoint = DefaultEndpoint
 	}
+	openAPIEndpoint := strings.TrimRight(strings.TrimSpace(config.OpenAPIEndpoint), "/")
+	if openAPIEndpoint == "" {
+		openAPIEndpoint = DefaultOpenAPIEndpoint
+	}
+	if httpClient == nil {
+		httpClient = &http.Client{Timeout: 15 * time.Second}
+	}
 	api, err := handlerapi.New(endpoint, config.APIKey, httpClient)
 	if err != nil {
 		return nil, err
 	}
 	return &Client{
-		api: api,
+		api:             api,
+		apiKey:          strings.TrimSpace(config.APIKey),
+		openAPIEndpoint: openAPIEndpoint,
+		httpClient:      httpClient,
+		userAgent:       "sms/1.0",
 		policy: core.ProviderPolicy{
 			OrderTTL:           20 * time.Minute,
 			PollInterval:       5 * time.Second,

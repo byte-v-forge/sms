@@ -16,7 +16,7 @@ func (c *Client) ListRouteOffers(ctx context.Context, query core.RouteOfferQuery
 	if (query.CountryISO2 != "" || query.CountryCallingCode != "") && country.ID == "" {
 		return nil, nil
 	}
-	priceOffers, err := c.listOperatorRoutePriceOffers(ctx, query.ApplicationKey, country.ID)
+	priceOffers, err := c.listRoutePriceOffers(ctx, query.ApplicationKey, country.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -30,20 +30,20 @@ func (c *Client) ListRouteOffers(ctx context.Context, query core.RouteOfferQuery
 		if metadata.ID == "" {
 			metadata = heroSMSCountryByID(countries, offer.CountryID)
 		}
+		applicationKey := firstHeroSMSString(query.ApplicationKey, heroSMSPublicApplicationKey(offer.UpstreamServiceKey), offer.UpstreamServiceKey)
 		route := core.Route{
 			ProviderKey:        ProviderKey,
-			ApplicationKey:     offer.UpstreamServiceKey,
+			ApplicationKey:     applicationKey,
 			UpstreamServiceKey: offer.UpstreamServiceKey,
 			CountryISO2:        metadata.ISO2,
 			CountryCallingCode: metadata.CallingCode,
 			ProviderCountryID:  offer.CountryID,
-			UpstreamProviderID: offer.Operator,
+			MaxPrice:           offer.Price,
 		}
 		out = append(out, core.RouteOffer{
 			ProviderKey:          ProviderKey,
-			UpstreamProviderID:   offer.Operator,
-			UpstreamProviderName: offer.Operator,
-			ApplicationKey:       offer.UpstreamServiceKey,
+			UpstreamProviderName: "any",
+			ApplicationKey:       applicationKey,
 			ApplicationName:      heroSMSApplicationName(offer.UpstreamServiceKey),
 			CountryISO2:          metadata.ISO2,
 			CountryName:          firstHeroSMSString(metadata.Name, offer.CountryID),
@@ -57,12 +57,12 @@ func (c *Client) ListRouteOffers(ctx context.Context, query core.RouteOfferQuery
 	return out, nil
 }
 
-func (c *Client) listRoutePriceOffers(ctx context.Context, applicationKey, countryID, operator string) ([]PriceOffer, error) {
+func (c *Client) listRoutePriceOffers(ctx context.Context, applicationKey, countryID string) ([]PriceOffer, error) {
 	candidates := heroSMSServiceCandidates(applicationKey)
 	var out []PriceOffer
 	var lastErr error
 	for _, service := range candidates {
-		offers, err := c.ListPriceOffers(ctx, service, countryID, operator)
+		offers, err := c.ListPriceOffers(ctx, service, countryID)
 		if err != nil {
 			if isHeroSMSUnsupportedCatalogLookup(err) {
 				lastErr = err
@@ -75,9 +75,5 @@ func (c *Client) listRoutePriceOffers(ctx context.Context, applicationKey, count
 	if len(out) > 0 || lastErr == nil {
 		return uniqueHeroSMSOffers(out), nil
 	}
-	statuses, err := c.ListNumberStatuses(ctx, countryID)
-	if err != nil {
-		return nil, lastErr
-	}
-	return uniqueHeroSMSOffers(statuses), nil
+	return nil, lastErr
 }
