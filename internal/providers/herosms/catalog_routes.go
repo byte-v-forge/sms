@@ -8,7 +8,11 @@ import (
 )
 
 func (c *Client) ListRouteOffers(ctx context.Context, query core.RouteOfferQuery) ([]core.RouteOffer, error) {
-	country := heroSMSCountryForQuery(query)
+	countries, err := c.ListCountries(ctx)
+	if err != nil {
+		return nil, err
+	}
+	country := heroSMSCountryForQuery(query, countries)
 	if (query.CountryISO2 != "" || query.CountryCallingCode != "") && country.ID == "" {
 		return nil, nil
 	}
@@ -24,7 +28,7 @@ func (c *Client) ListRouteOffers(ctx context.Context, query core.RouteOfferQuery
 		}
 		metadata := country
 		if metadata.ID == "" {
-			metadata = heroSMSCountryByID(offer.CountryID)
+			metadata = heroSMSCountryByID(countries, offer.CountryID)
 		}
 		route := core.Route{
 			ProviderKey:        ProviderKey,

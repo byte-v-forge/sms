@@ -54,7 +54,7 @@ func smsbowerCountryCodes(name string) (string, string) {
 	if normalized == "" {
 		return "", ""
 	}
-	iso2 := geox.CountryAlpha2ByName(normalized)
+	iso2 := geox.CountryAlpha2InText(normalized)
 	if iso2 == "" {
 		return "", ""
 	}
