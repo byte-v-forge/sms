@@ -54,7 +54,7 @@ func mapHeroSMSOpenAPIError(statusCode int, text string) error {
 		Details string `json:"details"`
 	}
 	if err := json.Unmarshal([]byte(text), &payload); err == nil && strings.TrimSpace(payload.Title) != "" {
-		return handlerapi.MapTextError(strings.TrimSpace(payload.Title))
+		return handlerapi.MapTextError(text)
 	}
 	if text != "" {
 		return handlerapi.MapTextError(text)

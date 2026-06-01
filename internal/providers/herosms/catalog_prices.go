@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"math/big"
 	"net/url"
+	"sort"
 	"strings"
 
 	"github.com/byte-v-forge/sms/internal/core"
@@ -45,53 +46,70 @@ func (c *Client) ListPriceOffers(ctx context.Context, serviceKey, countryID stri
 	offers := make([]PriceOffer, 0)
 	for service, byCountry := range response.Data {
 		for cID, item := range byCountry {
-			price, availableCount, ok := activationOfferPurchasePrice(item)
-			if !ok {
-				continue
+			for _, tier := range activationOfferPurchaseTiers(item) {
+				offers = append(offers, PriceOffer{
+					CountryID:          strings.TrimSpace(cID),
+					UpstreamServiceKey: normalizeHeroSMSServiceKey(service),
+					Price:              tier.Price,
+					AvailableCount:     tier.AvailableCount,
+				})
 			}
-			offers = append(offers, PriceOffer{
-				CountryID:          strings.TrimSpace(cID),
-				UpstreamServiceKey: normalizeHeroSMSServiceKey(service),
-				Price:              price,
-				AvailableCount:     availableCount,
-			})
 		}
 	}
 	return offers, nil
 }
 
-func activationOfferPurchasePrice(offer activationOffer) (core.Money, int, bool) {
-	if price, count, ok := lowestActivationPrice(offer.PriceMap); ok {
-		return core.Money{AmountDecimal: price}, count, true
+type activationOfferPurchaseTier struct {
+	Price          core.Money
+	AvailableCount int
+	amount         *big.Rat
+}
+
+func activationOfferPurchaseTiers(offer activationOffer) []activationOfferPurchaseTier {
+	if tiers := activationOfferPriceMapTiers(offer.PriceMap); len(tiers) > 0 {
+		return tiers
 	}
 	price := firstHeroSMSScalar(offer.Prices.Min, offer.Prices.Default, offer.Prices.Retail)
 	if price == "" {
-		return core.Money{}, 0, false
+		return nil
 	}
 	count := offer.Counts.DefaultPrice
 	if count <= 0 {
 		count = offer.Counts.Total
 	}
-	return core.Money{AmountDecimal: price}, count, count > 0
+	if count <= 0 {
+		return nil
+	}
+	return []activationOfferPurchaseTier{
+		{
+			Price:          core.Money{CurrencyCode: "USD", AmountDecimal: price},
+			AvailableCount: count,
+		},
+	}
 }
 
-func lowestActivationPrice(priceMap map[string]int) (string, int, bool) {
-	var bestText string
-	var bestValue *big.Rat
-	var bestCount int
+func activationOfferPriceMapTiers(priceMap map[string]int) []activationOfferPurchaseTier {
+	tiers := make([]activationOfferPurchaseTier, 0, len(priceMap))
 	for text, count := range priceMap {
 		if count <= 0 {
 			continue
 		}
-		value, ok := new(big.Rat).SetString(strings.TrimSpace(text))
+		priceText := strings.TrimSpace(text)
+		value, ok := new(big.Rat).SetString(priceText)
 		if !ok {
 			continue
 		}
-		if bestValue == nil || value.Cmp(bestValue) < 0 {
-			bestText = strings.TrimSpace(text)
-			bestValue = value
-			bestCount = count
-		}
+		tiers = append(tiers, activationOfferPurchaseTier{
+			Price:          core.Money{CurrencyCode: "USD", AmountDecimal: priceText},
+			AvailableCount: count,
+			amount:         value,
+		})
 	}
-	return bestText, bestCount, bestValue != nil
+	sort.SliceStable(tiers, func(i, j int) bool {
+		return tiers[i].amount.Cmp(tiers[j].amount) < 0
+	})
+	for i := range tiers {
+		tiers[i].amount = nil
+	}
+	return tiers
 }
