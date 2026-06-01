@@ -12,6 +12,7 @@ import (
 
 	smsv1 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/sms/v1"
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
+	"github.com/byte-v-forge/sms/internal/app"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -49,16 +50,16 @@ func (s *dashboardServer) handleSMSOrderAcquire(w http.ResponseWriter, r *http.R
 		return
 	}
 	if smsAcquireParamsNeedRecommendation(req.GetAcquireParams()) {
-		params, err := s.recommendSMSAcquireParams(r.Context(), req.GetAcquireParams())
-		if err != nil {
-			writeProtoJSON(w, http.StatusOK, &smsv1.AcquireNumberResponse{Error: &smsv1.SmsError{Code: smsv1.SmsErrorCode_SMS_ERROR_CODE_ROUTE_NOT_FOUND, Message: err.Error()}})
+		params, smsErr := s.recommendSMSAcquireParams(r.Context(), req.GetAcquireParams())
+		if smsErr != nil {
+			writeProtoJSON(w, http.StatusOK, &smsv1.AcquireNumberResponse{Error: smsErr})
 			return
 		}
 		req.AcquireParams = params
 	}
 	resp, err := s.smsOrderClient.AcquireNumber(r.Context(), &req)
 	if err != nil {
-		writeError(w, http.StatusBadGateway, err)
+		writeProtoJSON(w, http.StatusOK, &smsv1.AcquireNumberResponse{Error: app.PublicError(err)})
 		return
 	}
 	if resp.GetError() == nil && resp.GetOrder().GetOrderId() != "" {
@@ -131,7 +132,7 @@ func (s *dashboardServer) waitSMSOrderAcquired(ctx context.Context, initial *sms
 		}
 		resp, err := s.smsOrderClient.GetOrder(ctx, &smsv1.GetOrderRequest{OrderId: initial.GetOrder().GetOrderId()})
 		if err != nil {
-			return &smsv1.AcquireNumberResponse{Order: latest, Error: &smsv1.SmsError{Code: smsv1.SmsErrorCode_SMS_ERROR_CODE_INTERNAL, Message: err.Error()}}
+			return &smsv1.AcquireNumberResponse{Order: latest, Error: app.PublicError(err)}
 		}
 		if resp.GetOrder() != nil {
 			latest = resp.GetOrder()
@@ -166,9 +167,9 @@ func smsAcquireParamsNeedRecommendation(params *smsv1.SmsNumberAcquireParams) bo
 	return params.GetProviderParams() == nil
 }
 
-func (s *dashboardServer) recommendSMSAcquireParams(ctx context.Context, params *smsv1.SmsNumberAcquireParams) (*smsv1.SmsNumberAcquireParams, error) {
+func (s *dashboardServer) recommendSMSAcquireParams(ctx context.Context, params *smsv1.SmsNumberAcquireParams) (*smsv1.SmsNumberAcquireParams, *smsv1.SmsError) {
 	if s.smsCatalogClient == nil {
-		return nil, errors.New("sms catalog service is not configured")
+		return nil, &smsv1.SmsError{Code: smsv1.SmsErrorCode_SMS_ERROR_CODE_INTERNAL, Message: "sms catalog service is not configured"}
 	}
 	target := &smsv1.SmsTarget{
 		ApplicationKey:     strings.TrimSpace(params.GetApplicationKey()),
@@ -186,17 +187,17 @@ func (s *dashboardServer) recommendSMSAcquireParams(ctx context.Context, params 
 		},
 	})
 	if err != nil {
-		return nil, err
+		return nil, app.PublicError(err)
 	}
 	if resp.GetError() != nil {
-		return nil, errors.New(resp.GetError().GetMessage())
+		return nil, resp.GetError()
 	}
 	if len(resp.GetRecommendations()) == 0 || resp.GetRecommendations()[0].GetOffer().GetAcquireParams() == nil {
-		return nil, fmt.Errorf("sms route not found for %s/%s/%s", target.GetApplicationKey(), target.GetCountryIso2(), target.GetCountryCallingCode())
+		return nil, &smsv1.SmsError{Code: smsv1.SmsErrorCode_SMS_ERROR_CODE_ROUTE_NOT_FOUND, Message: fmt.Sprintf("sms route not found for %s/%s/%s", target.GetApplicationKey(), target.GetCountryIso2(), target.GetCountryCallingCode()), Retryable: true}
 	}
 	recommended, ok := proto.Clone(resp.GetRecommendations()[0].GetOffer().GetAcquireParams()).(*smsv1.SmsNumberAcquireParams)
 	if !ok || recommended == nil {
-		return nil, errors.New("sms route recommendation is invalid")
+		return nil, &smsv1.SmsError{Code: smsv1.SmsErrorCode_SMS_ERROR_CODE_INTERNAL, Message: "sms route recommendation is invalid"}
 	}
 	if recommended.RouteFailurePolicy == nil {
 		recommended.RouteFailurePolicy = params.GetRouteFailurePolicy()

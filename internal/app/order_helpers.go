@@ -88,5 +88,8 @@ func asCoreError(err error) *core.Error {
 	if smsErr, ok := err.(*core.Error); ok {
 		return smsErr
 	}
-	return core.NewError(core.CodeInternal, err.Error(), false)
+	if smsErr := runtimeCoreError(err); smsErr != nil {
+		return smsErr
+	}
+	return core.NewError(core.CodeInternal, "sms service request failed", false)
 }
