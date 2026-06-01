@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 
 	smsv1 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/sms/v1"
 	"github.com/byte-v-forge/sms/internal/core"
@@ -42,9 +43,20 @@ func (s *CatalogService) RecommendRoutes(ctx context.Context, query RouteRecomme
 	disabledRoutes := s.disabledRouteKeys(ctx, offers, failurePolicy)
 	candidates := routeCandidates(offers, providerFilter, minPrice, maxPrice, disabledRoutes, failurePolicy)
 	candidates = routeCandidatesWithMinimumAvailability(candidates, routeMinimumAvailability(query.Policy))
+	if len(offers) > 0 && len(candidates) == 0 {
+		return nil, routeRecommendationUnavailableError(target)
+	}
 	scoreRouteCandidates(candidates, strategy)
 	sortRouteCandidates(candidates, strategy)
 	return routeRecommendations(candidates, recommendationLimit(query.Policy)), nil
+}
+
+func routeRecommendationUnavailableError(target core.Target) error {
+	return core.NewError(
+		core.CodeSupplyUnavailable,
+		fmt.Sprintf("sms route currently unavailable for %s/%s/%s", target.ApplicationKey, target.CountryISO2, target.CountryCallingCode),
+		true,
+	)
 }
 
 func (s *CatalogService) listRecommendationOffers(ctx context.Context, target core.Target, providerFilter map[string]struct{}) ([]core.RouteOffer, error) {
