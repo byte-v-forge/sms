@@ -7,15 +7,14 @@ import (
 	"github.com/byte-v-forge/sms/internal/core"
 )
 
+const providerClockSkewTolerance = 5 * time.Minute
+
 func (s *OrderService) applyProviderOrder(ctx context.Context, order core.Order, route core.Route, provider core.Provider, providerOrder core.ProviderOrder) (core.Order, error) {
 	now := s.clock.Now()
-	acquiredAt := providerOrder.AcquiredAt
-	if acquiredAt.IsZero() {
-		acquiredAt = now
-	}
 	policy := providerPolicyForUpstreamOrder(provider, providerOrder.UpstreamOrderID).WithDefaults()
+	acquiredAt := normalizedProviderAcquiredAt(providerOrder.AcquiredAt, now)
 	expiresAt := providerOrder.ExpiresAt
-	if expiresAt.IsZero() {
+	if expiresAt.IsZero() || expiresAt.Before(acquiredAt) {
 		expiresAt = acquiredAt.Add(policy.OrderTTL)
 	}
 	if !order.ExpiresAt.IsZero() && order.ExpiresAt.Before(expiresAt) {
@@ -51,6 +50,13 @@ func (s *OrderService) applyProviderOrder(ctx context.Context, order core.Order,
 		return core.Order{}, err
 	}
 	return order, nil
+}
+
+func normalizedProviderAcquiredAt(providerAcquiredAt time.Time, now time.Time) time.Time {
+	if providerAcquiredAt.IsZero() || providerAcquiredAt.After(now.Add(providerClockSkewTolerance)) {
+		return now
+	}
+	return providerAcquiredAt
 }
 
 func (s *OrderService) recordAcquireFailure(ctx context.Context, order core.Order, smsErr *core.Error) (core.Order, error) {

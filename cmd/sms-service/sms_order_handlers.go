@@ -155,16 +155,19 @@ func (s *dashboardServer) waitSMSOrderAcquired(ctx context.Context, initial *sms
 		}
 		resp, err := s.smsOrderClient.GetOrder(ctx, &smsv1.GetOrderRequest{OrderId: initial.GetOrder().GetOrderId()})
 		if err != nil {
+			if smsOrderHasPhone(latest) {
+				return &smsv1.AcquireNumberResponse{Order: latest}
+			}
 			return &smsv1.AcquireNumberResponse{Order: latest, Error: app.PublicError(err)}
 		}
 		if resp.GetOrder() != nil {
 			latest = resp.GetOrder()
 		}
-		if resp.GetError() != nil {
-			return &smsv1.AcquireNumberResponse{Order: latest, Error: resp.GetError()}
-		}
 		if smsOrderHasPhone(latest) {
 			return &smsv1.AcquireNumberResponse{Order: latest}
+		}
+		if resp.GetError() != nil {
+			return &smsv1.AcquireNumberResponse{Order: latest, Error: resp.GetError()}
 		}
 		if latest.GetStatus() != smsv1.SmsOrderStatus_SMS_ORDER_STATUS_ACQUIRE_REQUESTED {
 			if latest.GetLastError() != nil {
