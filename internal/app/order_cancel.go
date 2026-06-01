@@ -105,6 +105,7 @@ func (s *OrderService) cancelLoadedOrder(ctx context.Context, order core.Order, 
 	} else if handled {
 		return synced, nil
 	}
+	order = normalizeProviderCancelTimes(order, policy, now)
 	if !order.CancelAllowedAt.IsZero() && now.Before(order.CancelAllowedAt) {
 		return order, &CancelRetryError{RetryAt: order.CancelAllowedAt}
 	}
@@ -146,4 +147,20 @@ func (s *OrderService) cancelLoadedOrder(ctx context.Context, order core.Order, 
 		return core.Order{}, err
 	}
 	return order, nil
+}
+
+func normalizeProviderCancelTimes(order core.Order, policy core.ProviderPolicy, now time.Time) core.Order {
+	if order.AcquiredAt.After(now.Add(providerClockSkewTolerance)) {
+		order.AcquiredAt = now
+		if policy.CancelAllowedAfter > 0 {
+			order.AcquiredAt = now.Add(-policy.CancelAllowedAfter)
+		}
+	}
+	if !order.CancelAllowedAt.IsZero() && !order.ExpiresAt.IsZero() && order.CancelAllowedAt.After(order.ExpiresAt) {
+		order.CancelAllowedAt = time.Time{}
+	}
+	if !order.CancelAllowedAt.IsZero() && order.CancelAllowedAt.After(now.Add(providerClockSkewTolerance)) {
+		order.CancelAllowedAt = order.AcquiredAt.Add(policy.CancelAllowedAfter)
+	}
+	return order
 }
