@@ -18,9 +18,11 @@ type countryMetadata struct {
 }
 
 var heroSMSServiceAliases = map[string][]string{
-	"gojek": {"gojek", "ni"},
+	"gojek":    {"gojek", "ni"},
+	"whatsapp": {"whatsapp", "wa"},
 }
 
 var heroSMSServiceNames = map[string]string{
 	"ni": "Gojek",
+	"wa": "Whatsapp",
 }
