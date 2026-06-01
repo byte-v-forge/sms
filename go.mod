@@ -10,6 +10,7 @@ require (
 )
 
 require (
+	github.com/biter777/countries v1.7.5 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
