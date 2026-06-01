@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/byte-v-forge/common-lib/geox"
 	"github.com/byte-v-forge/common-lib/stringx"
 	"github.com/byte-v-forge/sms/internal/core"
 )
@@ -49,13 +50,13 @@ func smsbowerCountryIDForQuery(query core.RouteOfferQuery, countries []Country) 
 }
 
 func smsbowerCountryCodes(name string) (string, string) {
-	normalized := strings.ToLower(strings.TrimSpace(name))
-	switch {
-	case strings.Contains(normalized, "indonesia"):
-		return "ID", "62"
-	case strings.Contains(normalized, "thai"):
-		return "TH", "66"
-	default:
+	normalized := strings.TrimSpace(name)
+	if normalized == "" {
 		return "", ""
 	}
+	iso2 := geox.CountryAlpha2ByName(normalized)
+	if iso2 == "" {
+		return "", ""
+	}
+	return iso2, geox.CountryCallingCode(iso2)
 }
