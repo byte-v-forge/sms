@@ -1,13 +1,18 @@
 package main
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/byte-v-forge/common-lib/httpx"
 
+	smsv1 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/sms/v1"
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
+	"google.golang.org/protobuf/proto"
 )
 
 func (s *dashboardServer) handleSMSOrders(w http.ResponseWriter, r *http.Request) {
@@ -25,6 +30,39 @@ func (s *dashboardServer) handleSMSOrders(w http.ResponseWriter, r *http.Request
 	}
 	if writeProviderError(w, resp.GetError()) {
 		return
+	}
+	writeProtoJSON(w, http.StatusOK, resp)
+}
+
+func (s *dashboardServer) handleSMSOrderAcquire(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	if s.smsOrderClient == nil {
+		writeError(w, http.StatusServiceUnavailable, errors.New("sms order service is not configured"))
+		return
+	}
+	var req smsv1.AcquireNumberRequest
+	if err := readProtoJSON(r, &req); err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	if smsAcquireParamsNeedRecommendation(req.GetAcquireParams()) {
+		params, err := s.recommendSMSAcquireParams(r.Context(), req.GetAcquireParams())
+		if err != nil {
+			writeProtoJSON(w, http.StatusOK, &smsv1.AcquireNumberResponse{Error: &smsv1.SmsError{Code: smsv1.SmsErrorCode_SMS_ERROR_CODE_ROUTE_NOT_FOUND, Message: err.Error()}})
+			return
+		}
+		req.AcquireParams = params
+	}
+	resp, err := s.smsOrderClient.AcquireNumber(r.Context(), &req)
+	if err != nil {
+		writeError(w, http.StatusBadGateway, err)
+		return
+	}
+	if resp.GetError() == nil && resp.GetOrder().GetOrderId() != "" {
+		resp = s.waitSMSOrderAcquired(r.Context(), resp, time.Duration(httpx.QueryInt(r, "wait_seconds", 60))*time.Second)
 	}
 	writeProtoJSON(w, http.StatusOK, resp)
 }
@@ -74,6 +112,103 @@ func (s *dashboardServer) handleSMSOrder(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	writeProtoJSON(w, http.StatusOK, resp)
+}
+
+func (s *dashboardServer) waitSMSOrderAcquired(ctx context.Context, initial *smsv1.AcquireNumberResponse, timeout time.Duration) *smsv1.AcquireNumberResponse {
+	if timeout <= 0 || initial.GetOrder().GetStatus() != smsv1.SmsOrderStatus_SMS_ORDER_STATUS_ACQUIRE_REQUESTED {
+		return initial
+	}
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+	latest := initial.GetOrder()
+	for {
+		select {
+		case <-ctx.Done():
+			return &smsv1.AcquireNumberResponse{Order: latest, Error: &smsv1.SmsError{Code: smsv1.SmsErrorCode_SMS_ERROR_CODE_TIMEOUT, Message: "sms number acquisition timed out", Retryable: true}}
+		case <-ticker.C:
+		}
+		resp, err := s.smsOrderClient.GetOrder(ctx, &smsv1.GetOrderRequest{OrderId: initial.GetOrder().GetOrderId()})
+		if err != nil {
+			return &smsv1.AcquireNumberResponse{Order: latest, Error: &smsv1.SmsError{Code: smsv1.SmsErrorCode_SMS_ERROR_CODE_INTERNAL, Message: err.Error()}}
+		}
+		if resp.GetOrder() != nil {
+			latest = resp.GetOrder()
+		}
+		if resp.GetError() != nil {
+			return &smsv1.AcquireNumberResponse{Order: latest, Error: resp.GetError()}
+		}
+		if smsOrderHasPhone(latest) {
+			return &smsv1.AcquireNumberResponse{Order: latest}
+		}
+		if latest.GetStatus() != smsv1.SmsOrderStatus_SMS_ORDER_STATUS_ACQUIRE_REQUESTED {
+			if latest.GetLastError() != nil {
+				return &smsv1.AcquireNumberResponse{Order: latest, Error: latest.GetLastError()}
+			}
+			return &smsv1.AcquireNumberResponse{Order: latest, Error: &smsv1.SmsError{Code: smsv1.SmsErrorCode_SMS_ERROR_CODE_SUPPLY_UNAVAILABLE, Message: "sms number acquisition finished without phone: " + latest.GetStatus().String(), Retryable: true}}
+		}
+	}
+}
+
+func smsOrderHasPhone(order *smsv1.SmsOrder) bool {
+	if order == nil || order.GetPhoneNumber() == nil {
+		return false
+	}
+	phone := order.GetPhoneNumber()
+	return strings.TrimSpace(phone.GetE164Number()) != "" || strings.TrimSpace(phone.GetNationalNumber()) != ""
+}
+
+func smsAcquireParamsNeedRecommendation(params *smsv1.SmsNumberAcquireParams) bool {
+	if params == nil {
+		return true
+	}
+	return params.GetProviderParams() == nil
+}
+
+func (s *dashboardServer) recommendSMSAcquireParams(ctx context.Context, params *smsv1.SmsNumberAcquireParams) (*smsv1.SmsNumberAcquireParams, error) {
+	if s.smsCatalogClient == nil {
+		return nil, errors.New("sms catalog service is not configured")
+	}
+	target := &smsv1.SmsTarget{
+		ApplicationKey:     strings.TrimSpace(params.GetApplicationKey()),
+		CountryIso2:        strings.ToUpper(strings.TrimSpace(params.GetCountryIso2())),
+		CountryCallingCode: strings.TrimPrefix(strings.TrimSpace(params.GetCountryCallingCode()), "+"),
+	}
+	resp, err := s.smsCatalogClient.RecommendSmsRoutes(ctx, &smsv1.RecommendSmsRoutesRequest{
+		Target: target,
+		Policy: &smsv1.SmsRoutePolicy{
+			Strategy:          smsv1.SmsRouteStrategy_SMS_ROUTE_STRATEGY_LOWEST_PRICE,
+			Limit:             1,
+			MinAvailableCount: smsMinAvailableCount(params.GetMinAvailableCount()),
+			MaxPrice:          params.GetMaxPrice(),
+			FailurePolicy:     params.GetRouteFailurePolicy(),
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if resp.GetError() != nil {
+		return nil, errors.New(resp.GetError().GetMessage())
+	}
+	if len(resp.GetRecommendations()) == 0 || resp.GetRecommendations()[0].GetOffer().GetAcquireParams() == nil {
+		return nil, fmt.Errorf("sms route not found for %s/%s/%s", target.GetApplicationKey(), target.GetCountryIso2(), target.GetCountryCallingCode())
+	}
+	recommended, ok := proto.Clone(resp.GetRecommendations()[0].GetOffer().GetAcquireParams()).(*smsv1.SmsNumberAcquireParams)
+	if !ok || recommended == nil {
+		return nil, errors.New("sms route recommendation is invalid")
+	}
+	if recommended.RouteFailurePolicy == nil {
+		recommended.RouteFailurePolicy = params.GetRouteFailurePolicy()
+	}
+	return recommended, nil
+}
+
+func smsMinAvailableCount(value int32) int32 {
+	if value <= 0 {
+		return 1
+	}
+	return value
 }
 
 func orderIDsFromQuery(r *http.Request) []string {

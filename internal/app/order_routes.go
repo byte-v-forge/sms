@@ -16,6 +16,8 @@ func RouteFromPublicAcquireParams(params *smsv1.SmsNumberAcquireParams) core.Rou
 		ApplicationKey:     strings.TrimSpace(params.GetApplicationKey()),
 		CountryISO2:        strings.ToUpper(strings.TrimSpace(params.GetCountryIso2())),
 		CountryCallingCode: strings.TrimPrefix(strings.TrimSpace(params.GetCountryCallingCode()), "+"),
+		MinAvailableCount:  int(params.GetMinAvailableCount()),
+		MaxPrice:           moneyFromProto(params.GetMaxPrice()),
 		FailurePolicy:      routeFailurePolicyFromProto(params.GetRouteFailurePolicy()),
 	}
 	switch value := params.GetProviderParams().(type) {
@@ -46,6 +48,10 @@ func PublicAcquireParamsFromRoute(route core.Route) *smsv1.SmsNumberAcquireParam
 		ApplicationKey:     strings.TrimSpace(route.ApplicationKey),
 		CountryIso2:        strings.ToUpper(strings.TrimSpace(route.CountryISO2)),
 		CountryCallingCode: strings.TrimPrefix(strings.TrimSpace(route.CountryCallingCode), "+"),
+		MinAvailableCount:  int32(route.MinAvailableCount),
+	}
+	if moneyIsSet(route.MaxPrice) {
+		params.MaxPrice = PublicMoney(route.MaxPrice)
 	}
 	if policy := protoRouteFailurePolicy(route.FailurePolicy); policy != nil {
 		params.RouteFailurePolicy = policy
@@ -123,4 +129,8 @@ func durationSeconds(duration time.Duration) int {
 		return 0
 	}
 	return int(duration.Round(time.Second) / time.Second)
+}
+
+func moneyIsSet(money core.Money) bool {
+	return strings.TrimSpace(money.AmountDecimal) != "" || strings.TrimSpace(money.CurrencyCode) != ""
 }

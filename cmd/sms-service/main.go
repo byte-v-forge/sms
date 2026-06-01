@@ -124,7 +124,16 @@ func main() {
 	}
 	defer dashboardConn.Close()
 	errCh := make(chan error, 2)
-	startDashboardHTTP(groupCtx, cfg.DashboardHTTPAddr, cfg.DashboardStaticDir, smsinternalv1.NewSmsProviderAdminServiceClient(dashboardConn), hotStream, errCh)
+	startDashboardHTTP(
+		groupCtx,
+		cfg.DashboardHTTPAddr,
+		cfg.DashboardStaticDir,
+		smsinternalv1.NewSmsProviderAdminServiceClient(dashboardConn),
+		smsv1.NewSmsOrderServiceClient(dashboardConn),
+		smsv1.NewSmsCatalogServiceClient(dashboardConn),
+		hotStream,
+		errCh,
+	)
 
 	log.Printf("sms-service listening on %s", cfg.ListenAddr)
 	group.Go(func() error {

@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	smsv1 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/sms/v1"
 	"github.com/byte-v-forge/common-lib/hotstream"
 	"github.com/byte-v-forge/common-lib/httpsse"
 	"github.com/byte-v-forge/common-lib/protojsonhttp"
@@ -22,19 +23,21 @@ import (
 )
 
 type dashboardServer struct {
-	smsAdminClient smsinternalv1.SmsProviderAdminServiceClient
-	hotstream      hotstream.Subscriber
-	staticDir      string
+	smsAdminClient   smsinternalv1.SmsProviderAdminServiceClient
+	smsOrderClient   smsv1.SmsOrderServiceClient
+	smsCatalogClient smsv1.SmsCatalogServiceClient
+	hotstream        hotstream.Subscriber
+	staticDir        string
 }
 
-func startDashboardHTTP(ctx context.Context, listenAddr, staticDir string, admin smsinternalv1.SmsProviderAdminServiceClient, stream hotstream.Subscriber, errCh chan<- error) {
+func startDashboardHTTP(ctx context.Context, listenAddr, staticDir string, admin smsinternalv1.SmsProviderAdminServiceClient, orders smsv1.SmsOrderServiceClient, catalog smsv1.SmsCatalogServiceClient, stream hotstream.Subscriber, errCh chan<- error) {
 	if strings.TrimSpace(listenAddr) == "" {
 		return
 	}
 	if strings.TrimSpace(staticDir) == "" {
 		staticDir = "/app/dashboard/sms"
 	}
-	dashboard := &dashboardServer{smsAdminClient: admin, hotstream: stream, staticDir: staticDir}
+	dashboard := &dashboardServer{smsAdminClient: admin, smsOrderClient: orders, smsCatalogClient: catalog, hotstream: stream, staticDir: staticDir}
 	mux := http.NewServeMux()
 	mux.Handle("/api/sms/", http.StripPrefix("/api/sms", dashboard.routes()))
 	mux.Handle("/mf/sms/", http.StripPrefix("/mf/sms/", noCacheFileServer(staticDir)))
@@ -59,6 +62,7 @@ func (s *dashboardServer) routes() http.Handler {
 	mux.HandleFunc("/settings/providers/", s.handleSMSSettingsProvider)
 	mux.HandleFunc("/settings/providers", s.handleSMSSettingsProviders)
 	mux.HandleFunc("/order-codes", s.handleSMSOrderCodes)
+	mux.HandleFunc("/orders/acquire", s.handleSMSOrderAcquire)
 	mux.HandleFunc("/orders/", s.handleSMSOrder)
 	mux.HandleFunc("/orders", s.handleSMSOrders)
 	mux.HandleFunc("/streams/state", s.streamState)

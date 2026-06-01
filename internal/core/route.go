@@ -8,6 +8,8 @@ type Route struct {
 	UpstreamServiceKey string
 	CountryISO2        string
 	CountryCallingCode string
+	MinAvailableCount  int
+	MaxPrice           Money
 	ProviderCountryID  string
 	UpstreamProviderID string
 	FailurePolicy      RouteFailurePolicy
