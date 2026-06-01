@@ -9,6 +9,7 @@ type Route struct {
 	CountryISO2        string
 	CountryCallingCode string
 	MinAvailableCount  int
+	MinPrice           Money
 	MaxPrice           Money
 	ProviderCountryID  string
 	UpstreamProviderID string

@@ -28,7 +28,7 @@ func (s *CatalogService) RecommendRoutes(ctx context.Context, query RouteRecomme
 	if err := validateRecommendationTarget(target); err != nil {
 		return nil, err
 	}
-	maxPrice, err := recommendationMaxPrice(query.Policy)
+	minPrice, maxPrice, err := recommendationPriceRange(query.Policy)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func (s *CatalogService) RecommendRoutes(ctx context.Context, query RouteRecomme
 	strategy := recommendationStrategy(query.Policy)
 	failurePolicy := routeFailurePolicyFromRoutePolicy(query.Policy)
 	disabledRoutes := s.disabledRouteKeys(ctx, offers, failurePolicy)
-	candidates := routeCandidates(offers, providerFilter, maxPrice, disabledRoutes, failurePolicy)
+	candidates := routeCandidates(offers, providerFilter, minPrice, maxPrice, disabledRoutes, failurePolicy)
 	candidates = routeCandidatesWithMinimumAvailability(candidates, routeMinimumAvailability(query.Policy))
 	scoreRouteCandidates(candidates, strategy)
 	sortRouteCandidates(candidates, strategy)

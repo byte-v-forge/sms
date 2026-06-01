@@ -17,6 +17,7 @@ func RouteFromPublicAcquireParams(params *smsv1.SmsNumberAcquireParams) core.Rou
 		CountryISO2:        strings.ToUpper(strings.TrimSpace(params.GetCountryIso2())),
 		CountryCallingCode: strings.TrimPrefix(strings.TrimSpace(params.GetCountryCallingCode()), "+"),
 		MinAvailableCount:  int(params.GetMinAvailableCount()),
+		MinPrice:           moneyFromProto(params.GetMinPrice()),
 		MaxPrice:           moneyFromProto(params.GetMaxPrice()),
 		FailurePolicy:      routeFailurePolicyFromProto(params.GetRouteFailurePolicy()),
 	}
@@ -49,6 +50,9 @@ func PublicAcquireParamsFromRoute(route core.Route) *smsv1.SmsNumberAcquireParam
 		CountryIso2:        strings.ToUpper(strings.TrimSpace(route.CountryISO2)),
 		CountryCallingCode: strings.TrimPrefix(strings.TrimSpace(route.CountryCallingCode), "+"),
 		MinAvailableCount:  int32(route.MinAvailableCount),
+	}
+	if moneyIsSet(route.MinPrice) {
+		params.MinPrice = PublicMoney(route.MinPrice)
 	}
 	if moneyIsSet(route.MaxPrice) {
 		params.MaxPrice = PublicMoney(route.MaxPrice)

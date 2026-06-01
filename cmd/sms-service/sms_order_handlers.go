@@ -182,6 +182,7 @@ func (s *dashboardServer) recommendSMSAcquireParams(ctx context.Context, params 
 			Strategy:          smsv1.SmsRouteStrategy_SMS_ROUTE_STRATEGY_LOWEST_PRICE,
 			Limit:             1,
 			MinAvailableCount: smsMinAvailableCount(params.GetMinAvailableCount()),
+			MinPrice:          params.GetMinPrice(),
 			MaxPrice:          params.GetMaxPrice(),
 			FailurePolicy:     params.GetRouteFailurePolicy(),
 		},

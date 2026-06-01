@@ -31,7 +31,7 @@ func (s *CatalogService) disabledRouteKeys(ctx context.Context, offers []core.Ro
 	return disabled
 }
 
-func routeCandidates(offers []core.RouteOffer, providerFilter map[string]struct{}, maxPrice core.Money, disabledRoutes map[string]struct{}, failurePolicy core.RouteFailurePolicy) []routeCandidate {
+func routeCandidates(offers []core.RouteOffer, providerFilter map[string]struct{}, minPrice core.Money, maxPrice core.Money, disabledRoutes map[string]struct{}, failurePolicy core.RouteFailurePolicy) []routeCandidate {
 	candidates := make([]routeCandidate, 0, len(offers))
 	for _, offer := range offers {
 		offer.Route = routeWithFailurePolicy(offer.Route, failurePolicy)
@@ -44,7 +44,7 @@ func routeCandidates(offers []core.RouteOffer, providerFilter map[string]struct{
 		if !providerIncluded(offer.ProviderKey, providerFilter) {
 			continue
 		}
-		if !withinMaxPrice(offer.Price, maxPrice) {
+		if !withinPriceRange(offer.Price, minPrice, maxPrice) {
 			continue
 		}
 		price, hasPrice := parseDecimalAmount(offer.Price.AmountDecimal)
@@ -94,22 +94,33 @@ func providerIncluded(providerKey string, filter map[string]struct{}) bool {
 	return ok
 }
 
-func withinMaxPrice(price core.Money, maxPrice core.Money) bool {
-	if strings.TrimSpace(maxPrice.AmountDecimal) == "" {
-		return true
-	}
-	if maxPrice.CurrencyCode != "" && price.CurrencyCode != "" && !strings.EqualFold(maxPrice.CurrencyCode, price.CurrencyCode) {
-		return false
-	}
+func withinPriceRange(price core.Money, minPrice core.Money, maxPrice core.Money) bool {
 	offerAmount, ok := parseDecimalAmount(price.AmountDecimal)
 	if !ok {
+		return !moneyIsSet(minPrice) && !moneyIsSet(maxPrice)
+	}
+	if !withinPriceBound(price, offerAmount, minPrice, 1) {
 		return false
 	}
-	maxAmount, ok := parseDecimalAmount(maxPrice.AmountDecimal)
+	return withinPriceBound(price, offerAmount, maxPrice, -1)
+}
+
+func withinPriceBound(price core.Money, offerAmount *big.Rat, bound core.Money, direction int) bool {
+	if strings.TrimSpace(bound.AmountDecimal) == "" {
+		return true
+	}
+	if bound.CurrencyCode != "" && price.CurrencyCode != "" && !strings.EqualFold(bound.CurrencyCode, price.CurrencyCode) {
+		return false
+	}
+	boundAmount, ok := parseDecimalAmount(bound.AmountDecimal)
 	if !ok {
 		return false
 	}
-	return offerAmount.Cmp(maxAmount) <= 0
+	comparison := offerAmount.Cmp(boundAmount)
+	if direction > 0 {
+		return comparison >= 0
+	}
+	return comparison <= 0
 }
 
 func parseDecimalAmount(value string) (*big.Rat, bool) {
