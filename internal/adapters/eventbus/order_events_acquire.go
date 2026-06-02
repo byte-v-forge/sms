@@ -11,17 +11,18 @@ import (
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	"github.com/byte-v-forge/sms/internal/app"
 	"github.com/byte-v-forge/sms/internal/core"
+	smseventcatalog "github.com/byte-v-forge/sms/internal/eventcatalog"
 )
 
 func (b *OrderEventRecorder) OrderAcquireRequested(ctx context.Context, order core.Order, route core.Route, reason string) (eventoutbox.Record, error) {
 	reason = strings.TrimSpace(reason)
 	eventCtx := b.context(
-		eventcatalog.SMSOrderAcquireRequested.EventName,
+		smseventcatalog.OrderAcquireRequested.EventName,
 		eventbus.StableEventID("order-acquire-", order.ID, order.RequestID, reason),
 		order.ID,
 		order.UpdatedAt,
 	)
-	return b.record(ctx, eventcatalog.SMSOrderAcquireRequested.Subject, &smsinternalv1.SmsOrderAcquireRequest{
+	return b.record(ctx, smseventcatalog.OrderAcquireRequested.Subject, &smsinternalv1.SmsOrderAcquireRequest{
 		OrderId:       order.ID,
 		RequestId:     order.RequestID,
 		Reason:        reason,

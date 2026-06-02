@@ -9,7 +9,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/byte-v-forge/common-lib/eventcatalog"
 	"github.com/byte-v-forge/common-lib/eventoutbox"
 	smsv1 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/sms/v1"
 	"github.com/byte-v-forge/common-lib/grpcclient"
@@ -19,6 +18,7 @@ import (
 	eventbusadapter "github.com/byte-v-forge/sms/internal/adapters/eventbus"
 	grpcadapter "github.com/byte-v-forge/sms/internal/adapters/grpc"
 	"github.com/byte-v-forge/sms/internal/app"
+	smseventcatalog "github.com/byte-v-forge/sms/internal/eventcatalog"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 )
@@ -71,15 +71,15 @@ func main() {
 		hotStream,
 		routeHealthStore,
 	)
-	acquireConsumer, err := platformEventBus.PullWorkerConsumer(cfg.EventStreamName, eventcatalog.SMSOrderAcquireRequested.Subject, eventcatalog.SMSOrderAcquireRequested.ConsumerDurable, 10, 60*time.Second)
+	acquireConsumer, err := platformEventBus.PullWorkerConsumer(cfg.EventStreamName, smseventcatalog.OrderAcquireRequested.Subject, smseventcatalog.OrderAcquireRequested.ConsumerDurable, 10, 60*time.Second)
 	if err != nil {
 		log.Fatalf("initialize SMS order acquire worker: %v", err)
 	}
-	pollConsumer, err := platformEventBus.PullWorkerConsumer(cfg.EventStreamName, eventcatalog.SMSOrderPollRequested.Subject, eventcatalog.SMSOrderPollRequested.ConsumerDurable, 10, 60*time.Second)
+	pollConsumer, err := platformEventBus.PullWorkerConsumer(cfg.EventStreamName, smseventcatalog.OrderPollRequested.Subject, smseventcatalog.OrderPollRequested.ConsumerDurable, 10, 60*time.Second)
 	if err != nil {
 		log.Fatalf("initialize SMS order poll worker: %v", err)
 	}
-	cancelConsumer, err := platformEventBus.PullWorkerConsumer(cfg.EventStreamName, eventcatalog.SMSOrderCancelRequested.Subject, eventcatalog.SMSOrderCancelRequested.ConsumerDurable, 10, 60*time.Second)
+	cancelConsumer, err := platformEventBus.PullWorkerConsumer(cfg.EventStreamName, smseventcatalog.OrderCancelRequested.Subject, smseventcatalog.OrderCancelRequested.ConsumerDurable, 10, 60*time.Second)
 	if err != nil {
 		log.Fatalf("initialize SMS order cancel worker: %v", err)
 	}
