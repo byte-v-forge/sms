@@ -20,7 +20,7 @@ func (b *OrderEventRecorder) OrderPollRequested(ctx context.Context, order core.
 		order.ID,
 		order.UpdatedAt,
 	)
-	return b.record(ctx, smseventcatalog.OrderPollRequested.Subject, &smsinternalv1.SmsOrderPollRequest{
+	return b.record(ctx, smseventcatalog.OrderPollRequested, &smsinternalv1.SmsOrderPollRequest{
 		OrderId: order.ID,
 		Reason:  reason,
 	}, eventCtx, eventbus.WithNonEmptyAttribute(orderAttributes(order), "reason", reason))
@@ -35,7 +35,7 @@ func (b *OrderEventRecorder) OrderCancelRequested(ctx context.Context, order cor
 		order.ID,
 		order.UpdatedAt,
 	)
-	return b.record(ctx, smseventcatalog.OrderCancelRequested.Subject, &smsinternalv1.SmsOrderCancelRequest{
+	return b.record(ctx, smseventcatalog.OrderCancelRequested, &smsinternalv1.SmsOrderCancelRequest{
 		OrderId:   order.ID,
 		RequestId: requestID,
 		Reason:    reason,

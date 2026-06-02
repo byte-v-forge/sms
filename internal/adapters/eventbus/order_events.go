@@ -27,16 +27,15 @@ func NewOrderEventRecorder(source string) *OrderEventRecorder {
 	return &OrderEventRecorder{source: source}
 }
 
-func (b *OrderEventRecorder) record(_ context.Context, subject string, message proto.Message, eventCtx *commonv1.EventContext, attrs map[string]string) (eventoutbox.Record, error) {
+func (b *OrderEventRecorder) record(_ context.Context, definition eventcatalog.Definition, message proto.Message, eventCtx *commonv1.EventContext, attrs map[string]string) (eventoutbox.Record, error) {
 	if b == nil {
 		return eventoutbox.Record{}, nil
 	}
-	return eventoutbox.NewRecord(eventbus.Message{
-		Subject:    subject,
-		Event:      message,
-		Context:    eventCtx,
-		Attributes: attrs,
-	})
+	eventMessage, err := definition.NewMessage(message, eventCtx, attrs)
+	if err != nil {
+		return eventoutbox.Record{}, err
+	}
+	return eventoutbox.NewRecord(eventMessage)
 }
 
 func (b *OrderEventRecorder) context(eventName string, eventID string, correlationID string, occurredAt time.Time) *commonv1.EventContext {

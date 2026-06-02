@@ -22,7 +22,7 @@ func (b *OrderEventRecorder) OrderAcquireRequested(ctx context.Context, order co
 		order.ID,
 		order.UpdatedAt,
 	)
-	return b.record(ctx, smseventcatalog.OrderAcquireRequested.Subject, &smsinternalv1.SmsOrderAcquireRequest{
+	return b.record(ctx, smseventcatalog.OrderAcquireRequested, &smsinternalv1.SmsOrderAcquireRequest{
 		OrderId:       order.ID,
 		RequestId:     order.RequestID,
 		Reason:        reason,
@@ -37,7 +37,7 @@ func (b *OrderEventRecorder) OrderAcquired(ctx context.Context, order core.Order
 		order.ID,
 		order.AcquiredAt,
 	)
-	return b.record(ctx, eventcatalog.SMSOrderAcquired.Subject, &smsv1.SmsOrderAcquiredEvent{
+	return b.record(ctx, eventcatalog.SMSOrderAcquired, &smsv1.SmsOrderAcquiredEvent{
 		Context: eventCtx,
 		Order:   app.PublicOrder(order),
 	}, eventCtx, orderAttributes(order))

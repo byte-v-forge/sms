@@ -19,7 +19,7 @@ func (b *OrderEventRecorder) CodeReceived(ctx context.Context, order core.Order,
 		order.ID,
 		code.ReceivedAt,
 	)
-	return b.record(ctx, eventcatalog.SMSCodeReceived.Subject, &smsv1.SmsCodeReceivedEvent{
+	return b.record(ctx, eventcatalog.SMSCodeReceived, &smsv1.SmsCodeReceivedEvent{
 		Context: eventCtx,
 		OrderId: order.ID,
 		Code:    app.PublicCode(&code),
@@ -33,7 +33,7 @@ func (b *OrderEventRecorder) OrderStatusChanged(ctx context.Context, order core.
 		order.ID,
 		order.UpdatedAt,
 	)
-	return b.record(ctx, eventcatalog.SMSOrderStatusChanged.Subject, &smsv1.SmsOrderStatusChangedEvent{
+	return b.record(ctx, eventcatalog.SMSOrderStatusChanged, &smsv1.SmsOrderStatusChangedEvent{
 		Context:        eventCtx,
 		OrderId:        order.ID,
 		PreviousStatus: app.PublicOrderStatus(previous),
