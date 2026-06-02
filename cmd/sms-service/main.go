@@ -28,7 +28,12 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	configStore, err := app.NewPostgresProviderConfigStore(ctx, cfg.PGDSN)
+	providerRegistry, err := newProviderRegistry()
+	if err != nil {
+		log.Fatalf("initialize SMS provider registry: %v", err)
+	}
+
+	configStore, err := app.NewPostgresProviderConfigStore(ctx, cfg.PGDSN, providerRegistry)
 	if err != nil {
 		log.Fatalf("initialize SMS config store: %v", err)
 	}
@@ -61,10 +66,10 @@ func main() {
 
 	httpTimeout := time.Duration(cfg.HTTPTimeoutSeconds) * time.Second
 	orderEvents := eventbusadapter.NewOrderEventRecorder("sms-service")
-	catalogService := app.NewCatalogService(configStore, routeHealthStore, httpTimeout, cfg.ProviderHTTPProxy, app.SystemClock{})
+	catalogService := app.NewCatalogService(configStore, providerRegistry, routeHealthStore, httpTimeout, cfg.ProviderHTTPProxy, app.SystemClock{})
 	orderService := app.NewOrderService(
 		orderStore,
-		app.NewConfiguredProviders(configStore, httpTimeout, cfg.ProviderHTTPProxy),
+		app.NewConfiguredProviders(providerRegistry, configStore, httpTimeout, cfg.ProviderHTTPProxy),
 		app.SystemClock{},
 		app.RandomIDGenerator{},
 		orderEvents,
@@ -83,7 +88,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("initialize SMS order cancel worker: %v", err)
 	}
-	adminService := app.NewProviderAdminService(configStore, orderService, orderHistoryStore, httpTimeout, cfg.ProviderHTTPProxy, hotStream)
+	adminService := app.NewProviderAdminService(configStore, providerRegistry, orderService, orderHistoryStore, httpTimeout, cfg.ProviderHTTPProxy, hotStream)
 
 	listener, err := net.Listen("tcp", cfg.ListenAddr)
 	if err != nil {

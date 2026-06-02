@@ -41,7 +41,7 @@ func (s *PostgresProviderConfigStore) normalizeForSave(ctx context.Context, inpu
 	if config.GetProviderKey() == "" {
 		return nil, core.NewError(core.CodeValidationFailed, "provider_key is required", false)
 	}
-	if !supportedProviderKey(config.GetProviderKey()) {
+	if !s.providers.Supports(config.GetProviderKey()) {
 		return nil, core.NewError(core.CodeUnsupportedOperation, "unsupported sms provider", false)
 	}
 	config.CredentialSecret = strings.TrimSpace(config.GetCredentialSecret())

@@ -18,7 +18,7 @@ func (s *CatalogService) ListPriceOffers(ctx context.Context, query core.RouteOf
 		if !config.GetEnabled() {
 			continue
 		}
-		provider, err := providerFromConfig(config, s.timeout, s.defaultHTTPProxy)
+		provider, err := providerFromConfig(s.providers, config, s.timeout, s.defaultHTTPProxy)
 		if err != nil {
 			lastErr = err
 			continue

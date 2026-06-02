@@ -6,10 +6,12 @@ import (
 	"time"
 
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
+	providerspi "github.com/byte-v-forge/sms/internal/providers/spi"
 )
 
 type ProviderAdminService struct {
 	configs          ProviderConfigStore
+	providers        *providerspi.Registry
 	orders           *OrderService
 	orderDB          OrderListStore
 	timeout          time.Duration
@@ -17,9 +19,10 @@ type ProviderAdminService struct {
 	hot              HotStreamPublisher
 }
 
-func NewProviderAdminService(configs ProviderConfigStore, orders *OrderService, orderDB OrderListStore, timeout time.Duration, defaultHTTPProxy string, hot HotStreamPublisher) *ProviderAdminService {
+func NewProviderAdminService(configs ProviderConfigStore, providers *providerspi.Registry, orders *OrderService, orderDB OrderListStore, timeout time.Duration, defaultHTTPProxy string, hot HotStreamPublisher) *ProviderAdminService {
 	return &ProviderAdminService{
 		configs:          configs,
+		providers:        providers,
 		orders:           orders,
 		orderDB:          orderDB,
 		timeout:          timeout,
@@ -29,7 +32,7 @@ func NewProviderAdminService(configs ProviderConfigStore, orders *OrderService, 
 }
 
 func (s *ProviderAdminService) ListProviderPlugins(context.Context) ([]*smsinternalv1.SmsProviderPluginDescriptor, error) {
-	return listSMSProviderPluginDescriptors(), nil
+	return s.providers.Descriptors(), nil
 }
 
 func (s *ProviderAdminService) UpsertProviderConfig(ctx context.Context, config *smsinternalv1.SmsProviderConfig) (*smsinternalv1.SmsProviderConfig, error) {

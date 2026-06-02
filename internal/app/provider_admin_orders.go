@@ -15,7 +15,7 @@ func (s *ProviderAdminService) GetProviderBalance(ctx context.Context, providerK
 	if !config.GetEnabled() {
 		return core.Money{}, core.NewError(core.CodeValidationFailed, "sms provider config is disabled", false)
 	}
-	provider, err := providerFromConfig(config, s.timeout, s.defaultHTTPProxy)
+	provider, err := providerFromConfig(s.providers, config, s.timeout, s.defaultHTTPProxy)
 	if err != nil {
 		return core.Money{}, err
 	}

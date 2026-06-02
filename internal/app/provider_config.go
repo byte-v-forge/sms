@@ -10,6 +10,7 @@ import (
 	"github.com/byte-v-forge/common-lib/httpclient"
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	"github.com/byte-v-forge/sms/internal/core"
+	providerspi "github.com/byte-v-forge/sms/internal/providers/spi"
 )
 
 type ProviderConfigStore interface {
@@ -27,24 +28,27 @@ type OrderListStore interface {
 
 type ConfiguredProvider struct {
 	key              string
+	providers        *providerspi.Registry
 	configs          ProviderConfigStore
 	timeout          time.Duration
 	defaultHTTPProxy string
 }
 
-func NewConfiguredProvider(key string, configs ProviderConfigStore, timeout time.Duration, defaultHTTPProxy string) *ConfiguredProvider {
-	return &ConfiguredProvider{key: normalizeProviderKey(key), configs: configs, timeout: timeout, defaultHTTPProxy: strings.TrimSpace(defaultHTTPProxy)}
+func NewConfiguredProvider(providers *providerspi.Registry, key string, configs ProviderConfigStore, timeout time.Duration, defaultHTTPProxy string) *ConfiguredProvider {
+	return &ConfiguredProvider{key: normalizeProviderKey(key), providers: providers, configs: configs, timeout: timeout, defaultHTTPProxy: strings.TrimSpace(defaultHTTPProxy)}
 }
 
-func (p *ConfiguredProvider) Key() string                 { return p.key }
-func (p *ConfiguredProvider) Policy() core.ProviderPolicy { return defaultProviderPolicy(p.key) }
+func (p *ConfiguredProvider) Key() string { return p.key }
+func (p *ConfiguredProvider) Policy() core.ProviderPolicy {
+	return p.providers.DefaultPolicy(p.key, fallbackProviderPolicy())
+}
 
 func (p *ConfiguredProvider) AcquireNumber(ctx context.Context, request core.ProviderAcquireRequest) (core.ProviderOrder, error) {
 	config, err := p.configs.GetEnabledProviderConfig(ctx, p.key, request.Target)
 	if err != nil {
 		return core.ProviderOrder{}, err
 	}
-	provider, err := providerFromConfig(config, p.timeout, p.defaultHTTPProxy)
+	provider, err := providerFromConfig(p.providers, config, p.timeout, p.defaultHTTPProxy)
 	if err != nil {
 		return core.ProviderOrder{}, err
 	}
@@ -86,7 +90,7 @@ func (p *ConfiguredProvider) GetBalance(ctx context.Context) (core.Money, error)
 	if err != nil {
 		return core.Money{}, err
 	}
-	provider, err := providerFromConfig(config, p.timeout, p.defaultHTTPProxy)
+	provider, err := providerFromConfig(p.providers, config, p.timeout, p.defaultHTTPProxy)
 	if err != nil {
 		return core.Money{}, err
 	}
@@ -98,10 +102,10 @@ func (p *ConfiguredProvider) providerForOrder(ctx context.Context, upstreamOrder
 	if err != nil {
 		return nil, err
 	}
-	return providerFromConfig(config, p.timeout, p.defaultHTTPProxy)
+	return providerFromConfig(p.providers, config, p.timeout, p.defaultHTTPProxy)
 }
 
-func providerFromConfig(config *smsinternalv1.SmsProviderConfig, timeout time.Duration, defaultHTTPProxy string) (core.Provider, error) {
+func providerFromConfig(providers *providerspi.Registry, config *smsinternalv1.SmsProviderConfig, timeout time.Duration, defaultHTTPProxy string) (core.Provider, error) {
 	if config == nil {
 		return nil, core.NewError(core.CodeRouteNotFound, "sms provider config not found", false)
 	}
@@ -109,7 +113,7 @@ func providerFromConfig(config *smsinternalv1.SmsProviderConfig, timeout time.Du
 	if err != nil {
 		return nil, err
 	}
-	plugin, ok := smsProviderPluginByKey(config.GetProviderKey())
+	plugin, ok := providers.Get(config.GetProviderKey())
 	if !ok {
 		return nil, unsupportedSMSProvider(config.GetProviderKey())
 	}
@@ -134,11 +138,8 @@ func moneyFromProto(value *smsv1.DecimalMoney) core.Money {
 	return core.Money{CurrencyCode: value.GetCurrencyCode(), AmountDecimal: value.GetAmountDecimal()}
 }
 
-func normalizeProviderKey(value string) string { return strings.ToLower(strings.TrimSpace(value)) }
+func normalizeProviderKey(value string) string { return providerspi.NormalizeKey(value) }
 
-func defaultProviderPolicy(providerKey string) core.ProviderPolicy {
-	if plugin, ok := smsProviderPluginByKey(providerKey); ok {
-		return plugin.DefaultPolicy()
-	}
+func fallbackProviderPolicy() core.ProviderPolicy {
 	return core.ProviderPolicy{OrderTTL: 20 * time.Minute, PollInterval: 5 * time.Second}
 }

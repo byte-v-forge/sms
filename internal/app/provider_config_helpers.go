@@ -11,15 +11,3 @@ func cloneProviderConfig(input *smsinternalv1.SmsProviderConfig) *smsinternalv1.
 	}
 	return proto.Clone(input).(*smsinternalv1.SmsProviderConfig)
 }
-
-func defaultProviderCapabilities(providerKey string) *smsinternalv1.SmsProviderCapabilities {
-	if plugin, ok := smsProviderPluginByKey(providerKey); ok {
-		return plugin.Capabilities()
-	}
-	return &smsinternalv1.SmsProviderCapabilities{}
-}
-
-func supportedProviderKey(providerKey string) bool {
-	_, ok := smsProviderPluginByKey(providerKey)
-	return ok
-}

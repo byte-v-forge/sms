@@ -9,10 +9,7 @@ import (
 
 func (s *CatalogService) finalizeOffer(config *smsinternalv1.SmsProviderConfig, offer core.RouteOffer) core.RouteOffer {
 	offer.ProviderKey = normalizeProviderKey(firstNonEmpty(offer.ProviderKey, offer.Route.ProviderKey, config.GetProviderKey()))
-	displayName := offer.ProviderKey
-	if plugin, ok := smsProviderPluginByKey(offer.ProviderKey); ok {
-		displayName = plugin.DisplayName()
-	}
+	displayName := s.providers.DisplayName(offer.ProviderKey)
 	offer.ProviderDisplayName = firstNonEmpty(offer.ProviderDisplayName, displayName, offer.ProviderKey)
 	offer.Route.ProviderKey = offer.ProviderKey
 	if offer.Route.ApplicationKey == "" {
@@ -42,7 +39,7 @@ func (s *CatalogService) finalizeOffer(config *smsinternalv1.SmsProviderConfig, 
 	if offer.ObservedAt.IsZero() {
 		offer.ObservedAt = s.clock.Now()
 	}
-	if capabilities := defaultProviderCapabilities(config.GetProviderKey()); capabilities != nil {
+	if capabilities := s.providers.Capabilities(config.GetProviderKey()); capabilities != nil {
 		offer.SupportsCancel = true
 		offer.SupportsAdditionalCode = capabilities.GetSupportsAdditionalCode()
 		offer.RequiresMarkMessageSent = capabilities.GetRequiresMarkMessageSent()
