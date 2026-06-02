@@ -10,6 +10,7 @@ import (
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	"github.com/byte-v-forge/sms/internal/app"
 	"github.com/byte-v-forge/sms/internal/core"
+	smseventcatalog "github.com/byte-v-forge/sms/internal/eventcatalog"
 )
 
 const defaultPollRetryDelay = 5 * time.Second
@@ -23,6 +24,7 @@ func RunOrderPollWorker(ctx context.Context, consumer eventbus.Consumer, service
 	return eventbus.RunTypedConsumerWorker(ctx, eventbus.TypedConsumerWorkerConfig[*smsinternalv1.SmsOrderPollRequest]{
 		Name:           "sms order poll requests",
 		Consumer:       consumer,
+		Expected:       smseventcatalog.OrderPollRequested.ExpectedMessage(),
 		NewMessage:     func() *smsinternalv1.SmsOrderPollRequest { return &smsinternalv1.SmsOrderPollRequest{} },
 		Validate:       func(request *smsinternalv1.SmsOrderPollRequest) error { return validateOrderID(request.GetOrderId()) },
 		Handler:        worker.handle,

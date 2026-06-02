@@ -10,6 +10,7 @@ import (
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	"github.com/byte-v-forge/sms/internal/app"
 	"github.com/byte-v-forge/sms/internal/core"
+	smseventcatalog "github.com/byte-v-forge/sms/internal/eventcatalog"
 )
 
 const defaultCancelRetryDelay = 30 * time.Second
@@ -23,6 +24,7 @@ func RunOrderCancelWorker(ctx context.Context, consumer eventbus.Consumer, servi
 	return eventbus.RunTypedConsumerWorker(ctx, eventbus.TypedConsumerWorkerConfig[*smsinternalv1.SmsOrderCancelRequest]{
 		Name:           "sms order cancel requests",
 		Consumer:       consumer,
+		Expected:       smseventcatalog.OrderCancelRequested.ExpectedMessage(),
 		NewMessage:     func() *smsinternalv1.SmsOrderCancelRequest { return &smsinternalv1.SmsOrderCancelRequest{} },
 		Validate:       func(request *smsinternalv1.SmsOrderCancelRequest) error { return validateOrderID(request.GetOrderId()) },
 		Handler:        worker.handle,

@@ -31,11 +31,7 @@ func (b *OrderEventRecorder) record(_ context.Context, definition eventcatalog.D
 	if b == nil {
 		return eventoutbox.Record{}, nil
 	}
-	eventMessage, err := definition.NewMessage(message, eventCtx, attrs)
-	if err != nil {
-		return eventoutbox.Record{}, err
-	}
-	return eventoutbox.NewRecord(eventMessage)
+	return eventoutbox.NewRecordFor(definition, message, eventCtx, attrs)
 }
 
 func (b *OrderEventRecorder) context(eventName string, eventID string, correlationID string, occurredAt time.Time) *commonv1.EventContext {

@@ -76,15 +76,15 @@ func main() {
 		hotStream,
 		routeHealthStore,
 	)
-	acquireConsumer, err := platformEventBus.PullWorkerConsumer(cfg.EventStreamName, smseventcatalog.OrderAcquireRequested.Subject, smseventcatalog.OrderAcquireRequested.ConsumerDurable, 10, 60*time.Second)
+	acquireConsumer, err := platformEventBus.PullWorkerForDefinition(cfg.EventStreamName, smseventcatalog.OrderAcquireRequested, 10, 60*time.Second)
 	if err != nil {
 		log.Fatalf("initialize SMS order acquire worker: %v", err)
 	}
-	pollConsumer, err := platformEventBus.PullWorkerConsumer(cfg.EventStreamName, smseventcatalog.OrderPollRequested.Subject, smseventcatalog.OrderPollRequested.ConsumerDurable, 10, 60*time.Second)
+	pollConsumer, err := platformEventBus.PullWorkerForDefinition(cfg.EventStreamName, smseventcatalog.OrderPollRequested, 10, 60*time.Second)
 	if err != nil {
 		log.Fatalf("initialize SMS order poll worker: %v", err)
 	}
-	cancelConsumer, err := platformEventBus.PullWorkerConsumer(cfg.EventStreamName, smseventcatalog.OrderCancelRequested.Subject, smseventcatalog.OrderCancelRequested.ConsumerDurable, 10, 60*time.Second)
+	cancelConsumer, err := platformEventBus.PullWorkerForDefinition(cfg.EventStreamName, smseventcatalog.OrderCancelRequested, 10, 60*time.Second)
 	if err != nil {
 		log.Fatalf("initialize SMS order cancel worker: %v", err)
 	}
