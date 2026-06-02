@@ -123,7 +123,7 @@ func main() {
 		server.GracefulStop()
 	}()
 
-	dashboardConn, err := grpcclient.NewInsecure(selfTarget(cfg.ListenAddr))
+	dashboardConn, err := grpcclient.NewInsecure(grpcclient.SelfTarget(cfg.ListenAddr))
 	if err != nil {
 		log.Fatalf("connect sms dashboard admin API: %v", err)
 	}

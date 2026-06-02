@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -126,19 +125,4 @@ func noCacheFileServer(dir string) http.Handler {
 		}
 		http.NotFound(w, r)
 	})
-}
-
-func selfTarget(listenAddr string) string {
-	addr := strings.TrimSpace(listenAddr)
-	if strings.HasPrefix(addr, ":") {
-		return "127.0.0.1" + addr
-	}
-	host, port, err := net.SplitHostPort(addr)
-	if err != nil || port == "" {
-		return addr
-	}
-	if host == "" || host == "0.0.0.0" || host == "::" {
-		host = "127.0.0.1"
-	}
-	return net.JoinHostPort(host, port)
 }
