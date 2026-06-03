@@ -1,11 +1,16 @@
 package core
 
-import "time"
+import (
+	"time"
+
+	commonv1 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/common/v1"
+)
 
 type SMSCode struct {
 	Value       string
 	MessageText string
 	ReceivedAt  time.Time
+	SecretRef   *commonv1.SecretRef
 }
 
 type OrderCode struct {

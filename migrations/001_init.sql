@@ -92,11 +92,12 @@ CREATE INDEX IF NOT EXISTS idx_sms_orders_provider_upstream
 
 CREATE TABLE IF NOT EXISTS sms_order_codes (
   order_id text NOT NULL REFERENCES sms_orders(order_id) ON DELETE CASCADE,
-  code_value text NOT NULL,
+  code_secret_id text NOT NULL,
   message_text text NOT NULL DEFAULT '',
   received_at timestamptz NOT NULL,
+  expires_at timestamptz NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (order_id, code_value, received_at)
+  PRIMARY KEY (order_id, code_secret_id, received_at)
 );
 CREATE INDEX IF NOT EXISTS idx_sms_order_codes_order_received
   ON sms_order_codes(order_id, received_at DESC);

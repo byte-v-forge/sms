@@ -12,6 +12,7 @@ type OrderService struct {
 	hot         HotStreamPublisher
 	providers   map[string]core.Provider
 	routeHealth RouteHealthStore
+	codeSecrets *SMSCodeSecretStore
 	clock       core.Clock
 	ids         core.IDGenerator
 	events      OrderEventSink
@@ -32,6 +33,7 @@ func NewOrderService(
 	events OrderEventSink,
 	hot HotStreamPublisher,
 	routeHealth RouteHealthStore,
+	codeSecrets *SMSCodeSecretStore,
 ) *OrderService {
 	index := make(map[string]core.Provider, len(providers))
 	for _, provider := range providers {
@@ -53,6 +55,7 @@ func NewOrderService(
 		store:       store,
 		providers:   index,
 		routeHealth: routeHealth,
+		codeSecrets: codeSecrets,
 		clock:       clock,
 		ids:         ids,
 		events:      events,

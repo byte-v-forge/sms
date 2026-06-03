@@ -84,7 +84,7 @@ function CodesCell({ codes }: { codes: SmsOrderCodeView[] }) {
     <div className="grid gap-1">
       {codes.slice(0, 3).map((item) => (
         <div key={`${item.order_id}-${item.code?.secret_ref?.secret_id}-${item.code?.received_at}`} className="flex items-center gap-2">
-          <span className="font-mono text-xs">{item.code?.secret_ref?.secret_id || '-'}</span>
+          <span className="text-xs">{item.code?.secret_ref?.secret_id ? '已捕获' : '-'}</span>
           <span className="text-[11px] text-muted-foreground">{dateTimeText(item.code?.received_at)}</span>
         </div>
       ))}

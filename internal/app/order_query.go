@@ -56,16 +56,20 @@ func (s *OrderService) CheckCode(ctx context.Context, orderID string) (core.Orde
 		if receivedAt.IsZero() {
 			receivedAt = order.UpdatedAt
 		}
-		code := &core.SMSCode{Value: result.Code, MessageText: result.MessageText, ReceivedAt: receivedAt}
-		order.Status = core.StatusCodeReceived
-		records, err := s.statusAndCodeRecords(ctx, order, previousStatus, *code)
+		code := core.SMSCode{Value: result.Code, MessageText: result.MessageText, ReceivedAt: receivedAt}
+		code, err = s.prepareCodeSecret(ctx, order, code)
 		if err != nil {
 			return core.Order{}, nil, err
 		}
-		if err := s.recordCode(ctx, order, *code, records...); err != nil {
+		order.Status = core.StatusCodeReceived
+		records, err := s.statusAndCodeRecords(ctx, order, previousStatus, code)
+		if err != nil {
 			return core.Order{}, nil, err
 		}
-		return order, code, nil
+		if err := s.recordCode(ctx, order, code, records...); err != nil {
+			return core.Order{}, nil, err
+		}
+		return order, &code, nil
 	case core.StatusPendingCode, core.StatusAdditionalCodeRequested:
 		order.Status = result.Status
 	case core.StatusCanceled, core.StatusFailed, core.StatusExpired:

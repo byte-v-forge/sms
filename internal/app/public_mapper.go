@@ -4,9 +4,8 @@ import (
 	"errors"
 	"time"
 
-	commonv1 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/common/v1"
 	smsv1 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/sms/v1"
-	"github.com/byte-v-forge/common-lib/hashx"
+	"github.com/byte-v-forge/common-lib/secretref"
 	"github.com/byte-v-forge/sms/internal/core"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -41,16 +40,8 @@ func PublicCode(code *core.SMSCode) *smsv1.SmsCode {
 	if code == nil {
 		return nil
 	}
-	secretID := ""
-	if code.Value != "" {
-		secretID = "sms-code-" + hashx.SHA256Hex(code.Value)
-	}
 	return &smsv1.SmsCode{
-		SecretRef: &commonv1.SecretRef{
-			SecretId: secretID,
-			Provider: "sms",
-			Purpose:  "sms_otp",
-		},
+		SecretRef:  secretref.Clone(code.SecretRef, "sms", "sms_otp"),
 		ReceivedAt: PublicTime(code.ReceivedAt),
 	}
 }

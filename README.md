@@ -13,9 +13,10 @@ SMS provider 集成服务。
 - 核心生命周期服务：`internal/app`
 - provider 配置表：`sms_provider_configs`
 - 轻量订单表：`sms_orders`
-- 验证码历史表：`sms_order_codes`
+- 验证码引用历史表：`sms_order_codes`
 - 平台事件 outbox：`sms_platform_event_outbox`
 - 激活热状态：Redis，key 前缀 `sms:order`
+- 验证码短期 secret：Redis，key 前缀 `sms:code-secret`
 - 路由临时熔断状态：Redis，key 前缀 `sms:route_health`
 - provider 插件注册：`internal/app/provider_plugin.go`
 - provider adapter：`internal/providers/fivesim`、`internal/providers/herosms`、`internal/providers/smsbower`
@@ -27,7 +28,7 @@ SMS provider 集成服务。
 - SMS 服务不在 `AcquireNumber` 中隐式承载自动 fallback 或 route profile。
 - `AcquireNumber` 只接受精确 provider 参数，创建本地激活并通过 outbox 发布 `sms.activation.acquire_requested`。
 - acquire worker 消费事件后调用对应 provider 精确取号。
-- poll worker 查询 provider 状态；收到验证码后先写入 `sms_order_codes`，再通过 outbox 发布公共 SMS 事件。
+- poll worker 查询 provider 状态；收到验证码后先写入 Redis TTL secret store，再把 `SecretRef` 写入 `sms_order_codes` 并通过 outbox 发布公共 SMS 事件。
 - cancel API 写入取消意图并发布 `sms.activation.cancel_requested`；cancel worker 执行 provider cancel。
 - 已收到验证码的激活不会再向 provider 取消；若取消竞态中已收到验证码，则同步状态后返回当前激活。
 

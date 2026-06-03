@@ -38,6 +38,10 @@ func (s *OrderService) syncTerminalOrChargedProviderState(ctx context.Context, o
 			receivedAt = now
 		}
 		code := core.SMSCode{Value: result.Code, MessageText: result.MessageText, ReceivedAt: receivedAt}
+		code, err := s.prepareCodeSecret(ctx, order, code)
+		if err != nil {
+			return order, true, err
+		}
 		order.Status = core.StatusCodeReceived
 		records, err := s.statusAndCodeRecords(ctx, order, previousStatus, code)
 		if err != nil {

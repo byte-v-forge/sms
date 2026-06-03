@@ -50,6 +50,7 @@ func main() {
 	}
 	defer redisClient.Close()
 	activeStore := app.NewRedisOrderStore(redisx.NewStringStore(redisClient, "sms:order", 30*time.Minute), app.SystemClock{})
+	codeSecretStore := app.NewSMSCodeSecretStore(redisx.NewStringStore(redisClient, "sms:code-secret", 30*time.Minute), app.SystemClock{})
 	orderStore := app.NewCompositeOrderStore(activeStore, orderHistoryStore)
 	routeHealthStore := app.NewRedisRouteHealthStore(redisClient)
 
@@ -75,6 +76,7 @@ func main() {
 		orderEvents,
 		hotStream,
 		routeHealthStore,
+		codeSecretStore,
 	)
 	acquireConsumer, err := platformEventBus.PullWorkerForDefinition(cfg.EventStreamName, smseventcatalog.OrderAcquireRequested, 10, 60*time.Second)
 	if err != nil {
