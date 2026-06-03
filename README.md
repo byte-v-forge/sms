@@ -22,7 +22,7 @@ SMS provider 集成服务。
 
 ## 数据流
 
-- `SmsCatalogService.ListSmsPriceOffers` 直接查询已启用 provider，返回报价、库存、上游 provider 标识和可直接取号的 `SmsNumberAcquireParams`。
+- `SmsCatalogService.ListSmsPriceOffers` 直接查询已启用 provider，返回报价、库存、上游 provider 标识和可放入取号请求的 `SmsOfferRef`。
 - `SmsCatalogService.RecommendSmsRoutes` 基于最低价优先、库存最低值、价格上限、provider 过滤和业务方配置的连续失败 TTL 临时禁用名单提供通用候选排序；使用方仍负责最终选择具体报价和上游 provider。
 - SMS 服务不在 `AcquireNumber` 中隐式承载自动 fallback 或 route profile。
 - `AcquireNumber` 只接受精确 provider 参数，创建本地激活并通过 outbox 发布 `sms.activation.acquire_requested`。

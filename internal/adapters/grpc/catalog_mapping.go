@@ -29,8 +29,6 @@ func toProtoPriceOffer(offer core.RouteOffer) *smsv1.SmsPriceOffer {
 		SupportsAdditionalCode:  offer.SupportsAdditionalCode,
 		RequiresMarkMessageSent: offer.RequiresMarkMessageSent,
 		ObservedAt:              toProtoTime(offer.ObservedAt),
-		UpstreamProviderId:      offer.UpstreamProviderID,
-		UpstreamProviderName:    offer.UpstreamProviderName,
-		AcquireParams:           app.PublicAcquireParamsFromRoute(offer.Route),
+		OfferRef:                app.PublicOfferRefFromRoute(offer.Route),
 	}
 }

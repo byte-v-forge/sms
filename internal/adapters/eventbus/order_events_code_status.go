@@ -13,31 +13,33 @@ import (
 )
 
 func (b *OrderEventRecorder) CodeReceived(ctx context.Context, order core.Order, code core.SMSCode) (eventoutbox.Record, error) {
-	eventCtx := b.context(
+	metadata := b.metadata(
 		eventcatalog.SMSCodeReceived.EventName,
+		eventcatalog.SMSCodeReceived.Subject,
 		eventbus.StableEventID("code-received-", order.ID, fmt.Sprintf("%d", code.ReceivedAt.UnixNano())),
 		order.ID,
 		code.ReceivedAt,
 	)
 	return b.record(ctx, eventcatalog.SMSCodeReceived, &smsv1.SmsCodeReceivedEvent{
-		Context: eventCtx,
-		OrderId: order.ID,
-		Code:    app.PublicCode(&code),
-	}, eventCtx, orderAttributes(order))
+		Metadata: metadata,
+		OrderId:  order.ID,
+		Code:     app.PublicCode(&code),
+	}, metadata, orderAttributes(order))
 }
 
 func (b *OrderEventRecorder) OrderStatusChanged(ctx context.Context, order core.Order, previous core.OrderStatus) (eventoutbox.Record, error) {
-	eventCtx := b.context(
+	metadata := b.metadata(
 		eventcatalog.SMSOrderStatusChanged.EventName,
+		eventcatalog.SMSOrderStatusChanged.Subject,
 		eventbus.StableEventID("order-status-", order.ID, string(previous), string(order.Status), fmt.Sprintf("%d", order.UpdatedAt.UnixNano())),
 		order.ID,
 		order.UpdatedAt,
 	)
 	return b.record(ctx, eventcatalog.SMSOrderStatusChanged, &smsv1.SmsOrderStatusChangedEvent{
-		Context:        eventCtx,
+		Metadata:       metadata,
 		OrderId:        order.ID,
 		PreviousStatus: app.PublicOrderStatus(previous),
 		CurrentStatus:  app.PublicOrderStatus(order.Status),
 		Error:          app.PublicError(order.LastError),
-	}, eventCtx, orderAttributes(order))
+	}, metadata, orderAttributes(order))
 }

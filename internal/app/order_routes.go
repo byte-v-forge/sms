@@ -21,31 +21,66 @@ func RouteFromPublicAcquireParams(params *smsv1.SmsNumberAcquireParams) core.Rou
 		MaxPrice:           moneyFromProto(params.GetMaxPrice()),
 		FailurePolicy:      routeFailurePolicyFromProto(params.GetRouteFailurePolicy()),
 	}
-	switch value := params.GetProviderParams().(type) {
-	case *smsv1.SmsNumberAcquireParams_FiveSim:
-		five := value.FiveSim
-		route.ProviderKey = "5sim"
-		route.UpstreamServiceKey = strings.TrimSpace(five.GetProduct())
-		route.ProviderCountryID = strings.TrimSpace(five.GetCountry())
-		route.UpstreamProviderID = strings.TrimSpace(five.GetOperator())
-	case *smsv1.SmsNumberAcquireParams_SmsBower:
-		bower := value.SmsBower
-		route.ProviderKey = "smsbower"
-		route.UpstreamServiceKey = strings.TrimSpace(bower.GetService())
-		route.ProviderCountryID = strings.TrimSpace(bower.GetCountry())
-		route.UpstreamProviderID = strings.TrimSpace(bower.GetProviderId())
-	case *smsv1.SmsNumberAcquireParams_HeroSms:
-		hero := value.HeroSms
-		route.ProviderKey = "herosms"
-		route.UpstreamServiceKey = strings.TrimSpace(hero.GetService())
-		route.ProviderCountryID = strings.TrimSpace(hero.GetCountry())
-		route.UpstreamProviderID = strings.TrimSpace(hero.GetOperator())
+	if refRoute := RouteFromPublicOfferRef(params.GetOfferRef()); refRoute.ProviderKey != "" {
+		route.ProviderKey = refRoute.ProviderKey
+		route.UpstreamServiceKey = refRoute.UpstreamServiceKey
+		route.ProviderCountryID = refRoute.ProviderCountryID
+		route.UpstreamProviderID = refRoute.UpstreamProviderID
+		if route.ApplicationKey == "" {
+			route.ApplicationKey = refRoute.ApplicationKey
+		}
+		if route.CountryISO2 == "" {
+			route.CountryISO2 = refRoute.CountryISO2
+		}
+		if route.CountryCallingCode == "" {
+			route.CountryCallingCode = refRoute.CountryCallingCode
+		}
 	}
 	return route
 }
 
+func RouteFromPublicOfferRef(ref *smsv1.SmsOfferRef) core.Route {
+	if ref == nil {
+		return core.Route{}
+	}
+	route := routeFromOfferID(ref.GetOfferId())
+	target := ref.GetTarget()
+	if route.ProviderKey == "" {
+		route.ProviderKey = normalizeProviderKey(ref.GetProviderKey())
+	}
+	if target != nil {
+		if route.ApplicationKey == "" {
+			route.ApplicationKey = strings.TrimSpace(target.GetApplicationKey())
+		}
+		if route.CountryISO2 == "" {
+			route.CountryISO2 = strings.ToUpper(strings.TrimSpace(target.GetCountryIso2()))
+		}
+		if route.CountryCallingCode == "" {
+			route.CountryCallingCode = strings.TrimPrefix(strings.TrimSpace(target.GetCountryCallingCode()), "+")
+		}
+	}
+	return route
+}
+
+func routeFromOfferID(offerID string) core.Route {
+	parts := strings.Split(strings.TrimSpace(offerID), "|")
+	if len(parts) != 7 {
+		return core.Route{}
+	}
+	return core.Route{
+		ProviderKey:        normalizeProviderKey(parts[0]),
+		ApplicationKey:     strings.TrimSpace(parts[1]),
+		CountryISO2:        strings.ToUpper(strings.TrimSpace(parts[2])),
+		CountryCallingCode: strings.TrimPrefix(strings.TrimSpace(parts[3]), "+"),
+		UpstreamServiceKey: strings.TrimSpace(parts[4]),
+		ProviderCountryID:  strings.TrimSpace(parts[5]),
+		UpstreamProviderID: strings.TrimSpace(parts[6]),
+	}
+}
+
 func PublicAcquireParamsFromRoute(route core.Route) *smsv1.SmsNumberAcquireParams {
 	params := &smsv1.SmsNumberAcquireParams{
+		OfferRef:           PublicOfferRefFromRoute(route),
 		ApplicationKey:     strings.TrimSpace(route.ApplicationKey),
 		CountryIso2:        strings.ToUpper(strings.TrimSpace(route.CountryISO2)),
 		CountryCallingCode: strings.TrimPrefix(strings.TrimSpace(route.CountryCallingCode), "+"),
@@ -60,27 +95,39 @@ func PublicAcquireParamsFromRoute(route core.Route) *smsv1.SmsNumberAcquireParam
 	if policy := protoRouteFailurePolicy(route.FailurePolicy); policy != nil {
 		params.RouteFailurePolicy = policy
 	}
-	switch normalizeProviderKey(route.ProviderKey) {
-	case "5sim":
-		params.ProviderParams = &smsv1.SmsNumberAcquireParams_FiveSim{FiveSim: &smsv1.FiveSimAcquireParams{
-			Product:  strings.TrimSpace(route.UpstreamServiceKey),
-			Country:  strings.TrimSpace(route.ProviderCountryID),
-			Operator: strings.TrimSpace(route.UpstreamProviderID),
-		}}
-	case "smsbower":
-		params.ProviderParams = &smsv1.SmsNumberAcquireParams_SmsBower{SmsBower: &smsv1.SmsBowerAcquireParams{
-			Service:    strings.TrimSpace(route.UpstreamServiceKey),
-			Country:    strings.TrimSpace(route.ProviderCountryID),
-			ProviderId: strings.TrimSpace(route.UpstreamProviderID),
-		}}
-	case "herosms":
-		params.ProviderParams = &smsv1.SmsNumberAcquireParams_HeroSms{HeroSms: &smsv1.HeroSmsAcquireParams{
-			Service:  strings.TrimSpace(route.UpstreamServiceKey),
-			Country:  strings.TrimSpace(route.ProviderCountryID),
-			Operator: strings.TrimSpace(route.UpstreamProviderID),
-		}}
-	}
 	return params
+}
+
+func PublicOfferRefFromRoute(route core.Route) *smsv1.SmsOfferRef {
+	ref := &smsv1.SmsOfferRef{
+		OfferId:     publicOfferID(route),
+		ProviderKey: normalizeProviderKey(route.ProviderKey),
+		Target: &smsv1.SmsTarget{
+			ApplicationKey:     strings.TrimSpace(route.ApplicationKey),
+			CountryIso2:        strings.ToUpper(strings.TrimSpace(route.CountryISO2)),
+			CountryCallingCode: strings.TrimPrefix(strings.TrimSpace(route.CountryCallingCode), "+"),
+		},
+	}
+	if ref.GetProviderKey() == "" && ref.GetOfferId() == "" && ref.GetTarget().GetApplicationKey() == "" && ref.GetTarget().GetCountryIso2() == "" && ref.GetTarget().GetCountryCallingCode() == "" {
+		return nil
+	}
+	return ref
+}
+
+func publicOfferID(route core.Route) string {
+	values := []string{
+		normalizeProviderKey(route.ProviderKey),
+		strings.TrimSpace(route.ApplicationKey),
+		strings.ToUpper(strings.TrimSpace(route.CountryISO2)),
+		strings.TrimPrefix(strings.TrimSpace(route.CountryCallingCode), "+"),
+		strings.TrimSpace(route.UpstreamServiceKey),
+		strings.TrimSpace(route.ProviderCountryID),
+		strings.TrimSpace(route.UpstreamProviderID),
+	}
+	if strings.Join(values, "") == "" {
+		return ""
+	}
+	return strings.Join(values, "|")
 }
 
 func routeFailurePolicyFromRoutePolicy(policy *smsv1.SmsRoutePolicy) core.RouteFailurePolicy {

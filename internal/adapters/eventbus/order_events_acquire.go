@@ -16,8 +16,9 @@ import (
 
 func (b *OrderEventRecorder) OrderAcquireRequested(ctx context.Context, order core.Order, route core.Route, reason string) (eventoutbox.Record, error) {
 	reason = strings.TrimSpace(reason)
-	eventCtx := b.context(
+	metadata := b.metadata(
 		smseventcatalog.OrderAcquireRequested.EventName,
+		smseventcatalog.OrderAcquireRequested.Subject,
 		eventbus.StableEventID("order-acquire-", order.ID, order.RequestID, reason),
 		order.ID,
 		order.UpdatedAt,
@@ -27,18 +28,19 @@ func (b *OrderEventRecorder) OrderAcquireRequested(ctx context.Context, order co
 		RequestId:     order.RequestID,
 		Reason:        reason,
 		AcquireParams: app.PublicAcquireParamsFromRoute(route),
-	}, eventCtx, eventbus.WithNonEmptyAttribute(orderAttributes(order), "reason", reason))
+	}, metadata, eventbus.WithNonEmptyAttribute(orderAttributes(order), "reason", reason))
 }
 
 func (b *OrderEventRecorder) OrderAcquired(ctx context.Context, order core.Order) (eventoutbox.Record, error) {
-	eventCtx := b.context(
+	metadata := b.metadata(
 		eventcatalog.SMSOrderAcquired.EventName,
+		eventcatalog.SMSOrderAcquired.Subject,
 		eventbus.StableEventID("order-acquired-", order.ID, order.UpstreamOrderID),
 		order.ID,
 		order.AcquiredAt,
 	)
 	return b.record(ctx, eventcatalog.SMSOrderAcquired, &smsv1.SmsOrderAcquiredEvent{
-		Context: eventCtx,
-		Order:   app.PublicOrder(order),
-	}, eventCtx, orderAttributes(order))
+		Metadata: metadata,
+		Order:    app.PublicOrder(order),
+	}, metadata, orderAttributes(order))
 }

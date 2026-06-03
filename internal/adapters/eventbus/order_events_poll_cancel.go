@@ -14,8 +14,9 @@ import (
 
 func (b *OrderEventRecorder) OrderPollRequested(ctx context.Context, order core.Order, reason string) (eventoutbox.Record, error) {
 	reason = strings.TrimSpace(reason)
-	eventCtx := b.context(
+	metadata := b.metadata(
 		smseventcatalog.OrderPollRequested.EventName,
+		smseventcatalog.OrderPollRequested.Subject,
 		eventbus.StableEventID("order-poll-", order.ID, reason, fmt.Sprintf("%d", order.UpdatedAt.UnixNano())),
 		order.ID,
 		order.UpdatedAt,
@@ -23,14 +24,15 @@ func (b *OrderEventRecorder) OrderPollRequested(ctx context.Context, order core.
 	return b.record(ctx, smseventcatalog.OrderPollRequested, &smsinternalv1.SmsOrderPollRequest{
 		OrderId: order.ID,
 		Reason:  reason,
-	}, eventCtx, eventbus.WithNonEmptyAttribute(orderAttributes(order), "reason", reason))
+	}, metadata, eventbus.WithNonEmptyAttribute(orderAttributes(order), "reason", reason))
 }
 
 func (b *OrderEventRecorder) OrderCancelRequested(ctx context.Context, order core.Order, requestID string, reason string) (eventoutbox.Record, error) {
 	requestID = strings.TrimSpace(requestID)
 	reason = strings.TrimSpace(reason)
-	eventCtx := b.context(
+	metadata := b.metadata(
 		smseventcatalog.OrderCancelRequested.EventName,
+		smseventcatalog.OrderCancelRequested.Subject,
 		eventbus.StableEventID("order-cancel-", order.ID, requestID, reason),
 		order.ID,
 		order.UpdatedAt,
@@ -39,5 +41,5 @@ func (b *OrderEventRecorder) OrderCancelRequested(ctx context.Context, order cor
 		OrderId:   order.ID,
 		RequestId: requestID,
 		Reason:    reason,
-	}, eventCtx, eventbus.WithNonEmptyAttribute(eventbus.WithNonEmptyAttribute(orderAttributes(order), "request_id", requestID), "reason", reason))
+	}, metadata, eventbus.WithNonEmptyAttribute(eventbus.WithNonEmptyAttribute(orderAttributes(order), "request_id", requestID), "reason", reason))
 }

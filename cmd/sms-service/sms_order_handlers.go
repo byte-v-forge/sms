@@ -250,7 +250,14 @@ func smsAcquireParamsNeedRecommendation(params *smsv1.SmsNumberAcquireParams) bo
 	if params == nil {
 		return true
 	}
-	return params.GetProviderParams() == nil
+	ref := params.GetOfferRef()
+	target := ref.GetTarget()
+	return ref == nil ||
+		strings.TrimSpace(ref.GetProviderKey()) == "" ||
+		strings.TrimSpace(ref.GetOfferId()) == "" ||
+		target == nil ||
+		strings.TrimSpace(target.GetApplicationKey()) == "" ||
+		(strings.TrimSpace(target.GetCountryIso2()) == "" && strings.TrimSpace(target.GetCountryCallingCode()) == "")
 }
 
 func (s *dashboardServer) recommendSMSAcquireParams(ctx context.Context, params *smsv1.SmsNumberAcquireParams) (*smsv1.SmsNumberAcquireParams, *smsv1.SmsError) {
@@ -279,15 +286,22 @@ func (s *dashboardServer) recommendSMSAcquireParams(ctx context.Context, params 
 	if resp.GetError() != nil {
 		return nil, resp.GetError()
 	}
-	if len(resp.GetRecommendations()) == 0 || resp.GetRecommendations()[0].GetOffer().GetAcquireParams() == nil {
+	if len(resp.GetRecommendations()) == 0 || resp.GetRecommendations()[0].GetOffer().GetOfferRef() == nil {
 		return nil, &smsv1.SmsError{Code: smsv1.SmsErrorCode_SMS_ERROR_CODE_ROUTE_NOT_FOUND, Message: fmt.Sprintf("sms route not found for %s/%s/%s", target.GetApplicationKey(), target.GetCountryIso2(), target.GetCountryCallingCode()), Retryable: true}
 	}
-	recommended, ok := proto.Clone(resp.GetRecommendations()[0].GetOffer().GetAcquireParams()).(*smsv1.SmsNumberAcquireParams)
-	if !ok || recommended == nil {
+	offerRef, ok := proto.Clone(resp.GetRecommendations()[0].GetOffer().GetOfferRef()).(*smsv1.SmsOfferRef)
+	if !ok || offerRef == nil {
 		return nil, &smsv1.SmsError{Code: smsv1.SmsErrorCode_SMS_ERROR_CODE_INTERNAL, Message: "sms route recommendation is invalid"}
 	}
-	if recommended.RouteFailurePolicy == nil {
-		recommended.RouteFailurePolicy = params.GetRouteFailurePolicy()
+	recommended := &smsv1.SmsNumberAcquireParams{
+		OfferRef:           offerRef,
+		ApplicationKey:     target.GetApplicationKey(),
+		CountryIso2:        target.GetCountryIso2(),
+		CountryCallingCode: target.GetCountryCallingCode(),
+		MinAvailableCount:  params.GetMinAvailableCount(),
+		MinPrice:           params.GetMinPrice(),
+		MaxPrice:           params.GetMaxPrice(),
+		RouteFailurePolicy: params.GetRouteFailurePolicy(),
 	}
 	return recommended, nil
 }
