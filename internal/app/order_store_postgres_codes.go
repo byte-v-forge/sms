@@ -40,6 +40,18 @@ ON CONFLICT (order_id, code_secret_id, received_at) DO UPDATE SET
 	})
 }
 
+func (s *PostgresOrderStore) CodeSecretExists(ctx context.Context, orderID string, secretID string) (bool, error) {
+	var exists bool
+	err := s.pool.QueryRow(ctx, `
+SELECT EXISTS (
+  SELECT 1
+  FROM sms_order_codes
+  WHERE order_id = $1 AND code_secret_id = $2
+)
+`, orderID, secretID).Scan(&exists)
+	return exists, err
+}
+
 func (s *PostgresOrderStore) ListCodes(ctx context.Context, orderIDs []string, limitPerOrder int) ([]core.OrderCode, error) {
 	if len(orderIDs) == 0 {
 		return []core.OrderCode{}, nil

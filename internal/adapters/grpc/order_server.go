@@ -37,6 +37,14 @@ func (s *OrderServer) GetOrder(ctx context.Context, request *smsv1.GetOrderReque
 	return &smsv1.GetOrderResponse{Order: toProtoOrder(order)}, nil
 }
 
+func (s *OrderServer) ResolveSmsCodeSecret(ctx context.Context, request *smsv1.ResolveSmsCodeSecretRequest) (*smsv1.ResolveSmsCodeSecretResponse, error) {
+	value, err := s.service.ResolveCodeSecret(ctx, request.GetOrderId(), request.GetSecretRef())
+	if err != nil {
+		return &smsv1.ResolveSmsCodeSecretResponse{Error: toProtoError(err)}, nil
+	}
+	return &smsv1.ResolveSmsCodeSecretResponse{CodeValue: value}, nil
+}
+
 func (s *OrderServer) MarkMessageSent(ctx context.Context, request *smsv1.MarkMessageSentRequest) (*smsv1.MarkMessageSentResponse, error) {
 	order, err := s.service.MarkMessageSent(ctx, request.GetOrderId(), request.GetRequestId())
 	if err != nil {

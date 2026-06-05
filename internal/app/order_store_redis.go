@@ -33,6 +33,9 @@ func (s *RedisOrderStore) Update(ctx context.Context, order core.Order, _ ...eve
 func (s *RedisOrderStore) RecordCode(ctx context.Context, order core.Order, _ core.SMSCode, _ ...eventoutbox.Record) error {
 	return s.save(ctx, order)
 }
+func (s *RedisOrderStore) CodeSecretExists(context.Context, string, string) (bool, error) {
+	return false, nil
+}
 
 func (s *RedisOrderStore) Get(ctx context.Context, orderID string) (core.Order, error) {
 	value, ok, err := s.store.Load(ctx, orderID)
@@ -97,6 +100,13 @@ func (s *CompositeOrderStore) RecordCode(ctx context.Context, order core.Order, 
 		return err
 	}
 	return s.active.Update(ctx, order)
+}
+
+func (s *CompositeOrderStore) CodeSecretExists(ctx context.Context, orderID string, secretID string) (bool, error) {
+	if s == nil || s.history == nil {
+		return false, nil
+	}
+	return s.history.CodeSecretExists(ctx, orderID, secretID)
 }
 
 func (s *CompositeOrderStore) Get(ctx context.Context, orderID string) (core.Order, error) {

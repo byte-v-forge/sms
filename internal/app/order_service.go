@@ -23,6 +23,7 @@ type OrderStore interface {
 	Get(ctx context.Context, orderID string) (core.Order, error)
 	Update(ctx context.Context, order core.Order, events ...eventoutbox.Record) error
 	RecordCode(ctx context.Context, order core.Order, code core.SMSCode, events ...eventoutbox.Record) error
+	CodeSecretExists(ctx context.Context, orderID string, secretID string) (bool, error)
 }
 
 func NewOrderService(
