@@ -39,10 +39,7 @@ func (s *OrderService) queueCancelRequest(ctx context.Context, order core.Order,
 	if err := s.updateOrder(ctx, order, record); err != nil {
 		return core.Order{}, err
 	}
-	if !s.asyncEvents {
-		return s.cancelLoadedOrder(ctx, order, requestID)
-	}
-	return order, nil
+	return s.execution.AfterCancelQueued(ctx, s, order, requestID)
 }
 
 func (s *OrderService) deferCancelRetry(ctx context.Context, order core.Order, requestID string, retryAt time.Time) (core.Order, error) {

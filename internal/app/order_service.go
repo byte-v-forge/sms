@@ -16,7 +16,7 @@ type OrderService struct {
 	clock       core.Clock
 	ids         core.IDGenerator
 	events      OrderEventSink
-	asyncEvents bool
+	execution   OrderExecution
 }
 
 type OrderStore interface {
@@ -50,6 +50,7 @@ func NewOrderService(
 	if events == nil {
 		events = noopOrderEventSink{}
 	}
+	execution := orderExecutionForEvents(events)
 	if routeHealth == nil {
 		routeHealth = noopRouteHealthStore{}
 	}
@@ -62,6 +63,6 @@ func NewOrderService(
 		ids:         ids,
 		events:      events,
 		hot:         hot,
-		asyncEvents: orderEventsAsync(events),
+		execution:   execution,
 	}
 }
