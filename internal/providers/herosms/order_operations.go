@@ -3,7 +3,6 @@ package herosms
 import (
 	"context"
 	"encoding/json"
-	"net/url"
 	"strings"
 	"time"
 
@@ -13,25 +12,12 @@ import (
 )
 
 func (c *Client) AcquireNumber(ctx context.Context, request core.ProviderAcquireRequest) (core.ProviderOrder, error) {
-	service := strings.TrimSpace(request.Route.UpstreamServiceKey)
-	if service == "" {
-		return core.ProviderOrder{}, core.NewError(core.CodeValidationFailed, "hero sms service is required", false)
-	}
-	country := strings.TrimSpace(request.Route.ProviderCountryID)
-	if country == "" {
-		return core.ProviderOrder{}, core.NewError(core.CodeValidationFailed, "hero sms provider country id is required", false)
-	}
-	params := url.Values{}
-	params.Set("service", service)
-	params.Set("country", country)
-	if operator := strings.TrimSpace(request.Route.UpstreamProviderID); operator != "" {
-		params.Set("operator", operator)
-	}
-	if maxPrice := strings.TrimSpace(request.Route.MaxPrice.AmountDecimal); maxPrice != "" {
-		params.Set("maxPrice", maxPrice)
-	}
-
-	result, err := c.api.Do(ctx, "getNumberV2", params)
+	result, err := c.api.GetNumberV2(ctx, request, handlerapi.GetNumberV2Config{
+		ProviderName:    "hero sms",
+		CountryLabel:    "provider country id",
+		ProviderIDParam: "operator",
+		MaxPriceParam:   "maxPrice",
+	})
 	if err != nil {
 		return core.ProviderOrder{}, err
 	}

@@ -3,7 +3,6 @@ package smsbower
 import (
 	"context"
 	"encoding/json"
-	"net/url"
 	"strings"
 
 	"github.com/byte-v-forge/sms/internal/core"
@@ -12,18 +11,11 @@ import (
 )
 
 func (c *Client) AcquireNumber(ctx context.Context, request core.ProviderAcquireRequest) (core.ProviderOrder, error) {
-	if strings.TrimSpace(request.Route.UpstreamServiceKey) == "" {
-		return core.ProviderOrder{}, core.NewError(core.CodeValidationFailed, "smsbower service is required", false)
-	}
-	if strings.TrimSpace(request.Route.ProviderCountryID) == "" {
-		return core.ProviderOrder{}, core.NewError(core.CodeValidationFailed, "smsbower country is required", false)
-	}
-	if strings.TrimSpace(request.Route.UpstreamProviderID) == "" {
-		return core.ProviderOrder{}, core.NewError(core.CodeValidationFailed, "smsbower upstream provider id is required", false)
-	}
-
-	params := c.acquireParams(request)
-	result, err := c.api.Do(ctx, "getNumberV2", params)
+	result, err := c.api.GetNumberV2(ctx, request, handlerapi.GetNumberV2Config{
+		ProviderName:       "smsbower",
+		ProviderIDParam:    "providerIds",
+		ProviderIDRequired: true,
+	})
 	if err != nil {
 		return core.ProviderOrder{}, err
 	}
@@ -47,13 +39,6 @@ func (c *Client) SetStatus(ctx context.Context, upstreamOrderID string, action c
 
 func (c *Client) GetBalance(ctx context.Context) (core.Money, error) {
 	return c.api.GetBalance(ctx)
-}
-func (c *Client) acquireParams(request core.ProviderAcquireRequest) url.Values {
-	params := url.Values{}
-	params.Set("service", request.Route.UpstreamServiceKey)
-	params.Set("country", request.Route.ProviderCountryID)
-	params.Set("providerIds", strings.TrimSpace(request.Route.UpstreamProviderID))
-	return params
 }
 
 func (c *Client) parseGetNumberV2(result string, request core.ProviderAcquireRequest) (core.ProviderOrder, error) {
