@@ -81,43 +81,15 @@ func heroSMSProviderOrder(orderID string, rawPhone string, payload heroSMSGetNum
 }
 
 func (c *Client) GetStatus(ctx context.Context, upstreamOrderID string) (core.ProviderCodeResult, error) {
-	params := url.Values{}
-	params.Set("id", upstreamOrderID)
-	result, err := c.api.Do(ctx, "getStatus", params)
-	if err != nil {
-		return core.ProviderCodeResult{}, err
-	}
-	return parseStatus(result)
+	return c.api.GetStatus(ctx, upstreamOrderID, parseStatus)
 }
 
 func (c *Client) SetStatus(ctx context.Context, upstreamOrderID string, action core.ProviderAction) error {
-	status, expected, err := statusForAction(action)
-	if err != nil {
-		return err
-	}
-	params := url.Values{}
-	params.Set("id", upstreamOrderID)
-	params.Set("status", status)
-	result, err := c.api.Do(ctx, "setStatus", params)
-	if err != nil {
-		return err
-	}
-	if result != expected {
-		return handlerapi.MapTextError(result)
-	}
-	return nil
+	return c.api.SetStatus(ctx, upstreamOrderID, action, statusForAction)
 }
 
 func (c *Client) GetBalance(ctx context.Context) (core.Money, error) {
-	result, err := c.api.Do(ctx, "getBalance", nil)
-	if err != nil {
-		return core.Money{}, err
-	}
-	const prefix = "ACCESS_BALANCE:"
-	if !strings.HasPrefix(result, prefix) {
-		return core.Money{}, handlerapi.MapTextError(result)
-	}
-	return core.Money{AmountDecimal: strings.TrimPrefix(result, prefix)}, nil
+	return c.api.GetBalance(ctx)
 }
 
 func parseAccessNumber(result string) (orderID, rawPhone string, ok bool) {
