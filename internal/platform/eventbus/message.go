@@ -3,8 +3,6 @@ package eventbus
 import (
 	"context"
 	"errors"
-	"fmt"
-	"strings"
 	"time"
 
 	commonv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/common/v1"
@@ -57,82 +55,4 @@ type Publisher interface {
 
 type Consumer interface {
 	Fetch(context.Context, int) ([]ReceivedMessage, error)
-}
-
-func NewEnvelope(message Message) (*commonv1.EventEnvelope, error) {
-	subject := strings.TrimSpace(message.Subject)
-	if subject == "" {
-		return nil, ErrEmptySubject
-	}
-	if message.Event == nil {
-		return nil, ErrEmptyEvent
-	}
-	if err := ValidateMetadata(message.Metadata); err != nil {
-		return nil, err
-	}
-	payload, err := proto.Marshal(message.Event)
-	if err != nil {
-		return nil, fmt.Errorf("marshal event payload: %w", err)
-	}
-	return &commonv1.EventEnvelope{
-		Metadata:        message.Metadata,
-		Subject:         subject,
-		PayloadType:     string(message.Event.ProtoReflect().Descriptor().FullName()),
-		Payload:         payload,
-		DataContentType: ProtobufContentType,
-		Extensions:      cloneExtensions(message.Extensions),
-	}, nil
-}
-
-func ValidateMetadata(metadata *commonv1.EventMetadata) error {
-	if metadata == nil {
-		return ErrEmptyEventMetadata
-	}
-	if strings.TrimSpace(metadata.GetId()) == "" {
-		return ErrEmptyEventID
-	}
-	if strings.TrimSpace(metadata.GetType()) == "" {
-		return ErrEmptyEventType
-	}
-	if strings.TrimSpace(metadata.GetVersion()) == "" {
-		return ErrEmptyEventVersion
-	}
-	if metadata.GetTime() == nil || !metadata.GetTime().IsValid() {
-		return ErrEmptyEventTime
-	}
-	if strings.TrimSpace(metadata.GetSource()) == "" {
-		return ErrEmptySource
-	}
-	if strings.TrimSpace(metadata.GetIdempotencyKey()) == "" {
-		return ErrEmptyIdempotencyKey
-	}
-	return nil
-}
-
-func UnmarshalPayload(message ReceivedMessage, event proto.Message) error {
-	if event == nil {
-		return ErrEmptyEvent
-	}
-	if message.Envelope == nil || len(message.Envelope.GetPayload()) == 0 {
-		return ErrEmptyPayload
-	}
-	if err := proto.Unmarshal(message.Envelope.GetPayload(), event); err != nil {
-		return fmt.Errorf("unmarshal event payload: %w", err)
-	}
-	return nil
-}
-
-func cloneExtensions(values map[string]string) map[string]string {
-	if len(values) == 0 {
-		return nil
-	}
-	out := make(map[string]string, len(values))
-	for key, value := range values {
-		key = strings.TrimSpace(key)
-		if key == "" {
-			continue
-		}
-		out[key] = strings.TrimSpace(value)
-	}
-	return out
 }
