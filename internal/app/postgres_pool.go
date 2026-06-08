@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func newPostgresPool(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
+func NewPostgresPool(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
 	if strings.TrimSpace(dsn) == "" {
 		return nil, errors.New("postgres dsn is empty")
 	}

@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 
 	"github.com/byte-v-forge/sms/internal/core"
 	"github.com/byte-v-forge/sms/internal/platform/eventoutbox"
@@ -13,23 +14,15 @@ const smsPlatformEventOutboxTable = "sms_platform_event_outbox"
 
 type PostgresOrderStore struct{ pool *pgxpool.Pool }
 
-func NewPostgresOrderStore(ctx context.Context, dsn string) (*PostgresOrderStore, error) {
-	pool, err := newPostgresPool(ctx, dsn)
-	if err != nil {
-		return nil, err
+func NewPostgresOrderStore(ctx context.Context, pool *pgxpool.Pool) (*PostgresOrderStore, error) {
+	if pool == nil {
+		return nil, errors.New("postgres order store pool is required")
 	}
 	store := &PostgresOrderStore{pool: pool}
 	if err := validatePostgresTables(ctx, pool, "sms_orders", "sms_order_codes", smsPlatformEventOutboxTable); err != nil {
-		pool.Close()
 		return nil, err
 	}
 	return store, nil
-}
-
-func (s *PostgresOrderStore) Close() {
-	if s != nil && s.pool != nil {
-		s.pool.Close()
-	}
 }
 
 func (s *PostgresOrderStore) Save(ctx context.Context, order core.Order, events ...eventoutbox.Record) error {
