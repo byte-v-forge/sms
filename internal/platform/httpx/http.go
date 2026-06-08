@@ -1,8 +1,6 @@
 package httpx
 
 import (
-	"bytes"
-	"compress/gzip"
 	"io"
 	"net/http"
 	"strconv"
@@ -19,22 +17,6 @@ func ReadLimited(body io.Reader, limit int64) ([]byte, error) {
 	return io.ReadAll(io.LimitReader(body, limit))
 }
 
-func ReadMaybeGzipLimited(body io.Reader, limit int64) ([]byte, error) {
-	raw, err := ReadLimited(body, limit)
-	if err != nil {
-		return nil, err
-	}
-	if !bytes.HasPrefix(raw, []byte{0x1f, 0x8b}) {
-		return raw, nil
-	}
-	reader, err := gzip.NewReader(bytes.NewReader(raw))
-	if err != nil {
-		return nil, err
-	}
-	defer reader.Close()
-	return ReadLimited(reader, limit)
-}
-
 func QueryInt(r *http.Request, key string, fallback int) int {
 	if r == nil {
 		return fallback
@@ -48,10 +30,6 @@ func QueryInt(r *http.Request, key string, fallback int) int {
 		return fallback
 	}
 	return parsed
-}
-
-func Successful(status int) bool {
-	return status >= 200 && status < 300
 }
 
 func RetryAfter(header http.Header) time.Duration {

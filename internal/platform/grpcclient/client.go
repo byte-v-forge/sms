@@ -1,7 +1,6 @@
 package grpcclient
 
 import (
-	"fmt"
 	"net"
 	"strings"
 
@@ -11,26 +10,6 @@ import (
 
 func NewInsecure(addr string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
 	return newInsecure(strings.TrimSpace(addr), opts...)
-}
-
-func NewRequiredInsecure(name string, addr string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
-	name = strings.TrimSpace(name)
-	if name == "" {
-		name = "gRPC target"
-	}
-	addr = strings.TrimSpace(addr)
-	if addr == "" {
-		return nil, fmt.Errorf("%s address is required", name)
-	}
-	conn, err := NewInsecure(addr, opts...)
-	if err != nil {
-		return nil, fmt.Errorf("connect to %s: %w", name, err)
-	}
-	return conn, nil
-}
-
-func NewInsecurePassthrough(addr string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
-	return newInsecure(TargetPassthrough(addr), opts...)
 }
 
 func SelfTarget(listenAddr string) string {
@@ -46,14 +25,6 @@ func SelfTarget(listenAddr string) string {
 		host = "127.0.0.1"
 	}
 	return net.JoinHostPort(host, port)
-}
-
-func TargetPassthrough(addr string) string {
-	addr = strings.TrimSpace(addr)
-	if addr == "" || strings.Contains(addr, "://") || strings.HasPrefix(addr, "passthrough:") {
-		return addr
-	}
-	return "passthrough:///" + addr
 }
 
 func newInsecure(target string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
