@@ -196,10 +196,5 @@ func firstHandlerAPIString(values ...string) string {
 }
 
 func truncateHandlerAPIErrorMessage(message string) string {
-	const maxErrorMessageLength = 512
-	message = strings.TrimSpace(message)
-	if len(message) <= maxErrorMessageLength {
-		return message
-	}
-	return strings.TrimSpace(message[:maxErrorMessageLength]) + "..."
+	return providerhttp.SanitizeErrorText(message)
 }
