@@ -262,13 +262,18 @@ func smsAcquireParamsNeedRecommendation(params *smsv1.SmsNumberAcquireParams) bo
 		return true
 	}
 	ref := params.GetOfferRef()
+	if ref == nil {
+		return true
+	}
 	target := ref.GetTarget()
-	return ref == nil ||
-		strings.TrimSpace(ref.GetProviderKey()) == "" ||
-		strings.TrimSpace(ref.GetOfferId()) == "" ||
+	routeRef := ref.GetRouteRef()
+	return strings.TrimSpace(ref.GetProviderKey()) == "" ||
 		target == nil ||
 		strings.TrimSpace(target.GetApplicationKey()) == "" ||
-		(strings.TrimSpace(target.GetCountryIso2()) == "" && strings.TrimSpace(target.GetCountryCallingCode()) == "")
+		(strings.TrimSpace(target.GetCountryIso2()) == "" && strings.TrimSpace(target.GetCountryCallingCode()) == "") ||
+		routeRef == nil ||
+		strings.TrimSpace(routeRef.GetUpstreamServiceKey()) == "" ||
+		strings.TrimSpace(routeRef.GetProviderCountryId()) == ""
 }
 
 func (s *dashboardServer) recommendSMSAcquireParams(ctx context.Context, params *smsv1.SmsNumberAcquireParams) (*smsv1.SmsNumberAcquireParams, *smsv1.SmsError) {

@@ -87,10 +87,17 @@ message SmsTarget {
   string country_calling_code = 3;
 }
 
+message SmsOfferRouteRef {
+  string upstream_service_key = 1;
+  string provider_country_id = 2;
+  string upstream_provider_id = 3;
+}
+
 message SmsOfferRef {
   string offer_id = 1;
   string provider_key = 2;
   SmsTarget target = 3;
+  SmsOfferRouteRef route_ref = 4;
 }
 
 message SmsNumberAcquireParams {
