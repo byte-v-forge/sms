@@ -152,10 +152,16 @@ type MemoryOrderStore struct {
 	mu     sync.RWMutex
 	orders map[string]core.Order
 	codes  map[string][]core.OrderCode
+	clock  core.Clock
 }
 
+const (
+	memoryOrderMaxEntries     = 1000
+	memoryOrderFinalRetention = 2 * time.Hour
+)
+
 func NewMemoryOrderStore() *MemoryOrderStore {
-	return &MemoryOrderStore{orders: map[string]core.Order{}, codes: map[string][]core.OrderCode{}}
+	return &MemoryOrderStore{orders: map[string]core.Order{}, codes: map[string][]core.OrderCode{}, clock: SystemClock{}}
 }
 
 func (s *MemoryOrderStore) Save(ctx context.Context, order core.Order, _ ...eventoutbox.Record) error {
@@ -174,6 +180,7 @@ func (s *MemoryOrderStore) RecordCode(ctx context.Context, order core.Order, cod
 	defer s.mu.Unlock()
 	s.orders[order.ID] = cloneOrder(order)
 	s.codes[order.ID] = append(s.codes[order.ID], core.OrderCode{OrderID: order.ID, Code: cloneSMSCode(code)})
+	s.pruneLocked(s.clock.Now())
 	return nil
 }
 
@@ -270,7 +277,69 @@ func (s *MemoryOrderStore) save(ctx context.Context, order core.Order) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.orders[order.ID] = cloneOrder(order)
+	s.pruneLocked(s.clock.Now())
 	return nil
+}
+
+func (s *MemoryOrderStore) pruneLocked(now time.Time) {
+	if len(s.orders) == 0 {
+		return
+	}
+	for orderID, order := range s.orders {
+		if order.Status.IsFinal() && memoryOrderAge(order, now) >= memoryOrderFinalRetention {
+			s.deleteOrderLocked(orderID)
+		}
+	}
+	if len(s.orders) <= memoryOrderMaxEntries {
+		return
+	}
+	entries := make([]memoryOrderEntry, 0, len(s.orders))
+	for orderID, order := range s.orders {
+		entries = append(entries, memoryOrderEntry{id: orderID, final: order.Status.IsFinal(), updatedAt: memoryOrderUpdatedAt(order)})
+	}
+	sort.Slice(entries, func(i, j int) bool {
+		if entries[i].final != entries[j].final {
+			return entries[i].final
+		}
+		if entries[i].updatedAt.Equal(entries[j].updatedAt) {
+			return entries[i].id < entries[j].id
+		}
+		return entries[i].updatedAt.Before(entries[j].updatedAt)
+	})
+	for _, entry := range entries {
+		if len(s.orders) <= memoryOrderMaxEntries {
+			return
+		}
+		s.deleteOrderLocked(entry.id)
+	}
+}
+
+type memoryOrderEntry struct {
+	id        string
+	final     bool
+	updatedAt time.Time
+}
+
+func (s *MemoryOrderStore) deleteOrderLocked(orderID string) {
+	delete(s.orders, orderID)
+	delete(s.codes, orderID)
+}
+
+func memoryOrderAge(order core.Order, now time.Time) time.Duration {
+	updatedAt := memoryOrderUpdatedAt(order)
+	if updatedAt.IsZero() || now.Before(updatedAt) {
+		return 0
+	}
+	return now.Sub(updatedAt)
+}
+
+func memoryOrderUpdatedAt(order core.Order) time.Time {
+	for _, value := range []time.Time{order.UpdatedAt, order.ExpiresAt, order.AcquiredAt} {
+		if !value.IsZero() {
+			return value
+		}
+	}
+	return time.Time{}
 }
 
 type MemoryTTLStringStore struct {
