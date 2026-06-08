@@ -1,8 +1,6 @@
 package app
 
 import (
-	"strings"
-
 	smsv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/sms/v1"
 	"github.com/byte-v-forge/sms/internal/core"
 )
@@ -12,9 +10,9 @@ func RouteFromPublicAcquireParams(params *smsv1.SmsNumberAcquireParams) core.Rou
 		return core.Route{}
 	}
 	route := core.Route{
-		ApplicationKey:     strings.TrimSpace(params.GetApplicationKey()),
-		CountryISO2:        strings.ToUpper(strings.TrimSpace(params.GetCountryIso2())),
-		CountryCallingCode: strings.TrimPrefix(strings.TrimSpace(params.GetCountryCallingCode()), "+"),
+		ApplicationKey:     routeText(params.GetApplicationKey()),
+		CountryISO2:        routeCountryISO2(params.GetCountryIso2()),
+		CountryCallingCode: routeCallingCode(params.GetCountryCallingCode()),
 		MinAvailableCount:  int(params.GetMinAvailableCount()),
 		MinPrice:           moneyFromProto(params.GetMinPrice()),
 		MaxPrice:           moneyFromProto(params.GetMaxPrice()),
@@ -46,20 +44,20 @@ func RouteFromPublicOfferRef(ref *smsv1.SmsOfferRef) core.Route {
 	target := ref.GetTarget()
 	if target != nil {
 		if route.ApplicationKey == "" {
-			route.ApplicationKey = strings.TrimSpace(target.GetApplicationKey())
+			route.ApplicationKey = routeText(target.GetApplicationKey())
 		}
 		if route.CountryISO2 == "" {
-			route.CountryISO2 = strings.ToUpper(strings.TrimSpace(target.GetCountryIso2()))
+			route.CountryISO2 = routeCountryISO2(target.GetCountryIso2())
 		}
 		if route.CountryCallingCode == "" {
-			route.CountryCallingCode = strings.TrimPrefix(strings.TrimSpace(target.GetCountryCallingCode()), "+")
+			route.CountryCallingCode = routeCallingCode(target.GetCountryCallingCode())
 		}
 	}
 	routeRef := ref.GetRouteRef()
 	if routeRef != nil {
-		route.UpstreamServiceKey = strings.TrimSpace(routeRef.GetUpstreamServiceKey())
-		route.ProviderCountryID = strings.TrimSpace(routeRef.GetProviderCountryId())
-		route.UpstreamProviderID = strings.TrimSpace(routeRef.GetUpstreamProviderId())
+		route.UpstreamServiceKey = routeText(routeRef.GetUpstreamServiceKey())
+		route.ProviderCountryID = routeText(routeRef.GetProviderCountryId())
+		route.UpstreamProviderID = routeText(routeRef.GetUpstreamProviderId())
 	}
 	return route
 }
@@ -67,9 +65,9 @@ func RouteFromPublicOfferRef(ref *smsv1.SmsOfferRef) core.Route {
 func PublicAcquireParamsFromRoute(route core.Route) *smsv1.SmsNumberAcquireParams {
 	params := &smsv1.SmsNumberAcquireParams{
 		OfferRef:           PublicOfferRefFromRoute(route),
-		ApplicationKey:     strings.TrimSpace(route.ApplicationKey),
-		CountryIso2:        strings.ToUpper(strings.TrimSpace(route.CountryISO2)),
-		CountryCallingCode: strings.TrimPrefix(strings.TrimSpace(route.CountryCallingCode), "+"),
+		ApplicationKey:     routeText(route.ApplicationKey),
+		CountryIso2:        routeCountryISO2(route.CountryISO2),
+		CountryCallingCode: routeCallingCode(route.CountryCallingCode),
 		MinAvailableCount:  int32(route.MinAvailableCount),
 	}
 	if moneyIsSet(route.MinPrice) {
@@ -89,14 +87,14 @@ func PublicOfferRefFromRoute(route core.Route) *smsv1.SmsOfferRef {
 		OfferId:     publicOfferID(route),
 		ProviderKey: normalizeProviderKey(route.ProviderKey),
 		Target: &smsv1.SmsTarget{
-			ApplicationKey:     strings.TrimSpace(route.ApplicationKey),
-			CountryIso2:        strings.ToUpper(strings.TrimSpace(route.CountryISO2)),
-			CountryCallingCode: strings.TrimPrefix(strings.TrimSpace(route.CountryCallingCode), "+"),
+			ApplicationKey:     routeText(route.ApplicationKey),
+			CountryIso2:        routeCountryISO2(route.CountryISO2),
+			CountryCallingCode: routeCallingCode(route.CountryCallingCode),
 		},
 		RouteRef: &smsv1.SmsOfferRouteRef{
-			UpstreamServiceKey: strings.TrimSpace(route.UpstreamServiceKey),
-			ProviderCountryId:  strings.TrimSpace(route.ProviderCountryID),
-			UpstreamProviderId: strings.TrimSpace(route.UpstreamProviderID),
+			UpstreamServiceKey: routeText(route.UpstreamServiceKey),
+			ProviderCountryId:  routeText(route.ProviderCountryID),
+			UpstreamProviderId: routeText(route.UpstreamProviderID),
 		},
 	}
 	if ref.GetProviderKey() == "" && ref.GetOfferId() == "" && targetIsZero(ref.GetTarget()) && offerRouteRefIsZero(ref.GetRouteRef()) {

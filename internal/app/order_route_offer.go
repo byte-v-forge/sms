@@ -12,12 +12,12 @@ import (
 func publicOfferID(route core.Route) string {
 	values := []string{
 		normalizeProviderKey(route.ProviderKey),
-		strings.TrimSpace(route.ApplicationKey),
-		strings.ToUpper(strings.TrimSpace(route.CountryISO2)),
-		strings.TrimPrefix(strings.TrimSpace(route.CountryCallingCode), "+"),
-		strings.TrimSpace(route.UpstreamServiceKey),
-		strings.TrimSpace(route.ProviderCountryID),
-		strings.TrimSpace(route.UpstreamProviderID),
+		routeText(route.ApplicationKey),
+		routeCountryISO2(route.CountryISO2),
+		routeCallingCode(route.CountryCallingCode),
+		routeText(route.UpstreamServiceKey),
+		routeText(route.ProviderCountryID),
+		routeText(route.UpstreamProviderID),
 	}
 	if strings.Join(values, "") == "" {
 		return ""
@@ -30,16 +30,16 @@ func targetIsZero(target *smsv1.SmsTarget) bool {
 	if target == nil {
 		return true
 	}
-	return strings.TrimSpace(target.GetApplicationKey()) == "" &&
-		strings.TrimSpace(target.GetCountryIso2()) == "" &&
-		strings.TrimSpace(target.GetCountryCallingCode()) == ""
+	return routeText(target.GetApplicationKey()) == "" &&
+		routeCountryISO2(target.GetCountryIso2()) == "" &&
+		routeCallingCode(target.GetCountryCallingCode()) == ""
 }
 
 func offerRouteRefIsZero(routeRef *smsv1.SmsOfferRouteRef) bool {
 	if routeRef == nil {
 		return true
 	}
-	return strings.TrimSpace(routeRef.GetUpstreamServiceKey()) == "" &&
-		strings.TrimSpace(routeRef.GetProviderCountryId()) == "" &&
-		strings.TrimSpace(routeRef.GetUpstreamProviderId()) == ""
+	return routeText(routeRef.GetUpstreamServiceKey()) == "" &&
+		routeText(routeRef.GetProviderCountryId()) == "" &&
+		routeText(routeRef.GetUpstreamProviderId()) == ""
 }
