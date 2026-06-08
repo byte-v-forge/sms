@@ -1,8 +1,6 @@
 package main
 
 import (
-	"log"
-
 	"github.com/byte-v-forge/sms/internal/platform/envx"
 	"github.com/byte-v-forge/sms/internal/platform/natseventbus"
 )
@@ -19,11 +17,15 @@ type config struct {
 	EventStreamName    string
 }
 
-func loadConfig() config {
+func loadConfig() (config, error) {
+	httpTimeoutSeconds, err := envx.IntStrict("SMS_HTTP_TIMEOUT_SECONDS", 20)
+	if err != nil {
+		return config{}, err
+	}
 	cfg := config{
 		ListenAddr:         envx.StringDefault("SMS_LISTEN_ADDR", ":50051"),
 		PGDSN:              envx.StringDefault("SMS_PG_DSN", ""),
-		HTTPTimeoutSeconds: mustEnvInt("SMS_HTTP_TIMEOUT_SECONDS", 20),
+		HTTPTimeoutSeconds: httpTimeoutSeconds,
 		ProviderHTTPProxy:  envx.StringDefault("SMS_PROVIDER_HTTP_PROXY", ""),
 		DashboardHTTPAddr:  envx.StringDefault("SMS_DASHBOARD_HTTP_ADDR", ":8080"),
 		DashboardStaticDir: envx.StringDefault("SMS_DASHBOARD_STATIC_DIR", "/app/dashboard/sms"),
@@ -34,13 +36,5 @@ func loadConfig() config {
 	if cfg.HTTPTimeoutSeconds <= 0 {
 		cfg.HTTPTimeoutSeconds = 20
 	}
-	return cfg
-}
-
-func mustEnvInt(name string, fallback int) int {
-	parsed, err := envx.IntStrict(name, fallback)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return parsed
+	return cfg, nil
 }
