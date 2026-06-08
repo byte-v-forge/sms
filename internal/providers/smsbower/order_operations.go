@@ -34,7 +34,7 @@ func (c *Client) GetStatus(ctx context.Context, upstreamOrderID string) (core.Pr
 }
 
 func (c *Client) SetStatus(ctx context.Context, upstreamOrderID string, action core.ProviderAction) error {
-	return c.api.SetStatus(ctx, upstreamOrderID, action, statusForAction)
+	return c.api.SetActivationStatus(ctx, upstreamOrderID, action, "smsbower")
 }
 
 func (c *Client) GetBalance(ctx context.Context) (core.Money, error) {

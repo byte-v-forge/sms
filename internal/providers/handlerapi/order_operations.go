@@ -57,6 +57,12 @@ func (c *Client) SetStatus(ctx context.Context, upstreamOrderID string, action c
 	return nil
 }
 
+func (c *Client) SetActivationStatus(ctx context.Context, upstreamOrderID string, action core.ProviderAction, providerName string) error {
+	return c.SetStatus(ctx, upstreamOrderID, action, func(action core.ProviderAction) (string, string, error) {
+		return ActivationStatusForAction(providerName, action)
+	})
+}
+
 func (c *Client) GetBalance(ctx context.Context) (core.Money, error) {
 	result, err := c.Do(ctx, "getBalance", nil)
 	if err != nil {
@@ -67,6 +73,25 @@ func (c *Client) GetBalance(ctx context.Context) (core.Money, error) {
 		return core.Money{}, MapTextError(result)
 	}
 	return core.Money{AmountDecimal: strings.TrimPrefix(result, prefix)}, nil
+}
+
+func ActivationStatusForAction(providerName string, action core.ProviderAction) (status string, expected string, err error) {
+	switch action {
+	case core.ActionMarkMessageSent:
+		return "1", "ACCESS_READY", nil
+	case core.ActionRequestAdditional:
+		return "3", "ACCESS_RETRY_GET", nil
+	case core.ActionCompleteOrder:
+		return "6", "ACCESS_ACTIVATION", nil
+	case core.ActionCancelOrder:
+		return "8", "ACCESS_CANCEL", nil
+	default:
+		providerName = strings.TrimSpace(providerName)
+		if providerName == "" {
+			providerName = "sms provider"
+		}
+		return "", "", core.NewError(core.CodeUnsupportedOperation, "unsupported "+providerName+" status action", false)
+	}
 }
 
 func getNumberV2Params(request core.ProviderAcquireRequest, config GetNumberV2Config) (url.Values, error) {
