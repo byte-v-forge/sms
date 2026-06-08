@@ -7,6 +7,7 @@ import (
 
 	"github.com/byte-v-forge/sms/internal/core"
 	"github.com/byte-v-forge/sms/internal/platform/geox"
+	"github.com/byte-v-forge/sms/internal/platform/jsonx"
 	"github.com/byte-v-forge/sms/internal/platform/stringx"
 )
 
@@ -26,7 +27,7 @@ func (c *Client) ListCountries(ctx context.Context) ([]Country, error) {
 	}
 	countries := make([]Country, 0, len(raw))
 	for key, item := range raw {
-		id := rawJSONScalar(item.ID)
+		id := jsonx.Scalar(item.ID)
 		if id == "" || id == "0" {
 			id = key
 		}

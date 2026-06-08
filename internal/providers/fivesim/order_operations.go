@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/jsonx"
 	"github.com/byte-v-forge/sms/internal/providers/phone"
 )
 
@@ -30,7 +31,7 @@ func (c *Client) AcquireNumber(ctx context.Context, request core.ProviderAcquire
 	if err := c.getJSON(ctx, path, nil, true, &payload); err != nil {
 		return core.ProviderOrder{}, err
 	}
-	orderID := rawJSONScalar(payload.ID)
+	orderID := jsonx.Scalar(payload.ID)
 	if orderID == "" {
 		return core.ProviderOrder{}, core.NewError(core.CodeUpstreamRejected, "missing 5sim order id", false)
 	}
@@ -43,7 +44,7 @@ func (c *Client) AcquireNumber(ctx context.Context, request core.ProviderAcquire
 			CountryISO2:        request.Target.CountryISO2,
 			CountryCallingCode: request.Target.CountryCallingCode,
 		},
-		Price:      core.Money{CurrencyCode: c.currencyCode, AmountDecimal: rawJSONScalar(payload.Price)},
+		Price:      core.Money{CurrencyCode: c.currencyCode, AmountDecimal: jsonx.Scalar(payload.Price)},
 		AcquiredAt: parseTime(payload.CreatedAt),
 		ExpiresAt:  parseTime(payload.Expires),
 	}, nil
@@ -81,7 +82,7 @@ func (c *Client) GetBalance(ctx context.Context) (core.Money, error) {
 	if err := c.getJSON(ctx, "/v1/user/profile", nil, true, &payload); err != nil {
 		return core.Money{}, err
 	}
-	return core.Money{CurrencyCode: c.currencyCode, AmountDecimal: rawJSONScalar(payload.Balance)}, nil
+	return core.Money{CurrencyCode: c.currencyCode, AmountDecimal: jsonx.Scalar(payload.Balance)}, nil
 }
 
 func operatorForRoute(route core.Route) (string, error) {

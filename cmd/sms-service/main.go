@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -16,12 +17,19 @@ import (
 	grpcadapter "github.com/byte-v-forge/sms/internal/adapters/grpc"
 	"github.com/byte-v-forge/sms/internal/app"
 	smseventcatalog "github.com/byte-v-forge/sms/internal/eventcatalog"
+	"github.com/byte-v-forge/sms/internal/platform/eventbus"
+	"github.com/byte-v-forge/sms/internal/platform/eventcatalog"
 	"github.com/byte-v-forge/sms/internal/platform/eventoutbox"
 	"github.com/byte-v-forge/sms/internal/platform/grpcclient"
 	"github.com/byte-v-forge/sms/internal/platform/grpchealth"
 	"github.com/byte-v-forge/sms/internal/platform/natseventbus"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
+)
+
+const (
+	orderEventWorkerBatch   = 10
+	orderEventWorkerAckWait = 60 * time.Second
 )
 
 func main() {
@@ -77,7 +85,9 @@ func main() {
 	smsinternalv1.RegisterSmsProviderAdminServiceServer(server, grpcadapter.NewProviderAdminServer(adminService))
 	grpchealth.RegisterServing(server)
 	group, groupCtx := errgroup.WithContext(ctx)
-	startEventWorkers(group, groupCtx, cfg, platformEventBus, stores.orderOutbox, orderService)
+	if err := startEventWorkers(group, groupCtx, cfg, platformEventBus, stores.orderOutbox, orderService); err != nil {
+		log.Fatalf("initialize SMS event workers: %v", err)
+	}
 
 	go func() {
 		<-groupCtx.Done()
@@ -129,24 +139,45 @@ func configuredOrderEvents(enabled bool) app.OrderEventSink {
 	return eventbusadapter.NewOrderEventRecorder("sms-service")
 }
 
-func startEventWorkers(group *errgroup.Group, ctx context.Context, cfg config, platformEventBus *natseventbus.Bus, orderOutbox *app.PostgresOrderStore, orderService *app.OrderService) {
+func startEventWorkers(group *errgroup.Group, ctx context.Context, cfg config, platformEventBus *natseventbus.Bus, orderOutbox *app.PostgresOrderStore, orderService *app.OrderService) error {
 	if platformEventBus == nil || orderOutbox == nil {
 		if strings.TrimSpace(cfg.NATSURL) != "" && orderOutbox == nil {
 			log.Print("SMS platform event bus configured without PostgreSQL outbox; using in-process order flow")
 		}
-		return
+		return nil
 	}
-	acquireConsumer, err := platformEventBus.PullWorkerForDefinition(cfg.EventStreamName, smseventcatalog.OrderAcquireRequested, 10, 60*time.Second)
-	if err != nil {
-		log.Fatalf("initialize SMS order acquire worker: %v", err)
+	workers := []orderEventWorker{
+		{
+			name:       "SMS order acquire",
+			definition: smseventcatalog.OrderAcquireRequested,
+			run: func(consumer eventbus.Consumer) error {
+				return eventbusadapter.RunOrderAcquireWorker(ctx, consumer, orderService)
+			},
+		},
+		{
+			name:       "SMS order poll",
+			definition: smseventcatalog.OrderPollRequested,
+			run: func(consumer eventbus.Consumer) error {
+				return eventbusadapter.RunOrderPollWorker(ctx, consumer, orderService)
+			},
+		},
+		{
+			name:       "SMS order cancel",
+			definition: smseventcatalog.OrderCancelRequested,
+			run: func(consumer eventbus.Consumer) error {
+				return eventbusadapter.RunOrderCancelWorker(ctx, consumer, orderService)
+			},
+		},
 	}
-	pollConsumer, err := platformEventBus.PullWorkerForDefinition(cfg.EventStreamName, smseventcatalog.OrderPollRequested, 10, 60*time.Second)
-	if err != nil {
-		log.Fatalf("initialize SMS order poll worker: %v", err)
-	}
-	cancelConsumer, err := platformEventBus.PullWorkerForDefinition(cfg.EventStreamName, smseventcatalog.OrderCancelRequested, 10, 60*time.Second)
-	if err != nil {
-		log.Fatalf("initialize SMS order cancel worker: %v", err)
+	starts := make([]func() error, 0, len(workers))
+	for _, worker := range workers {
+		consumer, err := platformEventBus.PullWorkerForDefinition(cfg.EventStreamName, worker.definition, orderEventWorkerBatch, orderEventWorkerAckWait)
+		if err != nil {
+			return fmt.Errorf("initialize %s worker: %w", worker.name, err)
+		}
+		run := worker.run
+		consumerForWorker := consumer
+		starts = append(starts, func() error { return run(consumerForWorker) })
 	}
 	group.Go(func() error {
 		return eventoutbox.RunWorker(ctx, eventoutbox.WorkerConfig{
@@ -155,13 +186,15 @@ func startEventWorkers(group *errgroup.Group, ctx context.Context, cfg config, p
 			Logf:      log.Printf,
 		})
 	})
-	group.Go(func() error {
-		return eventbusadapter.RunOrderAcquireWorker(ctx, acquireConsumer, orderService)
-	})
-	group.Go(func() error {
-		return eventbusadapter.RunOrderPollWorker(ctx, pollConsumer, orderService)
-	})
-	group.Go(func() error {
-		return eventbusadapter.RunOrderCancelWorker(ctx, cancelConsumer, orderService)
-	})
+	for _, start := range starts {
+		start := start
+		group.Go(start)
+	}
+	return nil
+}
+
+type orderEventWorker struct {
+	name       string
+	definition eventcatalog.Definition
+	run        func(eventbus.Consumer) error
 }

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/jsonx"
 )
 
 type activationOffersResponse struct {
@@ -69,7 +70,7 @@ func activationOfferPurchaseTiers(offer activationOffer) []activationOfferPurcha
 	if tiers := activationOfferPriceMapTiers(offer.PriceMap); len(tiers) > 0 {
 		return tiers
 	}
-	price := firstHeroSMSScalar(offer.Prices.Min, offer.Prices.Default, offer.Prices.Retail)
+	price := jsonx.FirstScalar(offer.Prices.Min, offer.Prices.Default, offer.Prices.Retail)
 	if price == "" {
 		return nil
 	}

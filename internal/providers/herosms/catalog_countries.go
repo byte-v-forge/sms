@@ -7,6 +7,7 @@ import (
 
 	"github.com/byte-v-forge/sms/internal/core"
 	"github.com/byte-v-forge/sms/internal/platform/geox"
+	"github.com/byte-v-forge/sms/internal/platform/jsonx"
 	"github.com/byte-v-forge/sms/internal/platform/stringx"
 )
 
@@ -27,7 +28,7 @@ func (c *Client) ListCountries(ctx context.Context) ([]countryMetadata, error) {
 	}
 	countries := make([]countryMetadata, 0, len(raw))
 	for key, item := range raw {
-		id := firstHeroSMSScalar(item.ID)
+		id := jsonx.FirstScalar(item.ID)
 		if id == "" || id == "0" {
 			id = key
 		}

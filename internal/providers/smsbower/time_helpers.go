@@ -5,10 +5,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/byte-v-forge/sms/internal/platform/jsonx"
 )
 
 func parseOrderTime(raw json.RawMessage) time.Time {
-	return parseOrderTimeText(rawJSONScalar(raw))
+	return parseOrderTimeText(jsonx.Scalar(raw))
 }
 
 func parseOrderTimeText(value string) time.Time {

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/jsonx"
 	"github.com/byte-v-forge/sms/internal/providers/handlerapi"
 	"github.com/byte-v-forge/sms/internal/providers/phone"
 )
@@ -52,8 +53,8 @@ func (c *Client) parseGetNumberV2(result string, request core.ProviderAcquireReq
 	if err := json.Unmarshal([]byte(result), &payload); err != nil {
 		return core.ProviderOrder{}, core.NewError(core.CodeUpstreamRejected, "bad getNumberV2 json response", false)
 	}
-	orderID := rawJSONScalar(payload.OrderID)
-	rawPhone := rawJSONScalar(payload.PhoneNumber)
+	orderID := jsonx.Scalar(payload.OrderID)
+	rawPhone := jsonx.Scalar(payload.PhoneNumber)
 	if orderID == "" || rawPhone == "" {
 		return core.ProviderOrder{}, core.NewError(core.CodeUpstreamRejected, "missing activationId or phoneNumber in getNumberV2 response", false)
 	}
@@ -61,14 +62,14 @@ func (c *Client) parseGetNumberV2(result string, request core.ProviderAcquireReq
 	return core.ProviderOrder{
 		UpstreamOrderID:          orderID,
 		PhoneNumber:              core.PhoneNumber{E164: e164, NationalNumber: national, CountryISO2: request.Target.CountryISO2, CountryCallingCode: request.Target.CountryCallingCode},
-		Price:                    core.Money{AmountDecimal: rawJSONScalar(payload.OrderCost)},
-		AcquiredAt:               parseOrderTimeText(rawJSONScalar(payload.OrderTime)),
+		Price:                    core.Money{AmountDecimal: jsonx.Scalar(payload.OrderCost)},
+		AcquiredAt:               parseOrderTimeText(jsonx.Scalar(payload.OrderTime)),
 		CanRequestAdditionalCode: providerTruthy(payload.CanGetAnotherSMS),
 	}, nil
 }
 
 func providerTruthy(raw json.RawMessage) bool {
-	switch strings.ToLower(rawJSONScalar(raw)) {
+	switch strings.ToLower(jsonx.Scalar(raw)) {
 	case "1", "true", "yes":
 		return true
 	default:

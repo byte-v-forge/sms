@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"net/url"
 	"strings"
+
+	"github.com/byte-v-forge/sms/internal/platform/jsonx"
 )
 
 func (c *Client) ListNumberStatuses(ctx context.Context, countryID string) ([]PriceOffer, error) {
@@ -25,7 +27,7 @@ func (c *Client) ListNumberStatuses(ctx context.Context, countryID string) ([]Pr
 		offers = append(offers, PriceOffer{
 			CountryID:          strings.TrimSpace(countryID),
 			UpstreamServiceKey: normalizeHeroSMSServiceKey(service),
-			AvailableCount:     heroSMSInt(count),
+			AvailableCount:     jsonx.Int(count),
 		})
 	}
 	return offers, nil

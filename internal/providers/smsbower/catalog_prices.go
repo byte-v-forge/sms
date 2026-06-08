@@ -6,6 +6,7 @@ import (
 	"net/url"
 
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/jsonx"
 	"github.com/byte-v-forge/sms/internal/platform/stringx"
 )
 
@@ -32,8 +33,8 @@ func (c *Client) ListPriceOffers(ctx context.Context, serviceKey, countryID stri
 				offers = append(offers, PriceOffer{
 					CountryID:          cID,
 					UpstreamServiceKey: svc,
-					ProviderID:         stringx.FirstNonEmpty(rawJSONScalar(offer.ProviderID), providerID),
-					Price:              core.Money{AmountDecimal: rawJSONScalar(offer.Price)},
+					ProviderID:         stringx.FirstNonEmpty(jsonx.Scalar(offer.ProviderID), providerID),
+					Price:              core.Money{AmountDecimal: jsonx.Scalar(offer.Price)},
 					AvailableCount:     offer.Count,
 				})
 			}

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/jsonx"
 	"github.com/byte-v-forge/sms/internal/providers/handlerapi"
 	"github.com/byte-v-forge/sms/internal/providers/phone"
 )
@@ -28,7 +29,7 @@ func (c *Client) AcquireNumber(ctx context.Context, request core.ProviderAcquire
 		}
 		return core.ProviderOrder{}, handlerapi.MapTextError(result)
 	}
-	orderID := firstHeroSMSScalar(payload.ActivationID)
+	orderID := jsonx.FirstScalar(payload.ActivationID)
 	if orderID == "" || strings.TrimSpace(payload.PhoneNumber) == "" {
 		return core.ProviderOrder{}, core.NewError(core.CodeUpstreamRejected, "bad hero sms getNumberV2 response", false)
 	}
@@ -59,7 +60,7 @@ func heroSMSProviderOrder(orderID string, rawPhone string, payload heroSMSGetNum
 			CountryISO2:        request.Target.CountryISO2,
 			CountryCallingCode: request.Target.CountryCallingCode,
 		},
-		Price:                    core.Money{CurrencyCode: heroSMSCurrencyCode(payload.Currency), AmountDecimal: firstHeroSMSScalar(payload.ActivationCost)},
+		Price:                    core.Money{CurrencyCode: heroSMSCurrencyCode(payload.Currency), AmountDecimal: jsonx.FirstScalar(payload.ActivationCost)},
 		AcquiredAt:               parseHeroSMSTime(payload.ActivationTime),
 		ExpiresAt:                parseHeroSMSTime(payload.ActivationEndTime),
 		CanRequestAdditionalCode: heroSMSBool(payload.CanGetAnotherSMS),
@@ -87,12 +88,12 @@ func parseAccessNumber(result string) (orderID, rawPhone string, ok bool) {
 }
 
 func heroSMSBool(raw json.RawMessage) bool {
-	scalar := strings.ToLower(firstHeroSMSScalar(raw))
+	scalar := strings.ToLower(jsonx.FirstScalar(raw))
 	return scalar == "true" || scalar == "1"
 }
 
 func heroSMSCurrencyCode(raw json.RawMessage) string {
-	switch firstHeroSMSScalar(raw) {
+	switch jsonx.FirstScalar(raw) {
 	case "840":
 		return "USD"
 	default:

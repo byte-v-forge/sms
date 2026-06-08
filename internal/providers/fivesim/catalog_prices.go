@@ -6,6 +6,7 @@ import (
 	"net/url"
 
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/jsonx"
 )
 
 func (c *Client) ListPriceOffers(ctx context.Context, product, countryID string) ([]PriceOffer, error) {
@@ -32,7 +33,7 @@ func (c *Client) ListPriceOffers(ctx context.Context, product, countryID string)
 					CountryID:          country,
 					UpstreamServiceKey: productKey,
 					Operator:           operator,
-					Price:              core.Money{CurrencyCode: c.currencyCode, AmountDecimal: rawJSONScalar(offer.Cost)},
+					Price:              core.Money{CurrencyCode: c.currencyCode, AmountDecimal: jsonx.Scalar(offer.Cost)},
 					AvailableCount:     offer.Count,
 					SuccessRate:        offer.Rate,
 				})
