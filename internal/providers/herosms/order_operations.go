@@ -4,12 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"strings"
-	"time"
 
 	"github.com/byte-v-forge/sms/internal/core"
 	"github.com/byte-v-forge/sms/internal/platform/jsonx"
 	"github.com/byte-v-forge/sms/internal/providers/handlerapi"
-	"github.com/byte-v-forge/sms/internal/providers/phone"
 )
 
 func (c *Client) AcquireNumber(ctx context.Context, request core.ProviderAcquireRequest) (core.ProviderOrder, error) {
@@ -36,85 +34,10 @@ func (c *Client) AcquireNumber(ctx context.Context, request core.ProviderAcquire
 	return heroSMSProviderOrder(orderID, payload.PhoneNumber, payload, request), nil
 }
 
-type heroSMSGetNumberV2Response struct {
-	ActivationID         json.RawMessage `json:"activationId"`
-	PhoneNumber          string          `json:"phoneNumber"`
-	ActivationCost       json.RawMessage `json:"activationCost"`
-	Currency             json.RawMessage `json:"currency"`
-	CanGetAnotherSMS     json.RawMessage `json:"canGetAnotherSms"`
-	ActivationTime       string          `json:"activationTime"`
-	ActivationEndTime    string          `json:"activationEndTime"`
-	ActivationOperator   string          `json:"activationOperator"`
-	ServiceCode          string          `json:"serviceCode"`
-	CountryPhoneCode     json.RawMessage `json:"countryPhoneCode"`
-	ActivationStatusCode json.RawMessage `json:"status"`
-}
-
-func heroSMSProviderOrder(orderID string, rawPhone string, payload heroSMSGetNumberV2Response, request core.ProviderAcquireRequest) core.ProviderOrder {
-	e164, national := phone.Normalize(rawPhone, request.Target.CountryISO2, request.Target.CountryCallingCode)
-	return core.ProviderOrder{
-		UpstreamOrderID: orderID,
-		PhoneNumber: core.PhoneNumber{
-			E164:               e164,
-			NationalNumber:     national,
-			CountryISO2:        request.Target.CountryISO2,
-			CountryCallingCode: request.Target.CountryCallingCode,
-		},
-		Price:                    core.Money{CurrencyCode: heroSMSCurrencyCode(payload.Currency), AmountDecimal: jsonx.FirstScalar(payload.ActivationCost)},
-		AcquiredAt:               parseHeroSMSTime(payload.ActivationTime),
-		ExpiresAt:                parseHeroSMSTime(payload.ActivationEndTime),
-		CanRequestAdditionalCode: heroSMSBool(payload.CanGetAnotherSMS),
-	}
-}
-
-func (c *Client) GetStatus(ctx context.Context, upstreamOrderID string) (core.ProviderCodeResult, error) {
-	return c.api.GetStatus(ctx, upstreamOrderID, parseStatus)
-}
-
-func (c *Client) SetStatus(ctx context.Context, upstreamOrderID string, action core.ProviderAction) error {
-	return c.api.SetActivationStatus(ctx, upstreamOrderID, action, "hero sms")
-}
-
-func (c *Client) GetBalance(ctx context.Context) (core.Money, error) {
-	return c.api.GetBalance(ctx)
-}
-
 func parseAccessNumber(result string) (orderID, rawPhone string, ok bool) {
 	parts := strings.SplitN(result, ":", 3)
 	if len(parts) != 3 || parts[0] != "ACCESS_NUMBER" {
 		return "", "", false
 	}
 	return parts[1], parts[2], true
-}
-
-func heroSMSBool(raw json.RawMessage) bool {
-	scalar := strings.ToLower(jsonx.FirstScalar(raw))
-	return scalar == "true" || scalar == "1"
-}
-
-func heroSMSCurrencyCode(raw json.RawMessage) string {
-	switch jsonx.FirstScalar(raw) {
-	case "840":
-		return "USD"
-	default:
-		return ""
-	}
-}
-
-func parseHeroSMSTime(value string) time.Time {
-	value = strings.TrimSpace(value)
-	if value == "" {
-		return time.Time{}
-	}
-	layouts := []string{
-		time.RFC3339Nano,
-		time.RFC3339,
-		"2006-01-02 15:04:05",
-	}
-	for _, layout := range layouts {
-		if parsed, err := time.Parse(layout, value); err == nil {
-			return parsed.UTC()
-		}
-	}
-	return time.Time{}
 }
