@@ -30,23 +30,27 @@ func (s *MemoryProviderConfigStore) UpsertProviderConfig(ctx context.Context, in
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	config, err := s.normalizeForSave(input)
+	config, err := s.prepareForSave(input)
 	if err != nil {
 		return nil, err
 	}
 	now := timestamppb.New(s.clock.Now())
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if existing := s.configs[config.GetProviderKey()]; existing != nil {
+	existing := s.configs[config.GetProviderKey()]
+	if existing != nil {
 		config.CreatedAt = cloneTimestamp(existing.GetCreatedAt())
-		if strings.TrimSpace(config.GetCredentialSecret()) == "" {
+		if config.GetCredentialSecret() == "" {
 			config.CredentialSecret = existing.GetCredentialSecret()
 		}
 	} else {
 		config.CreatedAt = cloneTimestamp(now)
 	}
+	if config.GetEnabled() && config.GetCredentialSecret() == "" {
+		return nil, core.NewError(core.CodeValidationFailed, "credential_secret is required for enabled sms provider", false)
+	}
 	config.UpdatedAt = cloneTimestamp(now)
-	config.CredentialSecretSet = strings.TrimSpace(config.GetCredentialSecret()) != ""
+	config.CredentialSecretSet = config.GetCredentialSecret() != ""
 	s.configs[config.GetProviderKey()] = cloneProviderConfig(config)
 	return cloneProviderConfig(config), nil
 }
@@ -114,7 +118,7 @@ func (s *MemoryProviderConfigStore) GetEnabledProviderConfig(ctx context.Context
 	return configs[0], nil
 }
 
-func (s *MemoryProviderConfigStore) normalizeForSave(input *smsinternalv1.SmsProviderConfig) (*smsinternalv1.SmsProviderConfig, error) {
+func (s *MemoryProviderConfigStore) prepareForSave(input *smsinternalv1.SmsProviderConfig) (*smsinternalv1.SmsProviderConfig, error) {
 	config := cloneProviderConfig(input)
 	config.ProviderKey = normalizeProviderKey(config.GetProviderKey())
 	if config.GetProviderKey() == "" {
@@ -124,17 +128,6 @@ func (s *MemoryProviderConfigStore) normalizeForSave(input *smsinternalv1.SmsPro
 		return nil, core.NewError(core.CodeUnsupportedOperation, "unsupported sms provider", false)
 	}
 	config.CredentialSecret = strings.TrimSpace(config.GetCredentialSecret())
-	if config.GetCredentialSecret() == "" {
-		s.mu.RLock()
-		existing := s.configs[config.GetProviderKey()]
-		if existing != nil {
-			config.CredentialSecret = existing.GetCredentialSecret()
-		}
-		s.mu.RUnlock()
-	}
-	if config.GetEnabled() && config.GetCredentialSecret() == "" {
-		return nil, core.NewError(core.CodeValidationFailed, "credential_secret is required for enabled sms provider", false)
-	}
 	return config, nil
 }
 
