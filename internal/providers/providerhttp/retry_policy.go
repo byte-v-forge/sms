@@ -1,12 +1,9 @@
 package providerhttp
 
 import (
-	"crypto/rand"
-	"encoding/binary"
 	"net/http"
 	"time"
 
-	"github.com/byte-v-forge/sms/internal/platform/httpclient"
 	"github.com/byte-v-forge/sms/internal/platform/httpx"
 )
 
@@ -49,30 +46,6 @@ func DefaultRetryableStatus(status int) bool {
 	return status == http.StatusTooManyRequests || status >= http.StatusInternalServerError
 }
 
-func shouldRetryError(err error, attempt int, policy RetryPolicy) bool {
-	return policy.Mode != RetryNone && attempt+1 < policy.Attempts && httpclient.IsRetryableTransportError(err)
-}
-
-func shouldRetryStatus(status int, attempt int, policy RetryPolicy) bool {
-	return policy.Mode != RetryNone && attempt+1 < policy.Attempts && policy.RetryableStatus != nil && policy.RetryableStatus(status)
-}
-
-func retryDelay(attempt int, policy RetryPolicy, header http.Header) time.Duration {
-	if header != nil {
-		if delay := httpx.RetryAfterMax(header, policy.MaxRetryAfter); delay > 0 {
-			return delay
-		}
-	}
-	delay := policy.BaseDelay
-	for i := 0; i < attempt; i++ {
-		delay *= 2
-	}
-	if delay > policy.MaxDelay {
-		delay = policy.MaxDelay
-	}
-	return delay + randomJitter(policy.Jitter)
-}
-
 func normalizeRetryPolicy(policy RetryPolicy) RetryPolicy {
 	if policy.Mode == RetryNone {
 		policy.Attempts = 1
@@ -93,15 +66,4 @@ func normalizeRetryPolicy(policy RetryPolicy) RetryPolicy {
 		policy.MaxBodyBytes = httpx.DefaultMaxBodyBytes
 	}
 	return policy
-}
-
-func randomJitter(max time.Duration) time.Duration {
-	if max <= 0 {
-		return 0
-	}
-	var seed [8]byte
-	if _, err := rand.Read(seed[:]); err != nil {
-		return max / 2
-	}
-	return time.Duration(binary.LittleEndian.Uint64(seed[:]) % uint64(max+1))
 }
