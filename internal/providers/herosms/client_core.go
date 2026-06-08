@@ -10,18 +10,6 @@ import (
 	"github.com/byte-v-forge/sms/internal/providers/handlerapi"
 )
 
-const (
-	DefaultEndpoint        = "https://hero-sms.com/stubs/handler_api.php"
-	DefaultOpenAPIEndpoint = "https://hero-sms.com/api/v1"
-	ProviderKey            = "herosms"
-)
-
-type Config struct {
-	Endpoint        string
-	OpenAPIEndpoint string
-	APIKey          string
-}
-
 type Client struct {
 	api             *handlerapi.Client
 	apiKey          string
@@ -32,22 +20,15 @@ type Client struct {
 }
 
 func New(config Config, httpClient handlerapi.HTTPDoer) (*Client, error) {
-	endpoint := config.Endpoint
-	if endpoint == "" {
-		endpoint = DefaultEndpoint
-	}
-	rawOpenAPIEndpoint := strings.TrimRight(strings.TrimSpace(config.OpenAPIEndpoint), "/")
-	if rawOpenAPIEndpoint == "" {
-		rawOpenAPIEndpoint = DefaultOpenAPIEndpoint
-	}
-	openAPIEndpoint, err := url.Parse(rawOpenAPIEndpoint)
+	config = config.withDefaults()
+	openAPIEndpoint, err := url.Parse(config.OpenAPIEndpoint)
 	if err != nil {
 		return nil, core.NewError(core.CodeValidationFailed, "invalid hero sms openapi endpoint", false)
 	}
 	if httpClient == nil {
 		httpClient = &http.Client{Timeout: 15 * time.Second}
 	}
-	api, err := handlerapi.New(endpoint, config.APIKey, httpClient)
+	api, err := handlerapi.New(config.Endpoint, config.APIKey, httpClient)
 	if err != nil {
 		return nil, err
 	}
@@ -57,18 +38,6 @@ func New(config Config, httpClient handlerapi.HTTPDoer) (*Client, error) {
 		openAPIEndpoint: *openAPIEndpoint,
 		httpClient:      httpClient,
 		userAgent:       "sms/1.0",
-		policy: core.ProviderPolicy{
-			OrderTTL:           20 * time.Minute,
-			PollInterval:       5 * time.Second,
-			CancelAllowedAfter: 2 * time.Minute,
-		},
+		policy:          defaultProviderPolicy(),
 	}, nil
-}
-
-func (c *Client) Key() string {
-	return ProviderKey
-}
-
-func (c *Client) Policy() core.ProviderPolicy {
-	return c.policy
 }
