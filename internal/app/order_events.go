@@ -16,6 +16,15 @@ type OrderEventSink interface {
 	OrderStatusChanged(context.Context, core.Order, core.OrderStatus) (eventoutbox.Record, error)
 }
 
+type asyncOrderEventSink interface {
+	AsyncRequests() bool
+}
+
+func orderEventsAsync(events OrderEventSink) bool {
+	async, ok := events.(asyncOrderEventSink)
+	return ok && async.AsyncRequests()
+}
+
 type noopOrderEventSink struct{}
 
 func (noopOrderEventSink) OrderAcquireRequested(context.Context, core.Order, core.Route, string) (eventoutbox.Record, error) {

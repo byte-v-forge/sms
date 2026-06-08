@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"strings"
 
 	"github.com/byte-v-forge/sms/internal/platform/hotstream"
 	"github.com/byte-v-forge/sms/internal/platform/hotstreamnats"
@@ -9,10 +10,13 @@ import (
 )
 
 func newPlatformEventBus(_ context.Context, cfg config) (*natseventbus.Bus, func(), error) {
-	bus, err := natseventbus.ConnectRequired(natseventbus.Config{
-		URL:        cfg.PlatformNATSURL,
+	if strings.TrimSpace(cfg.NATSURL) == "" {
+		return nil, noopClose, nil
+	}
+	bus, err := natseventbus.Connect(natseventbus.Config{
+		URL:        cfg.NATSURL,
 		ClientName: "sms-service",
-	}, "PLATFORM_NATS_URL is required for SMS order polling")
+	})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -20,14 +24,18 @@ func newPlatformEventBus(_ context.Context, cfg config) (*natseventbus.Bus, func
 }
 
 func newSMSHotStreamBus(ctx context.Context, cfg config) (hotstream.Bus, func(), error) {
+	if strings.TrimSpace(cfg.NATSURL) == "" {
+		return hotstream.NewHub(hotstream.DefaultBufferSize), noopClose, nil
+	}
 	bus, err := hotstreamnats.ConnectService(ctx, hotstreamnats.ServiceConfig{
-		URL:             cfg.PlatformNATSURL,
-		ClientName:      "sms-service",
-		Service:         "sms",
-		RequiredMessage: "PLATFORM_NATS_URL is required for SMS hotstream",
+		URL:        cfg.NATSURL,
+		ClientName: "sms-service",
+		Service:    "sms",
 	})
 	if err != nil {
 		return nil, nil, err
 	}
 	return bus, bus.Close, nil
 }
+
+func noopClose() {}

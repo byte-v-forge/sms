@@ -16,6 +16,7 @@ type OrderService struct {
 	clock       core.Clock
 	ids         core.IDGenerator
 	events      OrderEventSink
+	asyncEvents bool
 }
 
 type OrderStore interface {
@@ -61,5 +62,6 @@ func NewOrderService(
 		ids:         ids,
 		events:      events,
 		hot:         hot,
+		asyncEvents: orderEventsAsync(events),
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -18,7 +19,7 @@ import (
 	"github.com/byte-v-forge/sms/internal/platform/eventoutbox"
 	"github.com/byte-v-forge/sms/internal/platform/grpcclient"
 	"github.com/byte-v-forge/sms/internal/platform/grpchealth"
-	"github.com/byte-v-forge/sms/internal/platform/redisx"
+	"github.com/byte-v-forge/sms/internal/platform/natseventbus"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 )
@@ -33,26 +34,11 @@ func main() {
 		log.Fatalf("initialize SMS provider registry: %v", err)
 	}
 
-	configStore, err := app.NewPostgresProviderConfigStore(ctx, cfg.PGDSN, providerRegistry)
+	stores, err := newRuntimeStores(ctx, cfg, providerRegistry)
 	if err != nil {
-		log.Fatalf("initialize SMS config store: %v", err)
+		log.Fatalf("initialize SMS stores: %v", err)
 	}
-	defer configStore.Close()
-
-	orderHistoryStore, err := app.NewPostgresOrderStore(ctx, cfg.PGDSN)
-	if err != nil {
-		log.Fatalf("initialize SMS order store: %v", err)
-	}
-	defer orderHistoryStore.Close()
-	redisClient, err := redisx.NewRequiredClient(ctx, cfg.PlatformRedisURL, "PLATFORM_REDIS_URL is required for SMS order state")
-	if err != nil {
-		log.Fatalf("initialize SMS order redis: %v", err)
-	}
-	defer redisClient.Close()
-	activeStore := app.NewRedisOrderStore(redisx.NewStringStore(redisClient, "sms:order", 30*time.Minute), app.SystemClock{})
-	codeSecretStore := app.NewSMSCodeSecretStore(redisx.NewStringStore(redisClient, "sms:code-secret", 30*time.Minute), app.SystemClock{})
-	orderStore := app.NewCompositeOrderStore(activeStore, orderHistoryStore)
-	routeHealthStore := app.NewRedisRouteHealthStore(redisClient)
+	defer stores.close()
 
 	platformEventBus, closePlatformEventBus, err := newPlatformEventBus(ctx, cfg)
 	if err != nil {
@@ -66,31 +52,19 @@ func main() {
 	defer closeHotStream()
 
 	httpTimeout := time.Duration(cfg.HTTPTimeoutSeconds) * time.Second
-	orderEvents := eventbusadapter.NewOrderEventRecorder("sms-service")
-	catalogService := app.NewCatalogService(configStore, providerRegistry, routeHealthStore, httpTimeout, cfg.ProviderHTTPProxy, app.SystemClock{})
+	orderEvents := configuredOrderEvents(platformEventBus != nil && stores.orderOutbox != nil)
+	catalogService := app.NewCatalogService(stores.configs, providerRegistry, stores.routeHealth, httpTimeout, cfg.ProviderHTTPProxy, app.SystemClock{})
 	orderService := app.NewOrderService(
-		orderStore,
-		app.NewConfiguredProviders(providerRegistry, configStore, httpTimeout, cfg.ProviderHTTPProxy),
+		stores.orders,
+		app.NewConfiguredProviders(providerRegistry, stores.configs, httpTimeout, cfg.ProviderHTTPProxy),
 		app.SystemClock{},
 		app.RandomIDGenerator{},
 		orderEvents,
 		hotStream,
-		routeHealthStore,
-		codeSecretStore,
+		stores.routeHealth,
+		stores.codeSecrets,
 	)
-	acquireConsumer, err := platformEventBus.PullWorkerForDefinition(cfg.EventStreamName, smseventcatalog.OrderAcquireRequested, 10, 60*time.Second)
-	if err != nil {
-		log.Fatalf("initialize SMS order acquire worker: %v", err)
-	}
-	pollConsumer, err := platformEventBus.PullWorkerForDefinition(cfg.EventStreamName, smseventcatalog.OrderPollRequested, 10, 60*time.Second)
-	if err != nil {
-		log.Fatalf("initialize SMS order poll worker: %v", err)
-	}
-	cancelConsumer, err := platformEventBus.PullWorkerForDefinition(cfg.EventStreamName, smseventcatalog.OrderCancelRequested, 10, 60*time.Second)
-	if err != nil {
-		log.Fatalf("initialize SMS order cancel worker: %v", err)
-	}
-	adminService := app.NewProviderAdminService(configStore, providerRegistry, orderService, orderHistoryStore, httpTimeout, cfg.ProviderHTTPProxy, hotStream)
+	adminService := app.NewProviderAdminService(stores.configs, providerRegistry, orderService, stores.orderList, httpTimeout, cfg.ProviderHTTPProxy, hotStream)
 
 	listener, err := net.Listen("tcp", cfg.ListenAddr)
 	if err != nil {
@@ -103,22 +77,7 @@ func main() {
 	smsinternalv1.RegisterSmsProviderAdminServiceServer(server, grpcadapter.NewProviderAdminServer(adminService))
 	grpchealth.RegisterServing(server)
 	group, groupCtx := errgroup.WithContext(ctx)
-	group.Go(func() error {
-		return eventoutbox.RunWorker(groupCtx, eventoutbox.WorkerConfig{
-			Name:      "sms platform event outbox",
-			Processor: app.NewOrderOutboxProcessor(orderHistoryStore, platformEventBus),
-			Logf:      log.Printf,
-		})
-	})
-	group.Go(func() error {
-		return eventbusadapter.RunOrderAcquireWorker(groupCtx, acquireConsumer, orderService)
-	})
-	group.Go(func() error {
-		return eventbusadapter.RunOrderPollWorker(groupCtx, pollConsumer, orderService)
-	})
-	group.Go(func() error {
-		return eventbusadapter.RunOrderCancelWorker(groupCtx, cancelConsumer, orderService)
-	})
+	startEventWorkers(group, groupCtx, cfg, platformEventBus, stores.orderOutbox, orderService)
 
 	go func() {
 		<-groupCtx.Done()
@@ -161,4 +120,48 @@ func main() {
 		stop()
 		log.Fatalf("sms-service failed: %v", err)
 	}
+}
+
+func configuredOrderEvents(enabled bool) app.OrderEventSink {
+	if !enabled {
+		return nil
+	}
+	return eventbusadapter.NewOrderEventRecorder("sms-service")
+}
+
+func startEventWorkers(group *errgroup.Group, ctx context.Context, cfg config, platformEventBus *natseventbus.Bus, orderOutbox *app.PostgresOrderStore, orderService *app.OrderService) {
+	if platformEventBus == nil || orderOutbox == nil {
+		if strings.TrimSpace(cfg.NATSURL) != "" && orderOutbox == nil {
+			log.Print("SMS platform event bus configured without PostgreSQL outbox; using in-process order flow")
+		}
+		return
+	}
+	acquireConsumer, err := platformEventBus.PullWorkerForDefinition(cfg.EventStreamName, smseventcatalog.OrderAcquireRequested, 10, 60*time.Second)
+	if err != nil {
+		log.Fatalf("initialize SMS order acquire worker: %v", err)
+	}
+	pollConsumer, err := platformEventBus.PullWorkerForDefinition(cfg.EventStreamName, smseventcatalog.OrderPollRequested, 10, 60*time.Second)
+	if err != nil {
+		log.Fatalf("initialize SMS order poll worker: %v", err)
+	}
+	cancelConsumer, err := platformEventBus.PullWorkerForDefinition(cfg.EventStreamName, smseventcatalog.OrderCancelRequested, 10, 60*time.Second)
+	if err != nil {
+		log.Fatalf("initialize SMS order cancel worker: %v", err)
+	}
+	group.Go(func() error {
+		return eventoutbox.RunWorker(ctx, eventoutbox.WorkerConfig{
+			Name:      "sms platform event outbox",
+			Processor: app.NewOrderOutboxProcessor(orderOutbox, platformEventBus),
+			Logf:      log.Printf,
+		})
+	})
+	group.Go(func() error {
+		return eventbusadapter.RunOrderAcquireWorker(ctx, acquireConsumer, orderService)
+	})
+	group.Go(func() error {
+		return eventbusadapter.RunOrderPollWorker(ctx, pollConsumer, orderService)
+	})
+	group.Go(func() error {
+		return eventbusadapter.RunOrderCancelWorker(ctx, cancelConsumer, orderService)
+	})
 }

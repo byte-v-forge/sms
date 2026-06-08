@@ -16,6 +16,16 @@ func (s *OrderService) GetOrder(ctx context.Context, orderID string) (core.Order
 	if err := s.expireIfNeeded(ctx, &order); err != nil {
 		return core.Order{}, err
 	}
+	if !s.asyncEvents && order.Status.HasProviderLease() && order.Status != core.StatusCodeReceived && !order.Status.IsFinal() {
+		synced, _, err := s.CheckCode(ctx, orderID)
+		if synced.ID == "" {
+			synced = order
+		}
+		if err == nil {
+			return synced, nil
+		}
+		return synced, err
+	}
 	return order, nil
 }
 

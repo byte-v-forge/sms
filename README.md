@@ -52,9 +52,9 @@ sh webui/scripts/generate-proto.sh
 
 - `SMS_LISTEN_ADDR`：gRPC 监听地址，默认 `:50051`
 - `SMS_DASHBOARD_HTTP_ADDR`：dashboard BFF 监听地址，默认 `:8080`
-- `SMS_PG_DSN` 或 `PG_DSN`：PostgreSQL 连接
-- `PLATFORM_NATS_URL`：平台事件总线
-- `PLATFORM_REDIS_URL`：激活热状态和路由临时熔断状态 Redis
+- `SMS_PG_DSN`：可选 PostgreSQL 连接；未配置时使用进程内订单和 provider 配置存储
+- `SMS_NATS_URL`：可选 NATS/JetStream 事件总线；未配置时取号/取消走进程内同步流程，hotstream 使用本地 hub
+- `SMS_REDIS_URL`：可选 Redis；未配置时验证码 secret 与路由临时熔断状态使用进程内存储
 - `SMS_PROVIDER_HTTP_PROXY`：可选 provider 出口代理，支持 `http`、`https`、`socks5`、`socks5h`
 
 provider API key 通过 SMS 设置页或 `SmsProviderAdminService` 写入数据库。

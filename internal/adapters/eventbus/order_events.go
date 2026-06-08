@@ -27,6 +27,8 @@ func NewOrderEventRecorder(source string) *OrderEventRecorder {
 	return &OrderEventRecorder{source: source}
 }
 
+func (b *OrderEventRecorder) AsyncRequests() bool { return b != nil }
+
 func (b *OrderEventRecorder) record(_ context.Context, definition eventcatalog.Definition, message proto.Message, metadata *commonv1.EventMetadata, attrs map[string]string) (eventoutbox.Record, error) {
 	if b == nil {
 		return eventoutbox.Record{}, nil

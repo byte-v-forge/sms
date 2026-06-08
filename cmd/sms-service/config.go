@@ -14,22 +14,22 @@ type config struct {
 	ProviderHTTPProxy  string
 	DashboardHTTPAddr  string
 	DashboardStaticDir string
-	PlatformNATSURL    string
-	PlatformRedisURL   string
+	NATSURL            string
+	RedisURL           string
 	EventStreamName    string
 }
 
 func loadConfig() config {
 	cfg := config{
 		ListenAddr:         envx.StringDefault("SMS_LISTEN_ADDR", ":50051"),
-		PGDSN:              envx.StringDefault("SMS_PG_DSN", envx.StringDefault("PG_DSN", "")),
+		PGDSN:              envx.StringDefault("SMS_PG_DSN", ""),
 		HTTPTimeoutSeconds: mustEnvInt("SMS_HTTP_TIMEOUT_SECONDS", 20),
 		ProviderHTTPProxy:  envx.StringDefault("SMS_PROVIDER_HTTP_PROXY", ""),
 		DashboardHTTPAddr:  envx.StringDefault("SMS_DASHBOARD_HTTP_ADDR", ":8080"),
 		DashboardStaticDir: envx.StringDefault("SMS_DASHBOARD_STATIC_DIR", "/app/dashboard/sms"),
-		PlatformNATSURL:    envx.StringDefault("PLATFORM_NATS_URL", ""),
-		PlatformRedisURL:   envx.StringDefault("PLATFORM_REDIS_URL", ""),
-		EventStreamName:    envx.StringDefault("PLATFORM_EVENT_STREAM_NAME", natseventbus.DefaultStream),
+		NATSURL:            envx.StringDefault("SMS_NATS_URL", ""),
+		RedisURL:           envx.StringDefault("SMS_REDIS_URL", ""),
+		EventStreamName:    envx.StringDefault("SMS_EVENT_STREAM_NAME", natseventbus.DefaultStream),
 	}
 	if cfg.HTTPTimeoutSeconds <= 0 {
 		cfg.HTTPTimeoutSeconds = 20

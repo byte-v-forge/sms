@@ -34,6 +34,9 @@ func (s *OrderService) AcquireNumber(ctx context.Context, cmd core.AcquireNumber
 	if err := s.saveOrder(ctx, order, record); err != nil {
 		return core.Order{}, err
 	}
+	if !s.asyncEvents {
+		return s.RunAcquireRequest(ctx, order.ID, order.RequestID, route)
+	}
 	return order, nil
 }
 

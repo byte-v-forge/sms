@@ -14,7 +14,7 @@ const smsPlatformEventOutboxTable = "sms_platform_event_outbox"
 type PostgresOrderStore struct{ pool *pgxpool.Pool }
 
 func NewPostgresOrderStore(ctx context.Context, dsn string) (*PostgresOrderStore, error) {
-	pool, err := newRequiredPostgresPool(ctx, dsn)
+	pool, err := newPostgresPool(ctx, dsn)
 	if err != nil {
 		return nil, err
 	}

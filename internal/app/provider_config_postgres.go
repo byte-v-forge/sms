@@ -13,7 +13,7 @@ type PostgresProviderConfigStore struct {
 }
 
 func NewPostgresProviderConfigStore(ctx context.Context, dsn string, providers *providerspi.Registry) (*PostgresProviderConfigStore, error) {
-	pool, err := newRequiredPostgresPool(ctx, dsn)
+	pool, err := newPostgresPool(ctx, dsn)
 	if err != nil {
 		return nil, err
 	}
