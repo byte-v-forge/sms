@@ -53,20 +53,23 @@ function ProviderCard({ config, provider, saving, deleting, onSave, onDelete }: 
     setEnabled(config?.enabled ?? true);
   }, [config?.enabled, config?.provider_key]);
   const balance = useQuery({ queryKey: smsKeys.balance(provider.provider_key), queryFn: () => getSmsProviderBalance(provider.provider_key), enabled: !!config?.provider_key && config.enabled && !!config.api_key_set, refetchInterval: 60000 });
-  const canSave = enabled === false || !!apiKey.trim() || !!config?.api_key_set;
+  const dirty = enabled !== (config?.enabled ?? true) || !!apiKey.trim() || !config;
+  const hasCredential = !!apiKey.trim() || !!config?.api_key_set;
+  const canSave = dirty && (enabled === false || hasCredential);
   return (
-    <Card className="w-[340px] max-w-full flex-none bg-background">
+    <Card className={`w-[340px] max-w-full flex-none bg-background transition ${enabled ? 'border-primary/30' : 'opacity-75'}`}>
       <CardHeader>
         <CardTitle className="flex items-center justify-between gap-2"><span className="truncate">{provider.display_name || provider.provider_key}</span>{providerStatusBadge(config, enabled)}</CardTitle>
         <CardDescription>{provider.provider_key}</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-3">
         <Input type="password" placeholder={config?.api_key_set ? '留空保留 API Key' : 'Provider API Key'} value={apiKey} onChange={(event) => setAPIKey(event.target.value)} />
+        <p className="text-xs text-muted-foreground">{config?.api_key_set ? '留空保存会继续使用当前 API Key。' : '启用平台前需要填写 API Key。'}</p>
         <div className="flex items-center justify-between rounded-lg border border-border p-2 text-sm"><span>启用接码源</span><Switch checked={enabled} onCheckedChange={setEnabled} /></div>
-        <div className="grid gap-1 rounded-lg bg-muted/30 p-2"><DescriptionLine label="余额" value={balanceText(config, balance.isLoading, moneyText(balance.data?.balance))} /><DescriptionLine label="API Key" value={config?.api_key_set ? '已配置' : '未配置'} /></div>
+        <div className="grid gap-1 rounded-lg bg-muted/30 p-2"><DescriptionLine label="余额" value={balanceText(config, balance.isLoading, moneyText(balance.data?.balance))} /><DescriptionLine label="API Key" value={config?.api_key_set ? '已配置' : '未配置'} /><DescriptionLine label="变更" value={dirty ? '待保存' : '无'} /></div>
         <div className="flex justify-end gap-2">
           <Button aria-label="保存" title="保存" size="icon" disabled={saving || !canSave} onClick={() => onSave({ provider_key: provider.provider_key, enabled, api_key: apiKey.trim() || undefined })}>{saving ? <LoaderCircle className="size-4 animate-spin" /> : <Save className="size-4" />}</Button>
-          <Button aria-label="删除" title="删除" variant="outline" size="icon" disabled={!config?.provider_key || deleting} onClick={() => onDelete(provider.provider_key)}>{deleting ? <LoaderCircle className="size-4 animate-spin" /> : <Trash2 className="size-4" />}</Button>
+          <Button aria-label="删除" title="删除" variant="outline" size="icon" disabled={!config?.provider_key || deleting} onClick={() => confirmDelete(provider.provider_key, onDelete)}>{deleting ? <LoaderCircle className="size-4 animate-spin" /> : <Trash2 className="size-4" />}</Button>
         </div>
       </CardContent>
     </Card>
@@ -83,10 +86,14 @@ function mergeProviderOptions(providerOptions: SmsProviderOption[], configs: Sms
 
 function balanceText(config: SmsProviderSetting | undefined, loading: boolean, balance: string) {
   if (!config) return '-';
-  return loading ? '读取中' : balance;
+  return loading ? <span className="inline-flex items-center gap-1"><LoaderCircle className="size-3 animate-spin" />读取中</span> : balance;
 }
 
 function providerStatusBadge(config: SmsProviderSetting | undefined, enabled: boolean) {
   if (!config) return <Badge variant="outline">未配置</Badge>;
   return enabled ? <Badge>启用</Badge> : <Badge variant="secondary">停用</Badge>;
+}
+
+function confirmDelete(providerKey: string, onDelete: (id: string) => void) {
+  if (window.confirm(`确认删除 ${providerKey} 的接码源配置？`)) onDelete(providerKey);
 }

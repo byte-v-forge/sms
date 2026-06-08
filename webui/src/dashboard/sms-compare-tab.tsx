@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
-import { Search } from 'lucide-react';
+import { CheckSquare, RotateCcw, Search, Square } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { Badge, Button, Card, Checkbox, Input, Select } from '../ui';
@@ -48,8 +48,11 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
   useEffect(() => {
     if (routeQuery.providerKeys.length === 0 && enabledKeys.length > 0) setSelectedKeys(enabledKeys);
   }, [enabledKeys, routeQuery.providerKeys.length]);
-  const activeKeys = selectedKeys || enabledKeys;
-  const compareQuery = useMemo(() => ({ ...routeQuery, providerKeys: routeQuery.providerKeys.length > 0 ? routeQuery.providerKeys : enabledKeys }), [enabledKeys, routeQuery]);
+  const activeKeys = (selectedKeys || enabledKeys).filter((key) => enabledKeys.includes(key));
+  const compareQuery = useMemo(() => ({
+    ...routeQuery,
+    providerKeys: routeQuery.providerKeys.length > 0 ? routeQuery.providerKeys.filter((key) => enabledKeys.includes(key)) : enabledKeys
+  }), [enabledKeys, routeQuery]);
   const serverQuery = useMemo(() => smsPriceOfferQuery(compareQuery), [compareQuery]);
   const queried = canSearch(serverQuery.applicationKey, serverQuery.countryISO2, serverQuery.countryCallingCode, serverQuery.providerKeys);
   const offersQuery = useQuery({ queryKey: smsKeys.priceOffers(serverQuery), queryFn: () => listSmsPriceOffers(serverQuery), enabled: queried });
@@ -72,6 +75,16 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
     return { applicationKey: applicationKey.trim(), countryISO2: countryISO2.trim().toUpperCase(), countryCallingCode: countryCallingCode.trim().replace(/^\+/, ''), providerKeys: [...activeKeys], minAvailable: Math.max(0, minAvailable), sort: nextSort };
   }
 
+  function resetFilters() {
+    setSearchParams(new URLSearchParams());
+    setApplicationKey('');
+    setCountryISO2('');
+    setCountryCallingCode('');
+    setMinAvailable(1);
+    setSort('price');
+    setSelectedKeys(enabledKeys);
+  }
+
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-muted/20">
       <Card className="m-4 mb-0 p-3">
@@ -85,8 +98,12 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <ProviderPicker choices={choices} selectedKeys={activeKeys} onChange={setSelectedKeys} />
-            <Button disabled={!canSearch(applicationKey, countryISO2, countryCallingCode, activeKeys)} type="submit"><Search className="size-4" />查询比对</Button>
+            <div className="flex items-center gap-2">
+              <Button aria-label="重置查询条件" title="重置查询条件" size="icon-sm" variant="outline" onClick={resetFilters}><RotateCcw className="size-4" /></Button>
+              <Button disabled={!canSearch(applicationKey, countryISO2, countryCallingCode, activeKeys)} type="submit"><Search className="size-4" />查询比对</Button>
+            </div>
           </div>
+          <SearchHint applicationKey={applicationKey} countryISO2={countryISO2} countryCallingCode={countryCallingCode} providerKeys={activeKeys} />
         </form>
       </Card>
       <CompareSummary loading={offersQuery.isLoading} total={offers.length} providerCount={new Set(offers.map((offer) => offer.provider_key)).size} best={top} error={error} />
@@ -101,7 +118,27 @@ function Field({ label, className, children }: { label: string; className?: stri
 
 function ProviderPicker({ choices, selectedKeys, onChange }: { choices: ProviderChoice[]; selectedKeys: string[]; onChange: (keys: string[]) => void }) {
   if (choices.length === 0) return <span className="text-xs text-muted-foreground">暂无 provider 插件</span>;
-  return <div className="flex flex-wrap gap-2">{choices.map((choice) => <label key={choice.providerKey} className="inline-flex h-8 items-center gap-2 rounded-lg border border-border bg-background px-2 text-xs"><Checkbox checked={selectedKeys.includes(choice.providerKey)} disabled={!choice.enabled} onCheckedChange={() => toggleProvider(choice.providerKey, selectedKeys, onChange)} /><span>{choice.displayName}</span>{!choice.configured && <Badge variant="outline">未配置</Badge>}</label>)}</div>;
+  const enabledKeys = choices.filter((choice) => choice.enabled).map((choice) => choice.providerKey);
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <Badge variant="secondary">已选 {selectedKeys.length}/{enabledKeys.length}</Badge>
+      <Button aria-label="选择全部可用平台" title="选择全部可用平台" size="icon-sm" variant="ghost" onClick={() => onChange(enabledKeys)}><CheckSquare className="size-4" /></Button>
+      <Button aria-label="清空平台选择" title="清空平台选择" size="icon-sm" variant="ghost" onClick={() => onChange([])}><Square className="size-4" /></Button>
+      {choices.map((choice) => <ProviderChoiceItem key={choice.providerKey} choice={choice} selectedKeys={selectedKeys} onChange={onChange} />)}
+    </div>
+  );
+}
+
+function ProviderChoiceItem({ choice, selectedKeys, onChange }: { choice: ProviderChoice; selectedKeys: string[]; onChange: (keys: string[]) => void }) {
+  const checked = selectedKeys.includes(choice.providerKey);
+  return (
+    <label className={`inline-flex h-8 items-center gap-2 rounded-lg border border-border bg-background px-2 text-xs ${choice.enabled ? '' : 'opacity-60'}`}>
+      <Checkbox checked={checked} disabled={!choice.enabled} onCheckedChange={() => toggleProvider(choice.providerKey, selectedKeys, onChange)} />
+      <span>{choice.displayName}</span>
+      {!choice.configured && <Badge variant="outline">未配置</Badge>}
+      {choice.configured && !choice.enabled && <Badge variant="secondary">停用</Badge>}
+    </label>
+  );
 }
 
 function toggleProvider(providerKey: string, selectedKeys: string[], onChange: (keys: string[]) => void) {
@@ -110,6 +147,15 @@ function toggleProvider(providerKey: string, selectedKeys: string[], onChange: (
 
 function canSearch(applicationKey: string, countryISO2: string, callingCode: string, providerKeys: string[]) {
   return applicationKey.trim() !== '' && (countryISO2.trim() !== '' || callingCode.trim() !== '') && providerKeys.length > 0;
+}
+
+function SearchHint({ applicationKey, countryISO2, countryCallingCode, providerKeys }: { applicationKey: string; countryISO2: string; countryCallingCode: string; providerKeys: string[] }) {
+  const hints = [];
+  if (!applicationKey.trim()) hints.push('填写应用');
+  if (!countryISO2.trim() && !countryCallingCode.trim()) hints.push('填写国家 ISO2 或区号');
+  if (providerKeys.length === 0) hints.push('至少选择一个启用平台');
+  if (hints.length === 0) return <p className="text-xs text-muted-foreground">支持刷新和分享当前查询链接；多平台查询会先请求全部启用平台，再在前端按选择过滤。</p>;
+  return <p className="text-xs text-muted-foreground">还需要：{hints.join('、')}</p>;
 }
 
 function numberInputValue(value: string | number | null) {

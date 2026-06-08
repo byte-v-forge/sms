@@ -19,6 +19,8 @@ export function OrdersTab({ orders, codes, cancelingId, onCancel }: OrdersTabPro
   const [pageSize, setPageSize] = useState(20);
   const codesByOrder = useMemo(() => groupCodes(codes), [codes]);
   const rows = useMemo(() => orders.filter((item) => mode === 'active' ? canCancelStatus(item.order?.status) : !canCancelStatus(item.order?.status)), [mode, orders]);
+  const activeCount = orders.filter((item) => canCancelStatus(item.order?.status)).length;
+  const historyCount = orders.length - activeCount;
   const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
   const visible = rows.slice(page * pageSize, page * pageSize + pageSize);
 
@@ -29,6 +31,11 @@ export function OrdersTab({ orders, codes, cancelingId, onCancel }: OrdersTabPro
 
   return (
     <div className="flex min-h-0 flex-1 flex-col p-4">
+      <div className="mb-3 grid gap-2 sm:grid-cols-3">
+        <OrderStat label="进行中" value={activeCount} active={mode === 'active'} />
+        <OrderStat label="历史订单" value={historyCount} active={mode === 'history'} />
+        <OrderStat label="验证码记录" value={codes.length} />
+      </div>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-2">
           <Button size="sm" variant={mode === 'active' ? 'default' : 'outline'} onClick={() => changeMode('active')}>进行中</Button>
@@ -47,6 +54,10 @@ export function OrdersTab({ orders, codes, cancelingId, onCancel }: OrdersTabPro
       </div>
     </div>
   );
+}
+
+function OrderStat({ label, value, active }: { label: string; value: number; active?: boolean }) {
+  return <div className={`rounded-xl border p-3 ${active ? 'border-primary bg-secondary' : 'border-border bg-card'}`}><div className="text-xs text-muted-foreground">{label}</div><div className="mt-1 text-xl font-semibold">{value}</div></div>;
 }
 
 function OrderPager({ page, pageCount, pageSize, total, onPage, onPageSize }: { page: number; pageCount: number; pageSize: number; total: number; onPage: (page: number) => void; onPageSize: (size: number) => void }) {
@@ -70,19 +81,30 @@ function OrderRow({ item, codes, cancelingId, onCancel }: { item: SmsOrderView; 
   return (
     <TableRow>
       <TableCell className="font-mono text-xs">{order?.phone_number?.e164_number || order?.phone_number?.national_number || '-'}</TableCell>
-      <TableCell>{item.provider_key || '-'}</TableCell>
-      <TableCell>{statusText(order?.status)}</TableCell>
+      <TableCell>{item.provider_key ? <Badge variant="outline">{item.provider_key}</Badge> : '-'}</TableCell>
+      <TableCell><StatusBadge status={order?.status} /></TableCell>
       <TableCell>{remainingText(order?.expires_at)}</TableCell>
       <TableCell><CodesCell codes={codes} /></TableCell>
       <TableCell>{moneyText(order?.price)}</TableCell>
-      <TableCell className="text-right"><Button aria-label="取消订单" title="取消订单" size="icon-sm" variant="outline" disabled={!cancelable || cancelingId === id} onClick={() => onCancel(id)}><Ban className="size-4" /></Button></TableCell>
+      <TableCell className="text-right"><Button aria-label="取消订单" title="取消订单" size="icon-sm" variant="outline" disabled={!cancelable || cancelingId === id} onClick={() => confirmCancel(id, onCancel)}><Ban className="size-4" /></Button></TableCell>
     </TableRow>
   );
 }
 
+function StatusBadge({ status }: { status?: string }) {
+  if (status === 'SMS_ORDER_STATUS_FAILED') return <Badge variant="destructive">{statusText(status)}</Badge>;
+  if (['SMS_ORDER_STATUS_COMPLETED', 'SMS_ORDER_STATUS_CODE_RECEIVED'].includes(status || '')) return <Badge>{statusText(status)}</Badge>;
+  if (['SMS_ORDER_STATUS_CANCELED', 'SMS_ORDER_STATUS_EXPIRED'].includes(status || '')) return <Badge variant="secondary">{statusText(status)}</Badge>;
+  return <Badge variant="outline">{statusText(status)}</Badge>;
+}
+
+function confirmCancel(id: string, onCancel: (id: string) => void) {
+  if (window.confirm('确认取消这个号码订单？')) onCancel(id);
+}
+
 function CodesCell({ codes }: { codes: SmsOrderCodeView[] }) {
   if (codes.length === 0) return <span className="text-muted-foreground">-</span>;
-  return <div className="grid gap-1">{codes.slice(0, 3).map((item) => <div key={`${item.order_id}-${item.code?.secret_ref?.secret_id}-${item.code?.received_at}`} className="text-xs">{item.code?.secret_ref?.secret_id ? '已捕获' : '-'} · <span className="text-muted-foreground">{dateTimeText(item.code?.received_at)}</span></div>)}{codes.length > 3 && <div className="text-xs text-muted-foreground">+{codes.length - 3} 条历史</div>}</div>;
+  return <div className="grid gap-1">{codes.slice(0, 3).map((item) => <div key={`${item.order_id}-${item.code?.secret_ref?.secret_id}-${item.code?.received_at}`} className="text-xs"><Badge variant="secondary">已捕获</Badge> <span className="text-muted-foreground">{dateTimeText(item.code?.received_at)}</span></div>)}{codes.length > 3 && <div className="text-xs text-muted-foreground">+{codes.length - 3} 条历史</div>}</div>;
 }
 
 function groupCodes(codes: SmsOrderCodeView[]) {

@@ -14,15 +14,15 @@ export function WorkspaceRoutedPanel({ title, meta, tabs, children }: { title: R
   const location = useLocation();
   return (
     <main className="mx-auto flex h-screen max-w-7xl flex-col p-4">
-      <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
+      <Card className="flex min-h-0 flex-1 flex-col overflow-hidden bg-card/95 shadow-lg shadow-slate-200/60">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-background/70 px-4 py-3 backdrop-blur">
           <div>
-            <h1 className="text-lg font-semibold">{title}</h1>
+            <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
             {meta && <p className="text-xs text-muted-foreground">{meta}</p>}
           </div>
-          <nav className="flex gap-2">
+          <nav aria-label="SMS 页面导航" className="flex gap-2 rounded-xl bg-muted/40 p-1">
             {tabs.map((tab) => (
-              <Button key={tab.to} asChild size="sm" variant={routeMatches(location.pathname, tab) ? 'default' : 'outline'}>
+              <Button key={tab.to} asChild size="sm" variant={routeMatches(location.pathname, tab) ? 'default' : 'ghost'}>
                 <NavLink to={tab.to} className={({ isActive }) => cn(!isActive && 'text-foreground')}>{tab.label}</NavLink>
               </Button>
             ))}

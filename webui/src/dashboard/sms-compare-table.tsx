@@ -24,14 +24,24 @@ type OffersTableProps = {
 
 export function CompareSummary({ loading, total, providerCount, best, error }: CompareSummaryProps) {
   return (
-    <Card className="m-4 mb-3 grid gap-2 p-3">
-      <div className="flex flex-wrap items-center gap-3 text-sm">
-        <Badge variant="secondary">{loading ? '查询中' : `${total} 条报价`}</Badge>
-        <Badge variant="outline">{providerCount} 个平台</Badge>
-        <span className="text-muted-foreground">最低价：{best ? `${best.provider_display_name || best.provider_key} · ${moneyText(best.price)}` : '-'}</span>
+    <Card className="m-4 mb-3 grid gap-3 p-3">
+      <div className="grid gap-2 md:grid-cols-3">
+        <SummaryMetric label="报价" value={loading ? '查询中' : `${total} 条`} loading={loading} />
+        <SummaryMetric label="覆盖平台" value={`${providerCount} 个`} />
+        <SummaryMetric label="最低价" value={best ? moneyText(best.price) : '-'} hint={best ? best.provider_display_name || best.provider_key : undefined} />
       </div>
       {error && <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</div>}
     </Card>
+  );
+}
+
+function SummaryMetric({ label, value, hint, loading }: { label: string; value: string; hint?: string; loading?: boolean }) {
+  return (
+    <div className="rounded-lg border border-border bg-background p-3">
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="mt-1 flex items-center gap-2 text-lg font-semibold">{loading && <LoaderCircle className="size-4 animate-spin text-muted-foreground" />}{value}</div>
+      {hint && <div className="mt-1 truncate text-xs text-muted-foreground">{hint}</div>}
+    </div>
   );
 }
 
@@ -40,6 +50,10 @@ export function OffersTable({ offers, top, loading, queried, error, acquiringOff
   return (
     <div className="min-h-0 flex-1 overflow-auto px-4 pb-4">
       <div className="rounded-xl border border-border bg-card">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-3 py-2">
+          <div className="text-sm font-medium">报价明细</div>
+          {top && <Badge variant="secondary">最低价已高亮</Badge>}
+        </div>
         <Table>
           <TableHeader><TableRow><TableHead>平台</TableHead><TableHead>应用</TableHead><TableHead>国家</TableHead><TableHead>价格</TableHead><TableHead>库存</TableHead><TableHead>能力</TableHead><TableHead>观测时间</TableHead><TableHead /></TableRow></TableHeader>
           <TableBody>
