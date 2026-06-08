@@ -42,7 +42,7 @@ function ProviderErrors({ errors }: { errors: SmsProviderLookupError[] }) {
     <div className="flex flex-wrap gap-2">
       {errors.map((item, index) => (
         <Badge key={`${item.provider_key || item.provider_display_name || 'provider'}-${index}`} variant="outline" className="border-destructive/30 text-destructive">
-          {(item.provider_display_name || item.provider_key || 'provider')}：{item.error?.message || item.error?.code || '查询失败'}
+          {(item.provider_display_name || item.provider_key || '接码源')}：{item.error?.message || item.error?.code || '查询失败'}
         </Badge>
       ))}
     </div>

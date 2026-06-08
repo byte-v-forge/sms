@@ -27,7 +27,7 @@ export function SmsSettingsTab(props: SmsSettingsTabProps) {
   return (
     <div className="min-h-0 flex-1 overflow-auto bg-muted/20 p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <div><div className="text-sm font-semibold">SMS Provider</div><div className="text-xs text-muted-foreground">每个平台在卡片内直接配置，配置仅保存在 SMS 服务。</div></div>
+        <div><div className="text-sm font-semibold">接码源配置</div><div className="text-xs text-muted-foreground">统一管理聚合接码源，配置仅保存在 SMS 服务。</div></div>
         <div className="flex flex-wrap items-center gap-2"><Badge variant="secondary">{props.providerOptions.length} 插件</Badge><Badge variant="outline">{props.configs.length} 已配置</Badge><Badge variant={enabledCount > 0 ? 'default' : 'secondary'}>{enabledCount} 启用</Badge></div>
       </div>
       <div className="flex flex-wrap items-start gap-3">
@@ -64,7 +64,7 @@ function ProviderCard({ config, provider, saving, deleting, onSave, onDelete }: 
         <CardDescription>{provider.provider_key}</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-3">
-        <Input type="password" placeholder={config?.credential_secret_set ? '留空保留 API Key' : 'Provider API Key'} value={apiKey} onChange={(event) => setAPIKey(event.target.value)} />
+        <Input type="password" placeholder={config?.credential_secret_set ? '留空保留 API Key' : '接码源 API Key'} value={apiKey} onChange={(event) => setAPIKey(event.target.value)} />
         <p className="text-xs text-muted-foreground">{config?.credential_secret_set ? '留空保存会继续使用当前 API Key。' : '启用平台前需要填写 API Key。'}</p>
         <div className="flex items-center justify-between rounded-lg border border-border p-2 text-sm"><span>启用接码源</span><Switch checked={enabled} onCheckedChange={setEnabled} /></div>
         <div className="grid gap-1 rounded-lg bg-muted/30 p-2"><DescriptionLine label="余额" value={balanceText(config, balance.isLoading, moneyText(balance.data?.balance))} /><DescriptionLine label="API Key" value={config?.credential_secret_set ? '已配置' : '未配置'} /><DescriptionLine label="变更" value={dirty ? '待保存' : '无'} /></div>

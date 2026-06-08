@@ -45,7 +45,7 @@ export function OrdersTab({ orders, codes, cancelingId, onCancel }: OrdersTabPro
       </div>
       <div className="min-h-0 overflow-auto rounded-xl border border-border bg-card">
         <Table>
-          <TableHeader><TableRow><TableHead>号码</TableHead><TableHead>Provider</TableHead><TableHead>状态</TableHead><TableHead>剩余</TableHead><TableHead>最新 OTP</TableHead><TableHead>价格</TableHead><TableHead /></TableRow></TableHeader>
+          <TableHeader><TableRow><TableHead>号码</TableHead><TableHead>接码源</TableHead><TableHead>状态</TableHead><TableHead>剩余</TableHead><TableHead>最新 OTP</TableHead><TableHead>价格</TableHead><TableHead /></TableRow></TableHeader>
           <TableBody>
             {visible.map((item) => <OrderRow key={item.order?.order_id || item.provider_key} item={item} codes={codesByOrder.get(item.order?.order_id || '') || []} cancelingId={cancelingId} onCancel={onCancel} />)}
             {visible.length === 0 && <TableRow><TableCell colSpan={7}><EmptyBlock text="暂无订单" /></TableCell></TableRow>}

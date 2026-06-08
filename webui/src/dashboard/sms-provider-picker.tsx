@@ -9,7 +9,7 @@ type ProviderPickerProps = {
 };
 
 export function ProviderPicker({ choices, selectedKeys, onChange }: ProviderPickerProps) {
-  if (choices.length === 0) return <span className="text-xs text-muted-foreground">暂无 provider 插件</span>;
+  if (choices.length === 0) return <span className="text-xs text-muted-foreground">暂无接码源插件</span>;
   const enabledKeys = choices.filter((choice) => choice.enabled).map((choice) => choice.providerKey);
   return (
     <div className="flex flex-wrap items-center gap-2">
