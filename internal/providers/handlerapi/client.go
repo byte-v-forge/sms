@@ -3,6 +3,7 @@ package handlerapi
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -10,12 +11,10 @@ import (
 	"time"
 
 	"github.com/byte-v-forge/sms/internal/core"
-	"github.com/byte-v-forge/sms/internal/platform/httpx"
+	"github.com/byte-v-forge/sms/internal/providers/providerhttp"
 )
 
-type HTTPDoer interface {
-	Do(req *http.Request) (*http.Response, error)
-}
+type HTTPDoer = providerhttp.HTTPDoer
 
 type Client struct {
 	endpoint   string
@@ -43,44 +42,57 @@ func New(endpoint, apiKey string, httpClient HTTPDoer) (*Client, error) {
 }
 
 func (c *Client) Do(ctx context.Context, action string, params url.Values) (string, error) {
-	endpoint, err := url.Parse(c.endpoint)
-	if err != nil {
-		return "", core.NewError(core.CodeValidationFailed, "invalid handler api endpoint", false)
-	}
-	query := endpoint.Query()
-	for key, values := range params {
-		for _, value := range values {
-			if value != "" {
-				query.Add(key, value)
+	response, err := providerhttp.Do(ctx, c.httpClient, func(ctx context.Context) (*http.Request, error) {
+		endpoint, err := url.Parse(c.endpoint)
+		if err != nil {
+			return nil, core.NewError(core.CodeValidationFailed, "invalid handler api endpoint", false)
+		}
+		query := endpoint.Query()
+		for key, values := range params {
+			for _, value := range values {
+				if value != "" {
+					query.Add(key, value)
+				}
 			}
 		}
-	}
-	query.Set("api_key", c.apiKey)
-	query.Set("action", action)
-	endpoint.RawQuery = query.Encode()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), nil)
+		query.Set("api_key", c.apiKey)
+		query.Set("action", action)
+		endpoint.RawQuery = query.Encode()
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), nil)
+		if err != nil {
+			return nil, core.NewError(core.CodeInternal, err.Error(), false)
+		}
+		req.Header.Set("User-Agent", c.userAgent)
+		return req, nil
+	}, handlerAPIRetryPolicy(action))
 	if err != nil {
-		return "", core.NewError(core.CodeInternal, err.Error(), false)
-	}
-	req.Header.Set("User-Agent", c.userAgent)
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
+		var smsErr *core.Error
+		if errors.As(err, &smsErr) {
+			return "", smsErr
+		}
 		return "", core.NewError(core.CodeSupplyUnavailable, err.Error(), true)
 	}
-	defer resp.Body.Close()
-	body, err := httpx.ReadLimited(resp.Body, 1<<20)
-	if err != nil {
-		return "", core.NewError(core.CodeSupplyUnavailable, err.Error(), true)
-	}
-	text := strings.TrimSpace(string(body))
-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+	text := strings.TrimSpace(string(response.Body))
+	if response.StatusCode < 200 || response.StatusCode > 299 {
 		if text != "" {
 			return "", MapTextError(text)
 		}
-		return "", core.NewError(core.CodeSupplyUnavailable, fmt.Sprintf("handler api http status %d", resp.StatusCode), true)
+		return "", core.NewError(core.CodeSupplyUnavailable, fmt.Sprintf("handler api http status %d", response.StatusCode), true)
 	}
 	return text, nil
+}
+
+func handlerAPIRetryPolicy(action string) providerhttp.RetryPolicy {
+	switch action {
+	case "getNumberV2", "setStatus":
+		policy := providerhttp.NoRetry()
+		policy.MaxBodyBytes = 1 << 20
+		return policy
+	default:
+		policy := providerhttp.DefaultRetry()
+		policy.MaxBodyBytes = 1 << 20
+		return policy
+	}
 }
 
 func MapTextError(text string) error {

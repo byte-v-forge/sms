@@ -3,50 +3,68 @@ package fivesim
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/byte-v-forge/sms/internal/core"
-	"github.com/byte-v-forge/sms/internal/platform/httpx"
+	"github.com/byte-v-forge/sms/internal/providers/providerhttp"
 )
 
 func (c *Client) getJSON(ctx context.Context, path string, params url.Values, authenticated bool, out any) error {
-	endpoint, err := url.Parse(c.endpoint + path)
+	response, err := providerhttp.Do(ctx, c.httpClient, func(ctx context.Context) (*http.Request, error) {
+		endpoint, err := url.Parse(c.endpoint + path)
+		if err != nil {
+			return nil, core.NewError(core.CodeValidationFailed, "invalid 5sim endpoint", false)
+		}
+		if len(params) > 0 {
+			endpoint.RawQuery = params.Encode()
+		}
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), nil)
+		if err != nil {
+			return nil, core.NewError(core.CodeInternal, err.Error(), false)
+		}
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("User-Agent", c.userAgent)
+		if authenticated {
+			req.Header.Set("Authorization", "Bearer "+c.token)
+		}
+		return req, nil
+	}, fiveSimRetryPolicy(path))
 	if err != nil {
-		return core.NewError(core.CodeValidationFailed, "invalid 5sim endpoint", false)
-	}
-	if len(params) > 0 {
-		endpoint.RawQuery = params.Encode()
-	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), nil)
-	if err != nil {
-		return core.NewError(core.CodeInternal, err.Error(), false)
-	}
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("User-Agent", c.userAgent)
-	if authenticated {
-		req.Header.Set("Authorization", "Bearer "+c.token)
-	}
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
+		var smsErr *core.Error
+		if errors.As(err, &smsErr) {
+			return smsErr
+		}
 		return core.NewError(core.CodeSupplyUnavailable, err.Error(), true)
 	}
-	defer resp.Body.Close()
-	body, err := httpx.ReadLimited(resp.Body, 1<<20)
-	if err != nil {
-		return core.NewError(core.CodeSupplyUnavailable, err.Error(), true)
+	text := strings.TrimSpace(string(response.Body))
+	if response.StatusCode < 200 || response.StatusCode > 299 {
+		return mapError(response.StatusCode, text)
 	}
-	text := strings.TrimSpace(string(body))
-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return mapError(resp.StatusCode, text)
-	}
-	if err := json.Unmarshal(body, out); err != nil {
-		return mapError(resp.StatusCode, text)
+	if err := json.Unmarshal(response.Body, out); err != nil {
+		return mapError(response.StatusCode, text)
 	}
 	return nil
 }
+
+func fiveSimRetryPolicy(path string) providerhttp.RetryPolicy {
+	var policy providerhttp.RetryPolicy
+	if fiveSimRequestRetryable(path) {
+		policy = providerhttp.DefaultRetry()
+	} else {
+		policy = providerhttp.NoRetry()
+	}
+	policy.MaxBodyBytes = 1 << 20
+	return policy
+}
+
+func fiveSimRequestRetryable(path string) bool {
+	return strings.HasPrefix(path, "/v1/guest/") || strings.HasPrefix(path, "/v1/user/check/") || path == "/v1/user/profile"
+}
+
 func mapError(statusCode int, text string) error {
 	normalized := strings.ToLower(strings.TrimSpace(text))
 	switch {
