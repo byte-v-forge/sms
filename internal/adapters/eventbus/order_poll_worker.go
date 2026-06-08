@@ -2,12 +2,10 @@ package eventbusadapter
 
 import (
 	"context"
-	"log"
 	"time"
 
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	"github.com/byte-v-forge/sms/internal/app"
-	"github.com/byte-v-forge/sms/internal/core"
 	smseventcatalog "github.com/byte-v-forge/sms/internal/eventcatalog"
 	"github.com/byte-v-forge/sms/internal/platform/eventbus"
 )
@@ -29,40 +27,4 @@ func RunOrderPollWorker(ctx context.Context, consumer eventbus.Consumer, service
 		Handler:        worker.handle,
 		MalformedLabel: "terminate malformed sms order poll request",
 	})
-}
-
-func (w *OrderPollWorker) handle(ctx context.Context, request *smsinternalv1.SmsOrderPollRequest, _ eventbus.ReceivedMessage) eventbus.HandlerResult {
-	order, code, err := w.service.CheckCode(ctx, request.GetOrderId())
-	if err != nil {
-		log.Printf("sms order poll failed: order_id=%s error=%v", request.GetOrderId(), err)
-		if pollErrorRetryable(err) {
-			delay := w.pollDelay(ctx, order)
-			return eventbus.NakResult(delay, "delay sms order poll retry")
-		}
-		return eventbus.TermResult("terminate non-retryable sms order poll request")
-	}
-	if code != nil || order.Status == core.StatusCodeReceived || order.Status.IsFinal() {
-		return eventbus.AckResult("ack sms order poll request")
-	}
-	return eventbus.NakResult(w.pollDelay(ctx, order), "delay sms order poll")
-}
-
-func (w *OrderPollWorker) pollDelay(ctx context.Context, order core.Order) time.Duration {
-	if order.ID == "" {
-		return defaultPollRetryDelay
-	}
-	delay := w.service.PollInterval(ctx, order)
-	if delay <= 0 {
-		return defaultPollRetryDelay
-	}
-	return delay
-}
-
-func pollErrorRetryable(err error) bool {
-	return coreErrorRetryableUnless(
-		err,
-		core.CodeOrderNotFound,
-		core.CodeOrderAlreadyFinalized,
-		core.CodeOrderExpired,
-	)
 }
