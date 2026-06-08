@@ -7,19 +7,26 @@ import (
 )
 
 type OrderExecution interface {
-	AfterAcquireRequested(context.Context, *OrderService, core.Order, core.Route) (core.Order, error)
-	AfterCancelQueued(context.Context, *OrderService, core.Order, string) (core.Order, error)
+	AfterAcquireRequested(context.Context, core.Order, core.Route) (core.Order, error)
+	AfterCancelQueued(context.Context, core.Order, string) (core.Order, error)
 	SyncProviderStateOnRead() bool
 }
 
-type inProcessOrderExecution struct{}
+type acquireRequestRunner func(context.Context, string, string, core.Route) (core.Order, error)
 
-func (inProcessOrderExecution) AfterAcquireRequested(ctx context.Context, service *OrderService, order core.Order, route core.Route) (core.Order, error) {
-	return service.RunAcquireRequest(ctx, order.ID, order.RequestID, route)
+type cancelRequestRunner func(context.Context, core.Order, string) (core.Order, error)
+
+type inProcessOrderExecution struct {
+	acquire acquireRequestRunner
+	cancel  cancelRequestRunner
 }
 
-func (inProcessOrderExecution) AfterCancelQueued(ctx context.Context, service *OrderService, order core.Order, requestID string) (core.Order, error) {
-	return service.cancelLoadedOrder(ctx, order, requestID)
+func (e inProcessOrderExecution) AfterAcquireRequested(ctx context.Context, order core.Order, route core.Route) (core.Order, error) {
+	return e.acquire(ctx, order.ID, order.RequestID, route)
+}
+
+func (e inProcessOrderExecution) AfterCancelQueued(ctx context.Context, order core.Order, requestID string) (core.Order, error) {
+	return e.cancel(ctx, order, requestID)
 }
 
 func (inProcessOrderExecution) SyncProviderStateOnRead() bool {
@@ -28,11 +35,11 @@ func (inProcessOrderExecution) SyncProviderStateOnRead() bool {
 
 type asyncOrderExecution struct{}
 
-func (asyncOrderExecution) AfterAcquireRequested(_ context.Context, _ *OrderService, order core.Order, _ core.Route) (core.Order, error) {
+func (asyncOrderExecution) AfterAcquireRequested(_ context.Context, order core.Order, _ core.Route) (core.Order, error) {
 	return order, nil
 }
 
-func (asyncOrderExecution) AfterCancelQueued(_ context.Context, _ *OrderService, order core.Order, _ string) (core.Order, error) {
+func (asyncOrderExecution) AfterCancelQueued(_ context.Context, order core.Order, _ string) (core.Order, error) {
 	return order, nil
 }
 
@@ -44,10 +51,10 @@ type asyncOrderEventSink interface {
 	AsyncRequests() bool
 }
 
-func orderExecutionForEvents(events OrderEventSink) OrderExecution {
+func orderExecutionForEvents(events OrderEventSink, acquire acquireRequestRunner, cancel cancelRequestRunner) OrderExecution {
 	async, ok := events.(asyncOrderEventSink)
 	if ok && async.AsyncRequests() {
 		return asyncOrderExecution{}
 	}
-	return inProcessOrderExecution{}
+	return inProcessOrderExecution{acquire: acquire, cancel: cancel}
 }

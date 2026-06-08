@@ -50,11 +50,10 @@ func NewOrderService(
 	if events == nil {
 		events = noopOrderEventSink{}
 	}
-	execution := orderExecutionForEvents(events)
 	if routeHealth == nil {
 		routeHealth = noopRouteHealthStore{}
 	}
-	return &OrderService{
+	service := &OrderService{
 		store:       store,
 		providers:   index,
 		routeHealth: routeHealth,
@@ -63,6 +62,7 @@ func NewOrderService(
 		ids:         ids,
 		events:      events,
 		hot:         hot,
-		execution:   execution,
 	}
+	service.execution = orderExecutionForEvents(events, service.RunAcquireRequest, service.cancelLoadedOrder)
+	return service
 }

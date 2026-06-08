@@ -34,7 +34,7 @@ func (s *OrderService) AcquireNumber(ctx context.Context, cmd core.AcquireNumber
 	if err := s.saveOrder(ctx, order, record); err != nil {
 		return core.Order{}, err
 	}
-	return s.execution.AfterAcquireRequested(ctx, s, order, route)
+	return s.execution.AfterAcquireRequested(ctx, order, route)
 }
 
 func validateAcquireRoute(route core.Route) error {
