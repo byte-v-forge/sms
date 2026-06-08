@@ -2,7 +2,6 @@ package eventbusadapter
 
 import (
 	"context"
-	"errors"
 	"log"
 	"time"
 
@@ -47,14 +46,12 @@ func (w *OrderAcquireWorker) handle(ctx context.Context, request *smsinternalv1.
 }
 
 func acquireErrorRetryable(err error) bool {
-	var smsErr *core.Error
-	if !errors.As(err, &smsErr) {
-		return true
-	}
-	switch smsErr.Code {
-	case core.CodeValidationFailed, core.CodeUnsupportedOperation, core.CodeInsufficientBalance, core.CodeOrderExpired, core.CodeOrderAlreadyFinalized:
-		return false
-	default:
-		return smsErr.Retryable
-	}
+	return coreErrorRetryableUnless(
+		err,
+		core.CodeValidationFailed,
+		core.CodeUnsupportedOperation,
+		core.CodeInsufficientBalance,
+		core.CodeOrderExpired,
+		core.CodeOrderAlreadyFinalized,
+	)
 }

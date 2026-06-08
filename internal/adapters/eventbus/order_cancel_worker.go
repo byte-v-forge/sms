@@ -60,16 +60,13 @@ func cancelRetryDelay(err error, now time.Time) (time.Duration, bool) {
 }
 
 func cancelErrorRetryable(err error) bool {
-	var smsErr *core.Error
-	if !errors.As(err, &smsErr) {
-		return true
-	}
-	switch smsErr.Code {
-	case core.CodeOrderNotFound, core.CodeOrderAlreadyFinalized, core.CodeOrderExpired, core.CodeCancelNotAllowed:
-		return false
-	default:
-		return smsErr.Retryable
-	}
+	return coreErrorRetryableUnless(
+		err,
+		core.CodeOrderNotFound,
+		core.CodeOrderAlreadyFinalized,
+		core.CodeOrderExpired,
+		core.CodeCancelNotAllowed,
+	)
 }
 
 func (w *OrderCancelWorker) cancelDelay(order core.Order) time.Duration {

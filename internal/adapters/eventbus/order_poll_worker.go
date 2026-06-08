@@ -2,7 +2,6 @@ package eventbusadapter
 
 import (
 	"context"
-	"errors"
 	"log"
 	"time"
 
@@ -60,14 +59,10 @@ func (w *OrderPollWorker) pollDelay(ctx context.Context, order core.Order) time.
 }
 
 func pollErrorRetryable(err error) bool {
-	var smsErr *core.Error
-	if !errors.As(err, &smsErr) {
-		return true
-	}
-	switch smsErr.Code {
-	case core.CodeOrderNotFound, core.CodeOrderAlreadyFinalized, core.CodeOrderExpired:
-		return false
-	default:
-		return smsErr.Retryable
-	}
+	return coreErrorRetryableUnless(
+		err,
+		core.CodeOrderNotFound,
+		core.CodeOrderAlreadyFinalized,
+		core.CodeOrderExpired,
+	)
 }
