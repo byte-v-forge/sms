@@ -38,9 +38,9 @@ type Record struct {
 }
 
 type Row struct {
-	EventID      string `gorm:"column:event_id"`
-	Envelope     []byte `gorm:"column:envelope"`
-	AttemptCount int32  `gorm:"column:attempt_count"`
+	EventID      string
+	Envelope     []byte
+	AttemptCount int32
 }
 
 type Updates interface {
