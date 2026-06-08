@@ -2,7 +2,7 @@ FROM docker.io/library/node:22-bookworm-slim AS dashboard_builder
 
 WORKDIR /app/webui
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends protobuf-compiler \
+    && apt-get install -y --no-install-recommends protobuf-compiler libprotobuf-dev \
     && rm -rf /var/lib/apt/lists/*
 COPY webui/package.json webui/package-lock.json ./
 RUN npm ci
