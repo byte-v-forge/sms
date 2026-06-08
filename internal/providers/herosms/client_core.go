@@ -2,6 +2,7 @@ package herosms
 
 import (
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -24,7 +25,7 @@ type Config struct {
 type Client struct {
 	api             *handlerapi.Client
 	apiKey          string
-	openAPIEndpoint string
+	openAPIEndpoint url.URL
 	httpClient      handlerapi.HTTPDoer
 	userAgent       string
 	policy          core.ProviderPolicy
@@ -35,9 +36,13 @@ func New(config Config, httpClient handlerapi.HTTPDoer) (*Client, error) {
 	if endpoint == "" {
 		endpoint = DefaultEndpoint
 	}
-	openAPIEndpoint := strings.TrimRight(strings.TrimSpace(config.OpenAPIEndpoint), "/")
-	if openAPIEndpoint == "" {
-		openAPIEndpoint = DefaultOpenAPIEndpoint
+	rawOpenAPIEndpoint := strings.TrimRight(strings.TrimSpace(config.OpenAPIEndpoint), "/")
+	if rawOpenAPIEndpoint == "" {
+		rawOpenAPIEndpoint = DefaultOpenAPIEndpoint
+	}
+	openAPIEndpoint, err := url.Parse(rawOpenAPIEndpoint)
+	if err != nil {
+		return nil, core.NewError(core.CodeValidationFailed, "invalid hero sms openapi endpoint", false)
 	}
 	if httpClient == nil {
 		httpClient = &http.Client{Timeout: 15 * time.Second}
@@ -49,7 +54,7 @@ func New(config Config, httpClient handlerapi.HTTPDoer) (*Client, error) {
 	return &Client{
 		api:             api,
 		apiKey:          strings.TrimSpace(config.APIKey),
-		openAPIEndpoint: openAPIEndpoint,
+		openAPIEndpoint: *openAPIEndpoint,
 		httpClient:      httpClient,
 		userAgent:       "sms/1.0",
 		policy: core.ProviderPolicy{

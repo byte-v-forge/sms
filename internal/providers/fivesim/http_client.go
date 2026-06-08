@@ -15,10 +15,7 @@ import (
 
 func (c *Client) getJSON(ctx context.Context, path string, params url.Values, authenticated bool, out any) error {
 	response, err := providerhttp.Do(ctx, c.httpClient, func(ctx context.Context) (*http.Request, error) {
-		endpoint, err := url.Parse(c.endpoint + path)
-		if err != nil {
-			return nil, core.NewError(core.CodeValidationFailed, "invalid 5sim endpoint", false)
-		}
+		endpoint := c.endpointWithPath(path)
 		if len(params) > 0 {
 			endpoint.RawQuery = params.Encode()
 		}
@@ -48,6 +45,12 @@ func (c *Client) getJSON(ctx context.Context, path string, params url.Values, au
 		return mapError(response.StatusCode, text)
 	}
 	return nil
+}
+
+func (c *Client) endpointWithPath(path string) url.URL {
+	endpoint := c.endpoint
+	endpoint.Path = strings.TrimRight(endpoint.Path, "/") + path
+	return endpoint
 }
 
 func fiveSimRetryPolicy(path string) providerhttp.RetryPolicy {

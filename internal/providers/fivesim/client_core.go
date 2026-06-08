@@ -2,6 +2,7 @@ package fivesim
 
 import (
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -21,7 +22,7 @@ type Config struct {
 }
 
 type Client struct {
-	endpoint     string
+	endpoint     url.URL
 	token        string
 	currencyCode string
 	httpClient   handlerapi.HTTPDoer
@@ -30,9 +31,13 @@ type Client struct {
 }
 
 func New(config Config, httpClient handlerapi.HTTPDoer) (*Client, error) {
-	endpoint := strings.TrimRight(strings.TrimSpace(config.Endpoint), "/")
-	if endpoint == "" {
-		endpoint = DefaultEndpoint
+	rawEndpoint := strings.TrimRight(strings.TrimSpace(config.Endpoint), "/")
+	if rawEndpoint == "" {
+		rawEndpoint = DefaultEndpoint
+	}
+	endpoint, err := url.Parse(rawEndpoint)
+	if err != nil {
+		return nil, core.NewError(core.CodeValidationFailed, "invalid 5sim endpoint", false)
 	}
 	if strings.TrimSpace(config.Token) == "" {
 		return nil, core.NewError(core.CodeValidationFailed, "5sim token is required", false)
@@ -41,7 +46,7 @@ func New(config Config, httpClient handlerapi.HTTPDoer) (*Client, error) {
 		httpClient = &http.Client{Timeout: 15 * time.Second}
 	}
 	return &Client{
-		endpoint:     endpoint,
+		endpoint:     *endpoint,
 		token:        strings.TrimSpace(config.Token),
 		currencyCode: strings.TrimSpace(config.CurrencyCode),
 		httpClient:   httpClient,

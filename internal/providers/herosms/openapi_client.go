@@ -16,10 +16,7 @@ import (
 
 func (c *Client) getOpenAPIJSON(ctx context.Context, path string, params url.Values, out any) error {
 	response, err := providerhttp.Do(ctx, c.httpClient, func(ctx context.Context) (*http.Request, error) {
-		endpoint, err := url.Parse(c.openAPIEndpoint + path)
-		if err != nil {
-			return nil, core.NewError(core.CodeValidationFailed, "invalid hero sms openapi endpoint", false)
-		}
+		endpoint := c.openAPIEndpointWithPath(path)
 		if len(params) > 0 {
 			endpoint.RawQuery = params.Encode()
 		}
@@ -47,6 +44,12 @@ func (c *Client) getOpenAPIJSON(ctx context.Context, path string, params url.Val
 		return mapHeroSMSOpenAPIError(response.StatusCode, text)
 	}
 	return nil
+}
+
+func (c *Client) openAPIEndpointWithPath(path string) url.URL {
+	endpoint := c.openAPIEndpoint
+	endpoint.Path = strings.TrimRight(endpoint.Path, "/") + path
+	return endpoint
 }
 
 func heroSMSOpenAPIRetryPolicy() providerhttp.RetryPolicy {
