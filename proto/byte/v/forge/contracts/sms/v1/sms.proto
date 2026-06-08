@@ -312,9 +312,16 @@ message ListSmsPriceOffersRequest {
   repeated string provider_keys = 4;
 }
 
+message SmsProviderLookupError {
+  string provider_key = 1;
+  string provider_display_name = 2;
+  SmsError error = 3;
+}
+
 message ListSmsPriceOffersResponse {
   repeated SmsPriceOffer offers = 1;
   SmsError error = 2;
+  repeated SmsProviderLookupError provider_errors = 3;
 }
 
 message SmsOrderAcquiredEvent {

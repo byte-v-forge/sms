@@ -1,6 +1,6 @@
 import { LoaderCircle, PhoneCall } from 'lucide-react';
 import { Badge, Button, Card, EmptyBlock, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui';
-import type { SmsPriceOffer } from '../proto/byte/v/forge/contracts/sms/v1/sms';
+import type { SmsPriceOffer, SmsProviderLookupError } from '../proto/byte/v/forge/contracts/sms/v1/sms';
 import { dateTimeText, moneyText } from './sms-format';
 import { offerRowKey } from './sms-compare-data';
 
@@ -10,6 +10,7 @@ type CompareSummaryProps = {
   providerCount: number;
   best?: SmsPriceOffer;
   error?: string;
+  providerErrors: SmsProviderLookupError[];
 };
 
 type OffersTableProps = {
@@ -22,7 +23,7 @@ type OffersTableProps = {
   onAcquire: (offer: SmsPriceOffer) => void;
 };
 
-export function CompareSummary({ loading, total, providerCount, best, error }: CompareSummaryProps) {
+export function CompareSummary({ loading, total, providerCount, best, error, providerErrors }: CompareSummaryProps) {
   return (
     <Card className="m-4 mb-3 grid gap-3 p-3">
       <div className="grid gap-2 md:grid-cols-3">
@@ -31,7 +32,20 @@ export function CompareSummary({ loading, total, providerCount, best, error }: C
         <SummaryMetric label="最低价" value={best ? moneyText(best.price) : '-'} hint={best ? best.provider_display_name || best.provider_key : undefined} />
       </div>
       {error && <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</div>}
+      {providerErrors.length > 0 && <ProviderErrors errors={providerErrors} />}
     </Card>
+  );
+}
+
+function ProviderErrors({ errors }: { errors: SmsProviderLookupError[] }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {errors.map((item, index) => (
+        <Badge key={`${item.provider_key || item.provider_display_name || 'provider'}-${index}`} variant="outline" className="border-destructive/30 text-destructive">
+          {(item.provider_display_name || item.provider_key || 'provider')}：{item.error?.message || item.error?.code || '查询失败'}
+        </Badge>
+      ))}
+    </div>
   );
 }
 

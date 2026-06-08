@@ -2627,17 +2627,78 @@ func (x *ListSmsPriceOffersRequest) GetProviderKeys() []string {
 	return nil
 }
 
+type SmsProviderLookupError struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	ProviderKey         string                 `protobuf:"bytes,1,opt,name=provider_key,json=providerKey,proto3" json:"provider_key,omitempty"`
+	ProviderDisplayName string                 `protobuf:"bytes,2,opt,name=provider_display_name,json=providerDisplayName,proto3" json:"provider_display_name,omitempty"`
+	Error               *SmsError              `protobuf:"bytes,3,opt,name=error,proto3" json:"error,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *SmsProviderLookupError) Reset() {
+	*x = SmsProviderLookupError{}
+	mi := &file_byte_v_forge_contracts_sms_v1_sms_proto_msgTypes[39]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SmsProviderLookupError) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SmsProviderLookupError) ProtoMessage() {}
+
+func (x *SmsProviderLookupError) ProtoReflect() protoreflect.Message {
+	mi := &file_byte_v_forge_contracts_sms_v1_sms_proto_msgTypes[39]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SmsProviderLookupError.ProtoReflect.Descriptor instead.
+func (*SmsProviderLookupError) Descriptor() ([]byte, []int) {
+	return file_byte_v_forge_contracts_sms_v1_sms_proto_rawDescGZIP(), []int{39}
+}
+
+func (x *SmsProviderLookupError) GetProviderKey() string {
+	if x != nil {
+		return x.ProviderKey
+	}
+	return ""
+}
+
+func (x *SmsProviderLookupError) GetProviderDisplayName() string {
+	if x != nil {
+		return x.ProviderDisplayName
+	}
+	return ""
+}
+
+func (x *SmsProviderLookupError) GetError() *SmsError {
+	if x != nil {
+		return x.Error
+	}
+	return nil
+}
+
 type ListSmsPriceOffersResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Offers        []*SmsPriceOffer       `protobuf:"bytes,1,rep,name=offers,proto3" json:"offers,omitempty"`
-	Error         *SmsError              `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState    `protogen:"open.v1"`
+	Offers         []*SmsPriceOffer          `protobuf:"bytes,1,rep,name=offers,proto3" json:"offers,omitempty"`
+	Error          *SmsError                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	ProviderErrors []*SmsProviderLookupError `protobuf:"bytes,3,rep,name=provider_errors,json=providerErrors,proto3" json:"provider_errors,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *ListSmsPriceOffersResponse) Reset() {
 	*x = ListSmsPriceOffersResponse{}
-	mi := &file_byte_v_forge_contracts_sms_v1_sms_proto_msgTypes[39]
+	mi := &file_byte_v_forge_contracts_sms_v1_sms_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2649,7 +2710,7 @@ func (x *ListSmsPriceOffersResponse) String() string {
 func (*ListSmsPriceOffersResponse) ProtoMessage() {}
 
 func (x *ListSmsPriceOffersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_contracts_sms_v1_sms_proto_msgTypes[39]
+	mi := &file_byte_v_forge_contracts_sms_v1_sms_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2662,7 +2723,7 @@ func (x *ListSmsPriceOffersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSmsPriceOffersResponse.ProtoReflect.Descriptor instead.
 func (*ListSmsPriceOffersResponse) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_contracts_sms_v1_sms_proto_rawDescGZIP(), []int{39}
+	return file_byte_v_forge_contracts_sms_v1_sms_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *ListSmsPriceOffersResponse) GetOffers() []*SmsPriceOffer {
@@ -2679,6 +2740,13 @@ func (x *ListSmsPriceOffersResponse) GetError() *SmsError {
 	return nil
 }
 
+func (x *ListSmsPriceOffersResponse) GetProviderErrors() []*SmsProviderLookupError {
+	if x != nil {
+		return x.ProviderErrors
+	}
+	return nil
+}
+
 type SmsOrderAcquiredEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Metadata      *v1.EventMetadata      `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
@@ -2689,7 +2757,7 @@ type SmsOrderAcquiredEvent struct {
 
 func (x *SmsOrderAcquiredEvent) Reset() {
 	*x = SmsOrderAcquiredEvent{}
-	mi := &file_byte_v_forge_contracts_sms_v1_sms_proto_msgTypes[40]
+	mi := &file_byte_v_forge_contracts_sms_v1_sms_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2701,7 +2769,7 @@ func (x *SmsOrderAcquiredEvent) String() string {
 func (*SmsOrderAcquiredEvent) ProtoMessage() {}
 
 func (x *SmsOrderAcquiredEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_contracts_sms_v1_sms_proto_msgTypes[40]
+	mi := &file_byte_v_forge_contracts_sms_v1_sms_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2714,7 +2782,7 @@ func (x *SmsOrderAcquiredEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SmsOrderAcquiredEvent.ProtoReflect.Descriptor instead.
 func (*SmsOrderAcquiredEvent) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_contracts_sms_v1_sms_proto_rawDescGZIP(), []int{40}
+	return file_byte_v_forge_contracts_sms_v1_sms_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *SmsOrderAcquiredEvent) GetMetadata() *v1.EventMetadata {
@@ -2742,7 +2810,7 @@ type SmsCodeReceivedEvent struct {
 
 func (x *SmsCodeReceivedEvent) Reset() {
 	*x = SmsCodeReceivedEvent{}
-	mi := &file_byte_v_forge_contracts_sms_v1_sms_proto_msgTypes[41]
+	mi := &file_byte_v_forge_contracts_sms_v1_sms_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2754,7 +2822,7 @@ func (x *SmsCodeReceivedEvent) String() string {
 func (*SmsCodeReceivedEvent) ProtoMessage() {}
 
 func (x *SmsCodeReceivedEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_contracts_sms_v1_sms_proto_msgTypes[41]
+	mi := &file_byte_v_forge_contracts_sms_v1_sms_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2767,7 +2835,7 @@ func (x *SmsCodeReceivedEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SmsCodeReceivedEvent.ProtoReflect.Descriptor instead.
 func (*SmsCodeReceivedEvent) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_contracts_sms_v1_sms_proto_rawDescGZIP(), []int{41}
+	return file_byte_v_forge_contracts_sms_v1_sms_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *SmsCodeReceivedEvent) GetMetadata() *v1.EventMetadata {
@@ -2804,7 +2872,7 @@ type SmsOrderStatusChangedEvent struct {
 
 func (x *SmsOrderStatusChangedEvent) Reset() {
 	*x = SmsOrderStatusChangedEvent{}
-	mi := &file_byte_v_forge_contracts_sms_v1_sms_proto_msgTypes[42]
+	mi := &file_byte_v_forge_contracts_sms_v1_sms_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2816,7 +2884,7 @@ func (x *SmsOrderStatusChangedEvent) String() string {
 func (*SmsOrderStatusChangedEvent) ProtoMessage() {}
 
 func (x *SmsOrderStatusChangedEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_byte_v_forge_contracts_sms_v1_sms_proto_msgTypes[42]
+	mi := &file_byte_v_forge_contracts_sms_v1_sms_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2829,7 +2897,7 @@ func (x *SmsOrderStatusChangedEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SmsOrderStatusChangedEvent.ProtoReflect.Descriptor instead.
 func (*SmsOrderStatusChangedEvent) Descriptor() ([]byte, []int) {
-	return file_byte_v_forge_contracts_sms_v1_sms_proto_rawDescGZIP(), []int{42}
+	return file_byte_v_forge_contracts_sms_v1_sms_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *SmsOrderStatusChangedEvent) GetMetadata() *v1.EventMetadata {
@@ -3054,10 +3122,15 @@ const file_byte_v_forge_contracts_sms_v1_sms_proto_rawDesc = "" +
 	"\x0fapplication_key\x18\x01 \x01(\tR\x0eapplicationKey\x12!\n" +
 	"\fcountry_iso2\x18\x02 \x01(\tR\vcountryIso2\x120\n" +
 	"\x14country_calling_code\x18\x03 \x01(\tR\x12countryCallingCode\x12#\n" +
-	"\rprovider_keys\x18\x04 \x03(\tR\fproviderKeys\"\xa1\x01\n" +
+	"\rprovider_keys\x18\x04 \x03(\tR\fproviderKeys\"\xae\x01\n" +
+	"\x16SmsProviderLookupError\x12!\n" +
+	"\fprovider_key\x18\x01 \x01(\tR\vproviderKey\x122\n" +
+	"\x15provider_display_name\x18\x02 \x01(\tR\x13providerDisplayName\x12=\n" +
+	"\x05error\x18\x03 \x01(\v2'.byte.v.forge.contracts.sms.v1.SmsErrorR\x05error\"\x81\x02\n" +
 	"\x1aListSmsPriceOffersResponse\x12D\n" +
 	"\x06offers\x18\x01 \x03(\v2,.byte.v.forge.contracts.sms.v1.SmsPriceOfferR\x06offers\x12=\n" +
-	"\x05error\x18\x02 \x01(\v2'.byte.v.forge.contracts.sms.v1.SmsErrorR\x05error\"\xa3\x01\n" +
+	"\x05error\x18\x02 \x01(\v2'.byte.v.forge.contracts.sms.v1.SmsErrorR\x05error\x12^\n" +
+	"\x0fprovider_errors\x18\x03 \x03(\v25.byte.v.forge.contracts.sms.v1.SmsProviderLookupErrorR\x0eproviderErrors\"\xa3\x01\n" +
 	"\x15SmsOrderAcquiredEvent\x12K\n" +
 	"\bmetadata\x18\x01 \x01(\v2/.byte.v.forge.contracts.common.v1.EventMetadataR\bmetadata\x12=\n" +
 	"\x05order\x18\x02 \x01(\v2'.byte.v.forge.contracts.sms.v1.SmsOrderR\x05order\"\xba\x01\n" +
@@ -3133,7 +3206,7 @@ func file_byte_v_forge_contracts_sms_v1_sms_proto_rawDescGZIP() []byte {
 }
 
 var file_byte_v_forge_contracts_sms_v1_sms_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_byte_v_forge_contracts_sms_v1_sms_proto_msgTypes = make([]protoimpl.MessageInfo, 43)
+var file_byte_v_forge_contracts_sms_v1_sms_proto_msgTypes = make([]protoimpl.MessageInfo, 44)
 var file_byte_v_forge_contracts_sms_v1_sms_proto_goTypes = []any{
 	(SmsOrderStatus)(0),                   // 0: byte.v.forge.contracts.sms.v1.SmsOrderStatus
 	(SmsErrorCode)(0),                     // 1: byte.v.forge.contracts.sms.v1.SmsErrorCode
@@ -3177,14 +3250,15 @@ var file_byte_v_forge_contracts_sms_v1_sms_proto_goTypes = []any{
 	(*ListSmsCountriesRequest)(nil),       // 39: byte.v.forge.contracts.sms.v1.ListSmsCountriesRequest
 	(*ListSmsCountriesResponse)(nil),      // 40: byte.v.forge.contracts.sms.v1.ListSmsCountriesResponse
 	(*ListSmsPriceOffersRequest)(nil),     // 41: byte.v.forge.contracts.sms.v1.ListSmsPriceOffersRequest
-	(*ListSmsPriceOffersResponse)(nil),    // 42: byte.v.forge.contracts.sms.v1.ListSmsPriceOffersResponse
-	(*SmsOrderAcquiredEvent)(nil),         // 43: byte.v.forge.contracts.sms.v1.SmsOrderAcquiredEvent
-	(*SmsCodeReceivedEvent)(nil),          // 44: byte.v.forge.contracts.sms.v1.SmsCodeReceivedEvent
-	(*SmsOrderStatusChangedEvent)(nil),    // 45: byte.v.forge.contracts.sms.v1.SmsOrderStatusChangedEvent
-	(*v1.SecretRef)(nil),                  // 46: byte.v.forge.contracts.common.v1.SecretRef
-	(*timestamppb.Timestamp)(nil),         // 47: google.protobuf.Timestamp
-	(*durationpb.Duration)(nil),           // 48: google.protobuf.Duration
-	(*v1.EventMetadata)(nil),              // 49: byte.v.forge.contracts.common.v1.EventMetadata
+	(*SmsProviderLookupError)(nil),        // 42: byte.v.forge.contracts.sms.v1.SmsProviderLookupError
+	(*ListSmsPriceOffersResponse)(nil),    // 43: byte.v.forge.contracts.sms.v1.ListSmsPriceOffersResponse
+	(*SmsOrderAcquiredEvent)(nil),         // 44: byte.v.forge.contracts.sms.v1.SmsOrderAcquiredEvent
+	(*SmsCodeReceivedEvent)(nil),          // 45: byte.v.forge.contracts.sms.v1.SmsCodeReceivedEvent
+	(*SmsOrderStatusChangedEvent)(nil),    // 46: byte.v.forge.contracts.sms.v1.SmsOrderStatusChangedEvent
+	(*v1.SecretRef)(nil),                  // 47: byte.v.forge.contracts.common.v1.SecretRef
+	(*timestamppb.Timestamp)(nil),         // 48: google.protobuf.Timestamp
+	(*durationpb.Duration)(nil),           // 49: google.protobuf.Duration
+	(*v1.EventMetadata)(nil),              // 50: byte.v.forge.contracts.common.v1.EventMetadata
 }
 var file_byte_v_forge_contracts_sms_v1_sms_proto_depIdxs = []int32{
 	1,  // 0: byte.v.forge.contracts.sms.v1.SmsError.code:type_name -> byte.v.forge.contracts.sms.v1.SmsErrorCode
@@ -3194,24 +3268,24 @@ var file_byte_v_forge_contracts_sms_v1_sms_proto_depIdxs = []int32{
 	30, // 4: byte.v.forge.contracts.sms.v1.SmsNumberAcquireParams.route_failure_policy:type_name -> byte.v.forge.contracts.sms.v1.SmsRouteFailurePolicy
 	4,  // 5: byte.v.forge.contracts.sms.v1.SmsNumberAcquireParams.max_price:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
 	4,  // 6: byte.v.forge.contracts.sms.v1.SmsNumberAcquireParams.min_price:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
-	46, // 7: byte.v.forge.contracts.sms.v1.SmsCode.secret_ref:type_name -> byte.v.forge.contracts.common.v1.SecretRef
-	47, // 8: byte.v.forge.contracts.sms.v1.SmsCode.received_at:type_name -> google.protobuf.Timestamp
+	47, // 7: byte.v.forge.contracts.sms.v1.SmsCode.secret_ref:type_name -> byte.v.forge.contracts.common.v1.SecretRef
+	48, // 8: byte.v.forge.contracts.sms.v1.SmsCode.received_at:type_name -> google.protobuf.Timestamp
 	6,  // 9: byte.v.forge.contracts.sms.v1.SmsOrder.target:type_name -> byte.v.forge.contracts.sms.v1.SmsTarget
 	5,  // 10: byte.v.forge.contracts.sms.v1.SmsOrder.phone_number:type_name -> byte.v.forge.contracts.sms.v1.PhoneNumber
 	0,  // 11: byte.v.forge.contracts.sms.v1.SmsOrder.status:type_name -> byte.v.forge.contracts.sms.v1.SmsOrderStatus
 	4,  // 12: byte.v.forge.contracts.sms.v1.SmsOrder.price:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
-	47, // 13: byte.v.forge.contracts.sms.v1.SmsOrder.acquired_at:type_name -> google.protobuf.Timestamp
-	47, // 14: byte.v.forge.contracts.sms.v1.SmsOrder.expires_at:type_name -> google.protobuf.Timestamp
-	47, // 15: byte.v.forge.contracts.sms.v1.SmsOrder.updated_at:type_name -> google.protobuf.Timestamp
+	48, // 13: byte.v.forge.contracts.sms.v1.SmsOrder.acquired_at:type_name -> google.protobuf.Timestamp
+	48, // 14: byte.v.forge.contracts.sms.v1.SmsOrder.expires_at:type_name -> google.protobuf.Timestamp
+	48, // 15: byte.v.forge.contracts.sms.v1.SmsOrder.updated_at:type_name -> google.protobuf.Timestamp
 	3,  // 16: byte.v.forge.contracts.sms.v1.SmsOrder.last_error:type_name -> byte.v.forge.contracts.sms.v1.SmsError
-	47, // 17: byte.v.forge.contracts.sms.v1.SmsOrder.cancel_allowed_at:type_name -> google.protobuf.Timestamp
-	48, // 18: byte.v.forge.contracts.sms.v1.AcquireNumberRequest.lease_duration:type_name -> google.protobuf.Duration
+	48, // 17: byte.v.forge.contracts.sms.v1.SmsOrder.cancel_allowed_at:type_name -> google.protobuf.Timestamp
+	49, // 18: byte.v.forge.contracts.sms.v1.AcquireNumberRequest.lease_duration:type_name -> google.protobuf.Duration
 	9,  // 19: byte.v.forge.contracts.sms.v1.AcquireNumberRequest.acquire_params:type_name -> byte.v.forge.contracts.sms.v1.SmsNumberAcquireParams
 	11, // 20: byte.v.forge.contracts.sms.v1.AcquireNumberResponse.order:type_name -> byte.v.forge.contracts.sms.v1.SmsOrder
 	3,  // 21: byte.v.forge.contracts.sms.v1.AcquireNumberResponse.error:type_name -> byte.v.forge.contracts.sms.v1.SmsError
 	11, // 22: byte.v.forge.contracts.sms.v1.GetOrderResponse.order:type_name -> byte.v.forge.contracts.sms.v1.SmsOrder
 	3,  // 23: byte.v.forge.contracts.sms.v1.GetOrderResponse.error:type_name -> byte.v.forge.contracts.sms.v1.SmsError
-	46, // 24: byte.v.forge.contracts.sms.v1.ResolveSmsCodeSecretRequest.secret_ref:type_name -> byte.v.forge.contracts.common.v1.SecretRef
+	47, // 24: byte.v.forge.contracts.sms.v1.ResolveSmsCodeSecretRequest.secret_ref:type_name -> byte.v.forge.contracts.common.v1.SecretRef
 	3,  // 25: byte.v.forge.contracts.sms.v1.ResolveSmsCodeSecretResponse.error:type_name -> byte.v.forge.contracts.sms.v1.SmsError
 	11, // 26: byte.v.forge.contracts.sms.v1.MarkMessageSentResponse.order:type_name -> byte.v.forge.contracts.sms.v1.SmsOrder
 	3,  // 27: byte.v.forge.contracts.sms.v1.MarkMessageSentResponse.error:type_name -> byte.v.forge.contracts.sms.v1.SmsError
@@ -3222,7 +3296,7 @@ var file_byte_v_forge_contracts_sms_v1_sms_proto_depIdxs = []int32{
 	11, // 32: byte.v.forge.contracts.sms.v1.CancelOrderResponse.order:type_name -> byte.v.forge.contracts.sms.v1.SmsOrder
 	3,  // 33: byte.v.forge.contracts.sms.v1.CancelOrderResponse.error:type_name -> byte.v.forge.contracts.sms.v1.SmsError
 	4,  // 34: byte.v.forge.contracts.sms.v1.SmsPriceOffer.price:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
-	47, // 35: byte.v.forge.contracts.sms.v1.SmsPriceOffer.observed_at:type_name -> google.protobuf.Timestamp
+	48, // 35: byte.v.forge.contracts.sms.v1.SmsPriceOffer.observed_at:type_name -> google.protobuf.Timestamp
 	8,  // 36: byte.v.forge.contracts.sms.v1.SmsPriceOffer.offer_ref:type_name -> byte.v.forge.contracts.sms.v1.SmsOfferRef
 	2,  // 37: byte.v.forge.contracts.sms.v1.SmsRoutePolicy.strategy:type_name -> byte.v.forge.contracts.sms.v1.SmsRouteStrategy
 	4,  // 38: byte.v.forge.contracts.sms.v1.SmsRoutePolicy.max_price:type_name -> byte.v.forge.contracts.sms.v1.DecimalMoney
@@ -3239,45 +3313,47 @@ var file_byte_v_forge_contracts_sms_v1_sms_proto_depIdxs = []int32{
 	3,  // 49: byte.v.forge.contracts.sms.v1.ListSmsApplicationsResponse.error:type_name -> byte.v.forge.contracts.sms.v1.SmsError
 	27, // 50: byte.v.forge.contracts.sms.v1.ListSmsCountriesResponse.countries:type_name -> byte.v.forge.contracts.sms.v1.SmsCountry
 	3,  // 51: byte.v.forge.contracts.sms.v1.ListSmsCountriesResponse.error:type_name -> byte.v.forge.contracts.sms.v1.SmsError
-	28, // 52: byte.v.forge.contracts.sms.v1.ListSmsPriceOffersResponse.offers:type_name -> byte.v.forge.contracts.sms.v1.SmsPriceOffer
-	3,  // 53: byte.v.forge.contracts.sms.v1.ListSmsPriceOffersResponse.error:type_name -> byte.v.forge.contracts.sms.v1.SmsError
-	49, // 54: byte.v.forge.contracts.sms.v1.SmsOrderAcquiredEvent.metadata:type_name -> byte.v.forge.contracts.common.v1.EventMetadata
-	11, // 55: byte.v.forge.contracts.sms.v1.SmsOrderAcquiredEvent.order:type_name -> byte.v.forge.contracts.sms.v1.SmsOrder
-	49, // 56: byte.v.forge.contracts.sms.v1.SmsCodeReceivedEvent.metadata:type_name -> byte.v.forge.contracts.common.v1.EventMetadata
-	10, // 57: byte.v.forge.contracts.sms.v1.SmsCodeReceivedEvent.code:type_name -> byte.v.forge.contracts.sms.v1.SmsCode
-	49, // 58: byte.v.forge.contracts.sms.v1.SmsOrderStatusChangedEvent.metadata:type_name -> byte.v.forge.contracts.common.v1.EventMetadata
-	0,  // 59: byte.v.forge.contracts.sms.v1.SmsOrderStatusChangedEvent.previous_status:type_name -> byte.v.forge.contracts.sms.v1.SmsOrderStatus
-	0,  // 60: byte.v.forge.contracts.sms.v1.SmsOrderStatusChangedEvent.current_status:type_name -> byte.v.forge.contracts.sms.v1.SmsOrderStatus
-	3,  // 61: byte.v.forge.contracts.sms.v1.SmsOrderStatusChangedEvent.error:type_name -> byte.v.forge.contracts.sms.v1.SmsError
-	12, // 62: byte.v.forge.contracts.sms.v1.SmsOrderService.AcquireNumber:input_type -> byte.v.forge.contracts.sms.v1.AcquireNumberRequest
-	14, // 63: byte.v.forge.contracts.sms.v1.SmsOrderService.GetOrder:input_type -> byte.v.forge.contracts.sms.v1.GetOrderRequest
-	16, // 64: byte.v.forge.contracts.sms.v1.SmsOrderService.ResolveSmsCodeSecret:input_type -> byte.v.forge.contracts.sms.v1.ResolveSmsCodeSecretRequest
-	18, // 65: byte.v.forge.contracts.sms.v1.SmsOrderService.MarkMessageSent:input_type -> byte.v.forge.contracts.sms.v1.MarkMessageSentRequest
-	19, // 66: byte.v.forge.contracts.sms.v1.SmsOrderService.RequestAdditionalCode:input_type -> byte.v.forge.contracts.sms.v1.RequestAdditionalCodeRequest
-	20, // 67: byte.v.forge.contracts.sms.v1.SmsOrderService.CompleteOrder:input_type -> byte.v.forge.contracts.sms.v1.CompleteOrderRequest
-	21, // 68: byte.v.forge.contracts.sms.v1.SmsOrderService.CancelOrder:input_type -> byte.v.forge.contracts.sms.v1.CancelOrderRequest
-	35, // 69: byte.v.forge.contracts.sms.v1.SmsCatalogService.ListSmsProviders:input_type -> byte.v.forge.contracts.sms.v1.ListSmsProvidersRequest
-	37, // 70: byte.v.forge.contracts.sms.v1.SmsCatalogService.ListSmsApplications:input_type -> byte.v.forge.contracts.sms.v1.ListSmsApplicationsRequest
-	39, // 71: byte.v.forge.contracts.sms.v1.SmsCatalogService.ListSmsCountries:input_type -> byte.v.forge.contracts.sms.v1.ListSmsCountriesRequest
-	41, // 72: byte.v.forge.contracts.sms.v1.SmsCatalogService.ListSmsPriceOffers:input_type -> byte.v.forge.contracts.sms.v1.ListSmsPriceOffersRequest
-	31, // 73: byte.v.forge.contracts.sms.v1.SmsCatalogService.RecommendSmsRoutes:input_type -> byte.v.forge.contracts.sms.v1.RecommendSmsRoutesRequest
-	13, // 74: byte.v.forge.contracts.sms.v1.SmsOrderService.AcquireNumber:output_type -> byte.v.forge.contracts.sms.v1.AcquireNumberResponse
-	15, // 75: byte.v.forge.contracts.sms.v1.SmsOrderService.GetOrder:output_type -> byte.v.forge.contracts.sms.v1.GetOrderResponse
-	17, // 76: byte.v.forge.contracts.sms.v1.SmsOrderService.ResolveSmsCodeSecret:output_type -> byte.v.forge.contracts.sms.v1.ResolveSmsCodeSecretResponse
-	22, // 77: byte.v.forge.contracts.sms.v1.SmsOrderService.MarkMessageSent:output_type -> byte.v.forge.contracts.sms.v1.MarkMessageSentResponse
-	23, // 78: byte.v.forge.contracts.sms.v1.SmsOrderService.RequestAdditionalCode:output_type -> byte.v.forge.contracts.sms.v1.RequestAdditionalCodeResponse
-	24, // 79: byte.v.forge.contracts.sms.v1.SmsOrderService.CompleteOrder:output_type -> byte.v.forge.contracts.sms.v1.CompleteOrderResponse
-	25, // 80: byte.v.forge.contracts.sms.v1.SmsOrderService.CancelOrder:output_type -> byte.v.forge.contracts.sms.v1.CancelOrderResponse
-	36, // 81: byte.v.forge.contracts.sms.v1.SmsCatalogService.ListSmsProviders:output_type -> byte.v.forge.contracts.sms.v1.ListSmsProvidersResponse
-	38, // 82: byte.v.forge.contracts.sms.v1.SmsCatalogService.ListSmsApplications:output_type -> byte.v.forge.contracts.sms.v1.ListSmsApplicationsResponse
-	40, // 83: byte.v.forge.contracts.sms.v1.SmsCatalogService.ListSmsCountries:output_type -> byte.v.forge.contracts.sms.v1.ListSmsCountriesResponse
-	42, // 84: byte.v.forge.contracts.sms.v1.SmsCatalogService.ListSmsPriceOffers:output_type -> byte.v.forge.contracts.sms.v1.ListSmsPriceOffersResponse
-	33, // 85: byte.v.forge.contracts.sms.v1.SmsCatalogService.RecommendSmsRoutes:output_type -> byte.v.forge.contracts.sms.v1.RecommendSmsRoutesResponse
-	74, // [74:86] is the sub-list for method output_type
-	62, // [62:74] is the sub-list for method input_type
-	62, // [62:62] is the sub-list for extension type_name
-	62, // [62:62] is the sub-list for extension extendee
-	0,  // [0:62] is the sub-list for field type_name
+	3,  // 52: byte.v.forge.contracts.sms.v1.SmsProviderLookupError.error:type_name -> byte.v.forge.contracts.sms.v1.SmsError
+	28, // 53: byte.v.forge.contracts.sms.v1.ListSmsPriceOffersResponse.offers:type_name -> byte.v.forge.contracts.sms.v1.SmsPriceOffer
+	3,  // 54: byte.v.forge.contracts.sms.v1.ListSmsPriceOffersResponse.error:type_name -> byte.v.forge.contracts.sms.v1.SmsError
+	42, // 55: byte.v.forge.contracts.sms.v1.ListSmsPriceOffersResponse.provider_errors:type_name -> byte.v.forge.contracts.sms.v1.SmsProviderLookupError
+	50, // 56: byte.v.forge.contracts.sms.v1.SmsOrderAcquiredEvent.metadata:type_name -> byte.v.forge.contracts.common.v1.EventMetadata
+	11, // 57: byte.v.forge.contracts.sms.v1.SmsOrderAcquiredEvent.order:type_name -> byte.v.forge.contracts.sms.v1.SmsOrder
+	50, // 58: byte.v.forge.contracts.sms.v1.SmsCodeReceivedEvent.metadata:type_name -> byte.v.forge.contracts.common.v1.EventMetadata
+	10, // 59: byte.v.forge.contracts.sms.v1.SmsCodeReceivedEvent.code:type_name -> byte.v.forge.contracts.sms.v1.SmsCode
+	50, // 60: byte.v.forge.contracts.sms.v1.SmsOrderStatusChangedEvent.metadata:type_name -> byte.v.forge.contracts.common.v1.EventMetadata
+	0,  // 61: byte.v.forge.contracts.sms.v1.SmsOrderStatusChangedEvent.previous_status:type_name -> byte.v.forge.contracts.sms.v1.SmsOrderStatus
+	0,  // 62: byte.v.forge.contracts.sms.v1.SmsOrderStatusChangedEvent.current_status:type_name -> byte.v.forge.contracts.sms.v1.SmsOrderStatus
+	3,  // 63: byte.v.forge.contracts.sms.v1.SmsOrderStatusChangedEvent.error:type_name -> byte.v.forge.contracts.sms.v1.SmsError
+	12, // 64: byte.v.forge.contracts.sms.v1.SmsOrderService.AcquireNumber:input_type -> byte.v.forge.contracts.sms.v1.AcquireNumberRequest
+	14, // 65: byte.v.forge.contracts.sms.v1.SmsOrderService.GetOrder:input_type -> byte.v.forge.contracts.sms.v1.GetOrderRequest
+	16, // 66: byte.v.forge.contracts.sms.v1.SmsOrderService.ResolveSmsCodeSecret:input_type -> byte.v.forge.contracts.sms.v1.ResolveSmsCodeSecretRequest
+	18, // 67: byte.v.forge.contracts.sms.v1.SmsOrderService.MarkMessageSent:input_type -> byte.v.forge.contracts.sms.v1.MarkMessageSentRequest
+	19, // 68: byte.v.forge.contracts.sms.v1.SmsOrderService.RequestAdditionalCode:input_type -> byte.v.forge.contracts.sms.v1.RequestAdditionalCodeRequest
+	20, // 69: byte.v.forge.contracts.sms.v1.SmsOrderService.CompleteOrder:input_type -> byte.v.forge.contracts.sms.v1.CompleteOrderRequest
+	21, // 70: byte.v.forge.contracts.sms.v1.SmsOrderService.CancelOrder:input_type -> byte.v.forge.contracts.sms.v1.CancelOrderRequest
+	35, // 71: byte.v.forge.contracts.sms.v1.SmsCatalogService.ListSmsProviders:input_type -> byte.v.forge.contracts.sms.v1.ListSmsProvidersRequest
+	37, // 72: byte.v.forge.contracts.sms.v1.SmsCatalogService.ListSmsApplications:input_type -> byte.v.forge.contracts.sms.v1.ListSmsApplicationsRequest
+	39, // 73: byte.v.forge.contracts.sms.v1.SmsCatalogService.ListSmsCountries:input_type -> byte.v.forge.contracts.sms.v1.ListSmsCountriesRequest
+	41, // 74: byte.v.forge.contracts.sms.v1.SmsCatalogService.ListSmsPriceOffers:input_type -> byte.v.forge.contracts.sms.v1.ListSmsPriceOffersRequest
+	31, // 75: byte.v.forge.contracts.sms.v1.SmsCatalogService.RecommendSmsRoutes:input_type -> byte.v.forge.contracts.sms.v1.RecommendSmsRoutesRequest
+	13, // 76: byte.v.forge.contracts.sms.v1.SmsOrderService.AcquireNumber:output_type -> byte.v.forge.contracts.sms.v1.AcquireNumberResponse
+	15, // 77: byte.v.forge.contracts.sms.v1.SmsOrderService.GetOrder:output_type -> byte.v.forge.contracts.sms.v1.GetOrderResponse
+	17, // 78: byte.v.forge.contracts.sms.v1.SmsOrderService.ResolveSmsCodeSecret:output_type -> byte.v.forge.contracts.sms.v1.ResolveSmsCodeSecretResponse
+	22, // 79: byte.v.forge.contracts.sms.v1.SmsOrderService.MarkMessageSent:output_type -> byte.v.forge.contracts.sms.v1.MarkMessageSentResponse
+	23, // 80: byte.v.forge.contracts.sms.v1.SmsOrderService.RequestAdditionalCode:output_type -> byte.v.forge.contracts.sms.v1.RequestAdditionalCodeResponse
+	24, // 81: byte.v.forge.contracts.sms.v1.SmsOrderService.CompleteOrder:output_type -> byte.v.forge.contracts.sms.v1.CompleteOrderResponse
+	25, // 82: byte.v.forge.contracts.sms.v1.SmsOrderService.CancelOrder:output_type -> byte.v.forge.contracts.sms.v1.CancelOrderResponse
+	36, // 83: byte.v.forge.contracts.sms.v1.SmsCatalogService.ListSmsProviders:output_type -> byte.v.forge.contracts.sms.v1.ListSmsProvidersResponse
+	38, // 84: byte.v.forge.contracts.sms.v1.SmsCatalogService.ListSmsApplications:output_type -> byte.v.forge.contracts.sms.v1.ListSmsApplicationsResponse
+	40, // 85: byte.v.forge.contracts.sms.v1.SmsCatalogService.ListSmsCountries:output_type -> byte.v.forge.contracts.sms.v1.ListSmsCountriesResponse
+	43, // 86: byte.v.forge.contracts.sms.v1.SmsCatalogService.ListSmsPriceOffers:output_type -> byte.v.forge.contracts.sms.v1.ListSmsPriceOffersResponse
+	33, // 87: byte.v.forge.contracts.sms.v1.SmsCatalogService.RecommendSmsRoutes:output_type -> byte.v.forge.contracts.sms.v1.RecommendSmsRoutesResponse
+	76, // [76:88] is the sub-list for method output_type
+	64, // [64:76] is the sub-list for method input_type
+	64, // [64:64] is the sub-list for extension type_name
+	64, // [64:64] is the sub-list for extension extendee
+	0,  // [0:64] is the sub-list for field type_name
 }
 
 func init() { file_byte_v_forge_contracts_sms_v1_sms_proto_init() }
@@ -3291,7 +3367,7 @@ func file_byte_v_forge_contracts_sms_v1_sms_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_byte_v_forge_contracts_sms_v1_sms_proto_rawDesc), len(file_byte_v_forge_contracts_sms_v1_sms_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   43,
+			NumMessages:   44,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

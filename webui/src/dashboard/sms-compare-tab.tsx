@@ -58,6 +58,7 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
   const queried = canSearch(serverQuery.applicationKey, serverQuery.countryISO2, serverQuery.countryCallingCode, serverQuery.providerKeys);
   const offersQuery = useQuery({ queryKey: smsKeys.priceOffers(serverQuery), queryFn: () => listSmsPriceOffers(serverQuery), enabled: queried });
   const offers = filterAndSortOffers(offersQuery.data?.offers || [], serverQuery.providerKeys, serverQuery.minAvailable, compareQuery.sort);
+  const providerErrors = offersQuery.data?.provider_errors || [];
   const top = bestOffer(offers);
   const error = offersQuery.data?.error?.message;
 
@@ -107,7 +108,7 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
           <SearchHint applicationKey={applicationKey} countryISO2={countryISO2} countryCallingCode={countryCallingCode} providerKeys={activeKeys} />
         </form>
       </Card>
-      <CompareSummary loading={offersQuery.isLoading} total={offers.length} providerCount={new Set(offers.map((offer) => offer.provider_key)).size} best={top} error={error} />
+      <CompareSummary loading={offersQuery.isLoading} total={offers.length} providerCount={new Set(offers.map((offer) => offer.provider_key)).size} best={top} error={error} providerErrors={providerErrors} />
       <OffersTable offers={offers} top={top} loading={offersQuery.isLoading} queried={queried} error={error} acquiringOfferId={acquiringOfferId} onAcquire={onAcquire} />
     </div>
   );

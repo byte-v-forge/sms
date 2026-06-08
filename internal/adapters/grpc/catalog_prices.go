@@ -9,16 +9,20 @@ import (
 )
 
 func (s *CatalogServer) ListSmsPriceOffers(ctx context.Context, request *smsv1.ListSmsPriceOffersRequest) (*smsv1.ListSmsPriceOffersResponse, error) {
-	offers, err := s.service.ListPriceOffers(ctx, core.RouteOfferQuery{
+	result, err := s.service.ListPriceOffersDetailed(ctx, core.RouteOfferQuery{
 		ApplicationKey:     request.GetApplicationKey(),
 		CountryISO2:        request.GetCountryIso2(),
 		CountryCallingCode: request.GetCountryCallingCode(),
 		ProviderKeys:       request.GetProviderKeys(),
 	})
-	if err != nil {
-		return &smsv1.ListSmsPriceOffersResponse{Error: toProtoError(err)}, nil
+	response := &smsv1.ListSmsPriceOffersResponse{
+		Offers:         toProtoPriceOffers(result.Offers),
+		ProviderErrors: toProtoProviderLookupErrors(result.ProviderErrors),
 	}
-	return &smsv1.ListSmsPriceOffersResponse{Offers: toProtoPriceOffers(offers)}, nil
+	if err != nil {
+		response.Error = toProtoError(err)
+	}
+	return response, nil
 }
 
 func (s *CatalogServer) RecommendSmsRoutes(ctx context.Context, request *smsv1.RecommendSmsRoutesRequest) (*smsv1.RecommendSmsRoutesResponse, error) {
@@ -43,4 +47,16 @@ func (s *CatalogServer) RecommendSmsRoutes(ctx context.Context, request *smsv1.R
 		})
 	}
 	return &smsv1.RecommendSmsRoutesResponse{Recommendations: out}, nil
+}
+
+func toProtoProviderLookupErrors(errors []app.ProviderLookupError) []*smsv1.SmsProviderLookupError {
+	out := make([]*smsv1.SmsProviderLookupError, 0, len(errors))
+	for _, providerErr := range errors {
+		out = append(out, &smsv1.SmsProviderLookupError{
+			ProviderKey:         providerErr.ProviderKey,
+			ProviderDisplayName: providerErr.ProviderDisplayName,
+			Error:               toProtoError(providerErr.Err),
+		})
+	}
+	return out
 }

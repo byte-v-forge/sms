@@ -10,11 +10,30 @@ import (
 
 const catalogProviderConcurrency = 4
 
+type RouteOfferList struct {
+	Offers         []core.RouteOffer
+	ProviderErrors []ProviderLookupError
+}
+
+type ProviderLookupError struct {
+	ProviderKey         string
+	ProviderDisplayName string
+	Err                 error
+}
+
 func (s *CatalogService) ListPriceOffers(ctx context.Context, query core.RouteOfferQuery) ([]core.RouteOffer, error) {
+	result, err := s.ListPriceOffersDetailed(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	return result.Offers, nil
+}
+
+func (s *CatalogService) ListPriceOffersDetailed(ctx context.Context, query core.RouteOfferQuery) (RouteOfferList, error) {
 	query = normalizeOfferQuery(query)
 	configs, err := s.configs.ListProviderConfigs(ctx, false, singleProviderKey(query.ProviderKeys))
 	if err != nil {
-		return nil, err
+		return RouteOfferList{}, err
 	}
 	configs = filteredCatalogProviderConfigs(configs, normalizedProviderFilter(query.ProviderKeys))
 	results := make([]catalogProviderOffersResult, len(configs))
@@ -23,32 +42,42 @@ func (s *CatalogService) ListPriceOffers(ctx context.Context, query core.RouteOf
 	for index, config := range configs {
 		index := index
 		config := config
+		results[index].providerKey = normalizeProviderKey(config.GetProviderKey())
+		results[index].providerDisplayName = s.providers.DisplayName(config.GetProviderKey())
 		group.Go(func() error {
 			results[index].offers, results[index].err = s.listProviderPriceOffers(groupCtx, config, query)
 			return nil
 		})
 	}
 	if err := group.Wait(); err != nil {
-		return nil, err
+		return RouteOfferList{}, err
 	}
 	var out []core.RouteOffer
+	var providerErrors []ProviderLookupError
 	var lastErr error
 	for _, result := range results {
 		if result.err != nil {
 			lastErr = result.err
+			providerErrors = append(providerErrors, ProviderLookupError{
+				ProviderKey:         result.providerKey,
+				ProviderDisplayName: result.providerDisplayName,
+				Err:                 result.err,
+			})
 			continue
 		}
 		out = append(out, result.offers...)
 	}
 	if len(out) == 0 && lastErr != nil {
-		return nil, lastErr
+		return RouteOfferList{ProviderErrors: providerErrors}, lastErr
 	}
-	return out, nil
+	return RouteOfferList{Offers: out, ProviderErrors: providerErrors}, nil
 }
 
 type catalogProviderOffersResult struct {
-	offers []core.RouteOffer
-	err    error
+	providerKey         string
+	providerDisplayName string
+	offers              []core.RouteOffer
+	err                 error
 }
 
 func (s *CatalogService) listProviderPriceOffers(ctx context.Context, config *smsinternalv1.SmsProviderConfig, query core.RouteOfferQuery) ([]core.RouteOffer, error) {
