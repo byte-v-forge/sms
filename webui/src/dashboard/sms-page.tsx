@@ -8,7 +8,7 @@ import {
   useQuery,
   useQueryClient,
   useToastMessage
-} from '@byte-v-forge/common-ui';
+} from '../ui';
 import {
   cancelSmsOrder,
   deleteSmsProviderSetting,

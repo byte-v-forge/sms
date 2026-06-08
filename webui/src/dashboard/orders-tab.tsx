@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Ban, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@byte-v-forge/common-ui';
+import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui';
 import type { SmsOrderCodeView, SmsOrderView } from '../proto/byte/v/forge/sms/internal/v1/sms_internal';
 import { canCancelStatus, dateTimeText, moneyText, remainingText, statusText } from './sms-format';
 
@@ -33,14 +33,11 @@ export function OrdersTab({ orders, codes, cancelingId, onCancel }: OrdersTabPro
           <Button size="sm" variant={mode === 'history' ? 'default' : 'outline'} onClick={() => changeMode('history')}>历史订单</Button>
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Select value={String(pageSize)} onValueChange={(value) => { setPageSize(Number(value)); setPage(0); }}>
-            <SelectTrigger className="h-8 w-24"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="20">20/页</SelectItem>
-              <SelectItem value="50">50/页</SelectItem>
-              <SelectItem value="100">100/页</SelectItem>
-            </SelectContent>
-          </Select>
+          <select className="h-8 rounded-lg border border-border bg-background px-2" value={pageSize} onChange={(event) => { setPageSize(Number(event.target.value)); setPage(0); }}>
+            <option value="20">20/页</option>
+            <option value="50">50/页</option>
+            <option value="100">100/页</option>
+          </select>
           <Button size="icon-sm" variant="outline" disabled={page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))}><ChevronLeft className="size-4" /></Button>
           <span>{page + 1}/{pageCount}</span>
           <Button size="icon-sm" variant="outline" disabled={page + 1 >= pageCount} onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}><ChevronRight className="size-4" /></Button>

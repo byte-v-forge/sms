@@ -1,4 +1,4 @@
-import type { DecimalMoney } from '@byte-v-forge/common-ui/proto/byte/v/forge/contracts/sms/v1/sms';
+import type { DecimalMoney } from '../proto/byte/v/forge/contracts/sms/v1/sms';
 
 export function moneyText(money?: DecimalMoney) {
   if (!money?.amount_decimal) return '-';

@@ -1,4 +1,4 @@
-import { api } from '@byte-v-forge/common-ui';
+import { api } from '../ui';
 import type {
   CancelProviderOrderResponse,
   DeleteProviderConfigResponse,

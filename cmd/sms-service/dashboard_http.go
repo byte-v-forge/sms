@@ -39,8 +39,8 @@ func startDashboardHTTP(ctx context.Context, listenAddr, staticDir string, admin
 	dashboard := &dashboardServer{smsAdminClient: admin, smsOrderClient: orders, smsCatalogClient: catalog, hotstream: stream, staticDir: staticDir}
 	mux := http.NewServeMux()
 	mux.Handle("/api/sms/", http.StripPrefix("/api/sms", dashboard.routes()))
-	mux.Handle("/mf/sms/", http.StripPrefix("/mf/sms/", noCacheFileServer(staticDir)))
 	mux.HandleFunc("/healthz", dashboard.handleHealth)
+	mux.Handle("/", noCacheSPAFileServer(staticDir))
 	server := &http.Server{Addr: listenAddr, Handler: withCORS(mux), ReadHeaderTimeout: 5 * time.Second}
 	go func() {
 		<-ctx.Done()
@@ -115,14 +115,18 @@ func withCORS(next http.Handler) http.Handler {
 	})
 }
 
-func noCacheFileServer(dir string) http.Handler {
+func noCacheSPAFileServer(dir string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet && r.Method != http.MethodHead {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
 		w.Header().Set("Cache-Control", "no-store")
 		path := filepath.Join(dir, filepath.Clean(r.URL.Path))
 		if info, err := os.Stat(path); err == nil && !info.IsDir() {
 			http.ServeFile(w, r, path)
 			return
 		}
-		http.NotFound(w, r)
+		http.ServeFile(w, r, filepath.Join(dir, "index.html"))
 	})
 }

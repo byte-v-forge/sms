@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Save, Trash2 } from 'lucide-react';
-import { Badge, Button, DescriptionLine, EmptyBlock, Input, Item, ItemContent, ItemDescription, ItemTitle, Switch, useQuery } from '@byte-v-forge/common-ui';
+import { Badge, Button, DescriptionLine, EmptyBlock, Input, Item, ItemContent, ItemDescription, ItemTitle, Switch, useQuery } from '../ui';
 import { getSmsProviderBalance, smsKeys, type SaveSmsProviderSettingRequest, type SmsProviderOption, type SmsProviderSetting } from './sms-api';
 import { moneyText } from './sms-format';
 
