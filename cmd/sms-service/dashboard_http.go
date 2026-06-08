@@ -18,6 +18,7 @@ import (
 	"github.com/byte-v-forge/sms/internal/platform/hotstream"
 	"github.com/byte-v-forge/sms/internal/platform/httpsse"
 	"github.com/byte-v-forge/sms/internal/platform/protojsonhttp"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -29,7 +30,7 @@ type dashboardServer struct {
 	staticDir        string
 }
 
-func startDashboardHTTP(ctx context.Context, listenAddr, staticDir string, admin smsinternalv1.SmsProviderAdminServiceClient, orders smsv1.SmsOrderServiceClient, catalog smsv1.SmsCatalogServiceClient, stream hotstream.Subscriber, errCh chan<- error) {
+func startDashboardHTTP(ctx context.Context, group *errgroup.Group, listenAddr, staticDir string, admin smsinternalv1.SmsProviderAdminServiceClient, orders smsv1.SmsOrderServiceClient, catalog smsv1.SmsCatalogServiceClient, stream hotstream.Subscriber) {
 	if strings.TrimSpace(listenAddr) == "" {
 		return
 	}
@@ -48,12 +49,13 @@ func startDashboardHTTP(ctx context.Context, listenAddr, staticDir string, admin
 		defer cancel()
 		_ = server.Shutdown(shutdownCtx)
 	}()
-	go func() {
+	group.Go(func() error {
 		log.Printf("sms dashboard BFF listening on %s", listenAddr)
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			errCh <- fmt.Errorf("sms dashboard BFF failed: %w", err)
+			return fmt.Errorf("sms dashboard BFF failed: %w", err)
 		}
-	}()
+		return nil
+	})
 }
 
 func (s *dashboardServer) routes() http.Handler {

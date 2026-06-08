@@ -74,16 +74,15 @@ func main() {
 		log.Fatalf("connect sms dashboard admin API: %v", err)
 	}
 	defer dashboardConn.Close()
-	errCh := make(chan error, 2)
 	startDashboardHTTP(
 		groupCtx,
+		group,
 		cfg.DashboardHTTPAddr,
 		cfg.DashboardStaticDir,
 		smsinternalv1.NewSmsProviderAdminServiceClient(dashboardConn),
 		smsv1.NewSmsOrderServiceClient(dashboardConn),
 		smsv1.NewSmsCatalogServiceClient(dashboardConn),
 		hotStream,
-		errCh,
 	)
 
 	log.Printf("sms-service listening on %s", cfg.ListenAddr)
@@ -92,14 +91,6 @@ func main() {
 			return err
 		}
 		return nil
-	})
-	group.Go(func() error {
-		select {
-		case <-groupCtx.Done():
-			return nil
-		case err := <-errCh:
-			return err
-		}
 	})
 	if err := group.Wait(); err != nil {
 		stop()
