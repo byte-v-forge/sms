@@ -10,17 +10,6 @@ import (
 	"github.com/byte-v-forge/sms/internal/providers/handlerapi"
 )
 
-const (
-	DefaultEndpoint = "https://5sim.net"
-	ProviderKey     = "5sim"
-)
-
-type Config struct {
-	Endpoint     string
-	Token        string
-	CurrencyCode string
-}
-
 type Client struct {
 	endpoint     url.URL
 	token        string
@@ -31,11 +20,8 @@ type Client struct {
 }
 
 func New(config Config, httpClient handlerapi.HTTPDoer) (*Client, error) {
-	rawEndpoint := strings.TrimRight(strings.TrimSpace(config.Endpoint), "/")
-	if rawEndpoint == "" {
-		rawEndpoint = DefaultEndpoint
-	}
-	endpoint, err := url.Parse(rawEndpoint)
+	config = config.withDefaults()
+	endpoint, err := url.Parse(config.Endpoint)
 	if err != nil {
 		return nil, core.NewError(core.CodeValidationFailed, "invalid 5sim endpoint", false)
 	}
@@ -51,17 +37,6 @@ func New(config Config, httpClient handlerapi.HTTPDoer) (*Client, error) {
 		currencyCode: strings.TrimSpace(config.CurrencyCode),
 		httpClient:   httpClient,
 		userAgent:    "sms/1.0",
-		policy: core.ProviderPolicy{
-			OrderTTL:     20 * time.Minute,
-			PollInterval: 5 * time.Second,
-		},
+		policy:       defaultProviderPolicy(),
 	}, nil
-}
-
-func (c *Client) Key() string {
-	return ProviderKey
-}
-
-func (c *Client) Policy() core.ProviderPolicy {
-	return c.policy
 }
