@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
-import { Card, Flex, Menu, Typography } from 'antd';
-import type { MenuProps } from 'antd';
-import { Link, useLocation } from 'react-router';
+import { NavLink, useLocation } from 'react-router';
+import { Button } from './button';
+import { Card } from './card';
+import { cn } from './utils';
 
 type RouteTab = {
   to: string;
@@ -11,19 +12,23 @@ type RouteTab = {
 
 export function WorkspaceRoutedPanel({ title, meta, tabs, children }: { title: ReactNode; meta?: string; tabs: RouteTab[]; children: ReactNode }) {
   const location = useLocation();
-  const selected = tabs.find((tab) => routeMatches(location.pathname, tab))?.to || tabs[0]?.to;
-  const items: MenuProps['items'] = tabs.map((tab) => ({ key: tab.to, label: <Link to={tab.to}>{tab.label}</Link> }));
   return (
-    <main className="sms-shell">
-      <Card className="sms-shell-card" variant="borderless">
-        <Flex align="center" justify="space-between" gap={16} wrap="wrap" style={{ padding: '16px 20px', borderBottom: '1px solid #edf0f5' }}>
+    <main className="mx-auto flex h-screen max-w-7xl flex-col p-4">
+      <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
           <div>
-            <Typography.Title level={4} style={{ margin: 0 }}>{title}</Typography.Title>
-            {meta && <Typography.Text type="secondary">{meta}</Typography.Text>}
+            <h1 className="text-lg font-semibold">{title}</h1>
+            {meta && <p className="text-xs text-muted-foreground">{meta}</p>}
           </div>
-          <Menu className="sms-route-tabs" mode="horizontal" selectedKeys={selected ? [selected] : []} items={items} style={{ minWidth: 280, borderBottom: 0 }} />
-        </Flex>
-        <div className="sms-route-body">{children}</div>
+          <nav className="flex gap-2">
+            {tabs.map((tab) => (
+              <Button key={tab.to} asChild size="sm" variant={routeMatches(location.pathname, tab) ? 'default' : 'outline'}>
+                <NavLink to={tab.to} className={({ isActive }) => cn(!isActive && 'text-foreground')}>{tab.label}</NavLink>
+              </Button>
+            ))}
+          </nav>
+        </header>
+        <div className="flex min-h-0 flex-1 flex-col">{children}</div>
       </Card>
     </main>
   );

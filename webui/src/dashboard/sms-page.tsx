@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { MessageOutlined } from '@ant-design/icons';
-import { App as AntApp } from 'antd';
+import { MessageSquareText } from 'lucide-react';
+import { toast } from 'sonner';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Outlet } from 'react-router';
 import type { SmsPriceOffer } from '../proto/byte/v/forge/contracts/sms/v1/sms';
@@ -38,7 +38,6 @@ export type SmsPageContext = {
 
 export function SmsPage() {
   const queryClient = useQueryClient();
-  const { message } = AntApp.useApp();
   const settingsQuery = useQuery({ queryKey: smsKeys.settingsProviders, queryFn: listSmsProviderSettings });
   const ordersQuery = useQuery({ queryKey: smsKeys.orders, queryFn: listSmsOrders });
   const orderIds = (ordersQuery.data?.orders || []).map((item) => item.order?.order_id || '').filter(Boolean);
@@ -56,41 +55,20 @@ export function SmsPage() {
     rules: streamRules
   });
 
-  const saveMutation = useMutation({
-    mutationFn: saveSmsProviderSetting,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: smsKeys.settingsProviders });
-      message.success('接码源已保存');
-    },
-    onError: (error) => message.error(errorText(error))
-  });
-  const deleteMutation = useMutation({
-    mutationFn: deleteSmsProviderSetting,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: smsKeys.settingsProviders });
-      message.success('接码源已删除');
-    },
-    onError: (error) => message.error(errorText(error))
-  });
-  const cancelMutation = useMutation({
-    mutationFn: cancelSmsOrder,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: smsKeys.orders });
-      message.success('号码已取消');
-    },
-    onError: (error) => message.error(errorText(error))
-  });
+  const saveMutation = useMutation({ mutationFn: saveSmsProviderSetting, onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: smsKeys.settingsProviders }); toast.success('接码源已保存'); }, onError: showError });
+  const deleteMutation = useMutation({ mutationFn: deleteSmsProviderSetting, onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: smsKeys.settingsProviders }); toast.success('接码源已删除'); }, onError: showError });
+  const cancelMutation = useMutation({ mutationFn: cancelSmsOrder, onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: smsKeys.orders }); toast.success('号码已取消'); }, onError: showError });
   const acquireMutation = useMutation({
     mutationFn: acquireSmsFromOffer,
     onSuccess: async (response) => {
       if (response.error) {
-        message.error(response.error.message || response.error.code);
+        toast.error(response.error.message || response.error.code);
         return;
       }
       await queryClient.invalidateQueries({ queryKey: smsKeys.orders });
-      message.success('号码已获取');
+      toast.success('号码已获取');
     },
-    onError: (error) => message.error(errorText(error))
+    onError: showError
   });
   const pageContext: SmsPageContext = {
     providerOptions: options,
@@ -110,13 +88,17 @@ export function SmsPage() {
 
   return (
     <WorkspaceRoutedPanel
-      title={<span><MessageOutlined /> SMS</span>}
+      title={<span className="inline-flex items-center gap-2"><MessageSquareText className="size-4" />SMS</span>}
       meta={`${configs.length}个接码源 · ${ordersQuery.data?.orders?.length || 0}个订单`}
       tabs={[{ to: '/compare', label: '平台比价' }, { to: '/orders', label: '号码订单' }, { to: '/settings', label: '设置' }]}
     >
       <Outlet context={pageContext} />
     </WorkspaceRoutedPanel>
   );
+}
+
+function showError(error: unknown) {
+  toast.error(errorText(error));
 }
 
 function errorText(error: unknown) {

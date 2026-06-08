@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { FormEvent } from 'react';
-import { SearchOutlined } from '@ant-design/icons';
-import { Button, Card, Checkbox, Flex, Form, Input, InputNumber, Select, Space, Tag, Typography } from 'antd';
+import type { FormEvent, ReactNode } from 'react';
+import { Search } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
+import { Badge, Button, Card, Checkbox, Input, Select } from '../ui';
 import type { SmsPriceOffer } from '../proto/byte/v/forge/contracts/sms/v1/sms';
 import { listSmsPriceOffers, smsKeys, type SmsPriceOfferQuery, type SmsProviderOption, type SmsProviderSetting } from './sms-api';
 import { bestOffer, enabledProviderKeys, filterAndSortOffers, providerChoices, type OfferSort, type ProviderChoice } from './sms-compare-data';
@@ -69,48 +69,39 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
   }
 
   function draftQuery(nextSort: OfferSort): CompareQuery {
-    return {
-      applicationKey: applicationKey.trim(),
-      countryISO2: countryISO2.trim().toUpperCase(),
-      countryCallingCode: countryCallingCode.trim().replace(/^\+/, ''),
-      providerKeys: [...activeKeys],
-      minAvailable: Math.max(0, minAvailable),
-      sort: nextSort
-    };
+    return { applicationKey: applicationKey.trim(), countryISO2: countryISO2.trim().toUpperCase(), countryCallingCode: countryCallingCode.trim().replace(/^\+/, ''), providerKeys: [...activeKeys], minAvailable: Math.max(0, minAvailable), sort: nextSort };
   }
 
   return (
-    <Flex className="sms-fill" vertical>
-      <Card size="small" style={{ margin: 16, marginBottom: 0 }}>
-        <Form layout="vertical" onSubmitCapture={submitQuery}>
-          <Flex gap={12} wrap="wrap" align="end">
-            <Form.Item label="应用" style={{ minWidth: 210, flex: 1, marginBottom: 8 }}><Input placeholder="whatsapp/gojek" value={applicationKey} onChange={(event) => setApplicationKey(event.target.value)} /></Form.Item>
-            <Form.Item label="国家 ISO2" style={{ minWidth: 140, marginBottom: 8 }}><Input placeholder="ID" value={countryISO2} onChange={(event) => setCountryISO2(event.target.value)} /></Form.Item>
-            <Form.Item label="国家区号" style={{ minWidth: 140, marginBottom: 8 }}><Input placeholder="62" value={countryCallingCode} onChange={(event) => setCountryCallingCode(event.target.value)} /></Form.Item>
-            <Form.Item label="最低库存" style={{ minWidth: 140, marginBottom: 8 }}><InputNumber min={0} value={minAvailable} onChange={(value) => setMinAvailable(numberInputValue(value))} /></Form.Item>
-            <Form.Item label="排序" style={{ minWidth: 140, marginBottom: 8 }}><Select value={sort} onChange={changeSort} options={[{ label: '按低价', value: 'price' }, { label: '按库存', value: 'available' }, { label: '按平台', value: 'provider' }]} /></Form.Item>
-            <Button type="primary" htmlType="submit" icon={<SearchOutlined />} disabled={!canSearch(applicationKey, countryISO2, countryCallingCode, activeKeys)} style={{ marginBottom: 8 }}>查询比对</Button>
-          </Flex>
-          <ProviderPicker choices={choices} selectedKeys={activeKeys} onChange={setSelectedKeys} />
-        </Form>
+    <div className="flex min-h-0 flex-1 flex-col bg-muted/20">
+      <Card className="m-4 mb-0 p-3">
+        <form className="grid gap-3" onSubmit={submitQuery}>
+          <div className="grid gap-2 md:grid-cols-6">
+            <Field label="应用" className="md:col-span-2"><Input placeholder="whatsapp/gojek" value={applicationKey} onChange={(event) => setApplicationKey(event.target.value)} /></Field>
+            <Field label="国家 ISO2"><Input placeholder="ID" value={countryISO2} onChange={(event) => setCountryISO2(event.target.value)} /></Field>
+            <Field label="国家区号"><Input placeholder="62" value={countryCallingCode} onChange={(event) => setCountryCallingCode(event.target.value)} /></Field>
+            <Field label="最低库存"><Input min={0} type="number" value={minAvailable} onChange={(event) => setMinAvailable(numberInputValue(event.target.value))} /></Field>
+            <Field label="排序"><Select value={sort} onChange={(event) => changeSort(event.target.value as OfferSort)}><option value="price">按低价</option><option value="available">按库存</option><option value="provider">按平台</option></Select></Field>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <ProviderPicker choices={choices} selectedKeys={activeKeys} onChange={setSelectedKeys} />
+            <Button disabled={!canSearch(applicationKey, countryISO2, countryCallingCode, activeKeys)} type="submit"><Search className="size-4" />查询比对</Button>
+          </div>
+        </form>
       </Card>
       <CompareSummary loading={offersQuery.isLoading} total={offers.length} providerCount={new Set(offers.map((offer) => offer.provider_key)).size} best={top} error={error} />
       <OffersTable offers={offers} top={top} loading={offersQuery.isLoading} queried={queried} error={error} acquiringOfferId={acquiringOfferId} onAcquire={onAcquire} />
-    </Flex>
+    </div>
   );
 }
 
+function Field({ label, className, children }: { label: string; className?: string; children: ReactNode }) {
+  return <label className={`grid gap-1 text-xs font-medium text-muted-foreground ${className || ''}`}><span>{label}</span>{children}</label>;
+}
+
 function ProviderPicker({ choices, selectedKeys, onChange }: { choices: ProviderChoice[]; selectedKeys: string[]; onChange: (keys: string[]) => void }) {
-  if (choices.length === 0) return <Typography.Text type="secondary">暂无 provider 插件</Typography.Text>;
-  return (
-    <Space size={[12, 8]} wrap>
-      {choices.map((choice) => (
-        <Checkbox key={choice.providerKey} checked={selectedKeys.includes(choice.providerKey)} disabled={!choice.enabled} onChange={() => toggleProvider(choice.providerKey, selectedKeys, onChange)}>
-          {choice.displayName} {!choice.configured && <Tag>未配置</Tag>}
-        </Checkbox>
-      ))}
-    </Space>
-  );
+  if (choices.length === 0) return <span className="text-xs text-muted-foreground">暂无 provider 插件</span>;
+  return <div className="flex flex-wrap gap-2">{choices.map((choice) => <label key={choice.providerKey} className="inline-flex h-8 items-center gap-2 rounded-lg border border-border bg-background px-2 text-xs"><Checkbox checked={selectedKeys.includes(choice.providerKey)} disabled={!choice.enabled} onCheckedChange={() => toggleProvider(choice.providerKey, selectedKeys, onChange)} /><span>{choice.displayName}</span>{!choice.configured && <Badge variant="outline">未配置</Badge>}</label>)}</div>;
 }
 
 function toggleProvider(providerKey: string, selectedKeys: string[], onChange: (keys: string[]) => void) {
