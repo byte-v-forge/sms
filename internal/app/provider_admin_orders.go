@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/pagex"
 )
 
 func (s *ProviderAdminService) GetProviderBalance(ctx context.Context, providerKey string) (core.Money, error) {
@@ -26,13 +27,7 @@ func (s *ProviderAdminService) ListOrders(ctx context.Context, includeFinal bool
 	if s.orderDB == nil {
 		return nil, core.NewError(core.CodeUnsupportedOperation, "sms order list is not available", false)
 	}
-	if limit <= 0 {
-		limit = 100
-	}
-	if limit > 500 {
-		limit = 500
-	}
-	return s.orderDB.List(ctx, includeFinal, limit)
+	return s.orderDB.List(ctx, includeFinal, pagex.NormalizeLimit(limit, pagex.DefaultLimit, pagex.MaxLimit))
 }
 
 func (s *ProviderAdminService) ListOrderCodes(ctx context.Context, orderIDs []string, limitPerOrder int) ([]core.OrderCode, error) {
@@ -46,13 +41,7 @@ func (s *ProviderAdminService) ListOrderCodes(ctx context.Context, orderIDs []st
 	if len(ids) > 200 {
 		return nil, core.NewError(core.CodeValidationFailed, "too many order_ids", false)
 	}
-	if limitPerOrder <= 0 {
-		limitPerOrder = 10
-	}
-	if limitPerOrder > 50 {
-		limitPerOrder = 50
-	}
-	return s.orderDB.ListCodes(ctx, ids, limitPerOrder)
+	return s.orderDB.ListCodes(ctx, ids, pagex.NormalizeLimit(limitPerOrder, defaultOrderCodeLimit, maxOrderCodeLimit))
 }
 
 func (s *ProviderAdminService) CancelOrder(ctx context.Context, orderID string, requestID string) (core.Order, error) {

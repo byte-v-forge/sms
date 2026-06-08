@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/pagex"
 )
 
 func (s *PostgresOrderStore) Get(ctx context.Context, orderID string) (core.Order, error) {
@@ -12,12 +13,7 @@ func (s *PostgresOrderStore) Get(ctx context.Context, orderID string) (core.Orde
 }
 
 func (s *PostgresOrderStore) List(ctx context.Context, includeFinal bool, limit int) ([]core.Order, error) {
-	if limit <= 0 {
-		limit = 100
-	}
-	if limit > 500 {
-		limit = 500
-	}
+	limit = pagex.NormalizeLimit(limit, pagex.DefaultLimit, pagex.MaxLimit)
 	rows, err := s.pool.Query(ctx, `
 SELECT `+orderColumns()+`
 FROM sms_orders

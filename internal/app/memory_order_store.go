@@ -9,6 +9,7 @@ import (
 	commonv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/common/v1"
 	"github.com/byte-v-forge/sms/internal/core"
 	"github.com/byte-v-forge/sms/internal/platform/eventoutbox"
+	"github.com/byte-v-forge/sms/internal/platform/pagex"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -79,12 +80,7 @@ func (s *MemoryOrderStore) List(ctx context.Context, includeFinal bool, limit in
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	if limit <= 0 {
-		limit = 100
-	}
-	if limit > 500 {
-		limit = 500
-	}
+	limit = pagex.NormalizeLimit(limit, pagex.DefaultLimit, pagex.MaxLimit)
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	orders := make([]core.Order, 0, len(s.orders))
@@ -110,12 +106,7 @@ func (s *MemoryOrderStore) ListCodes(ctx context.Context, orderIDs []string, lim
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	if limitPerOrder <= 0 {
-		limitPerOrder = 10
-	}
-	if limitPerOrder > 50 {
-		limitPerOrder = 50
-	}
+	limitPerOrder = pagex.NormalizeLimit(limitPerOrder, defaultOrderCodeLimit, maxOrderCodeLimit)
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	out := []core.OrderCode{}
