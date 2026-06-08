@@ -8,6 +8,17 @@ import (
 	"github.com/byte-v-forge/sms/internal/core"
 )
 
+type CancelRetryError struct {
+	RetryAt time.Time
+}
+
+func (e *CancelRetryError) Error() string {
+	if e == nil || e.RetryAt.IsZero() {
+		return "sms order cancel retry is scheduled"
+	}
+	return "sms order cancel retry is scheduled for " + e.RetryAt.UTC().Format(time.RFC3339)
+}
+
 func shouldQueueEarlyCancelRetry(err *core.Error, policy core.ProviderPolicy) bool {
 	return err != nil && err.Code == core.CodeCancelNotAllowed && err.Retryable && policy.EarlyCancelRetryAfter > 0
 }
