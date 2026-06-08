@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/jsonx"
+	"github.com/byte-v-forge/sms/internal/platform/stringx"
 	"github.com/byte-v-forge/sms/internal/providers/providerhttp"
 )
 
@@ -158,41 +160,15 @@ func parseHandlerAPIJSONError(text string) (string, string, bool) {
 		return "", "", false
 	}
 	parts := []string{code}
-	if details := strings.TrimSpace(firstHandlerAPIString(payload.Details, payload.Detail)); details != "" {
+	if details := stringx.FirstNonEmpty(payload.Details, payload.Detail); details != "" {
 		parts = append(parts, details)
 	}
 	for _, key := range []string{"min", "max"} {
-		if value := handlerAPIInfoScalar(payload.Info[key]); value != "" {
+		if value := jsonx.Scalar(payload.Info[key]); value != "" {
 			parts = append(parts, key+"="+value)
 		}
 	}
 	return code, truncateHandlerAPIErrorMessage(strings.Join(parts, ": ")), true
-}
-
-func handlerAPIInfoScalar(raw json.RawMessage) string {
-	if len(raw) == 0 {
-		return ""
-	}
-	var text string
-	if err := json.Unmarshal(raw, &text); err == nil {
-		return strings.TrimSpace(text)
-	}
-	var number json.Number
-	decoder := json.NewDecoder(strings.NewReader(string(raw)))
-	decoder.UseNumber()
-	if err := decoder.Decode(&number); err == nil {
-		return strings.TrimSpace(number.String())
-	}
-	return ""
-}
-
-func firstHandlerAPIString(values ...string) string {
-	for _, value := range values {
-		if strings.TrimSpace(value) != "" {
-			return strings.TrimSpace(value)
-		}
-	}
-	return ""
 }
 
 func truncateHandlerAPIErrorMessage(message string) string {
