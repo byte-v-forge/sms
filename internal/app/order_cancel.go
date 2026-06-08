@@ -34,18 +34,7 @@ func (s *OrderService) CancelOrder(ctx context.Context, orderID, requestID strin
 		return order, nil
 	}
 	if !order.Status.HasProviderLease() || strings.TrimSpace(order.UpstreamOrderID) == "" {
-		previousStatus := order.Status
-		order.Status = core.StatusCanceled
-		order.UpdatedAt = s.clock.Now()
-		order.LastError = nil
-		records, err := s.statusChangedRecords(ctx, order, previousStatus)
-		if err != nil {
-			return order, err
-		}
-		if err := s.updateOrder(ctx, order, records...); err != nil {
-			return core.Order{}, err
-		}
-		return order, nil
+		return s.cancelLocalOrder(ctx, order, s.clock.Now(), false)
 	}
 	return s.queueCancelRequest(ctx, order, requestID, "api_request")
 }
@@ -73,19 +62,7 @@ func (s *OrderService) cancelLoadedOrder(ctx context.Context, order core.Order, 
 		return order, nil
 	}
 	if !order.Status.HasProviderLease() || strings.TrimSpace(order.UpstreamOrderID) == "" {
-		previousStatus := order.Status
-		order.Status = core.StatusCanceled
-		order.UpdatedAt = now
-		order.LastError = nil
-		order.CancelAllowedAt = time.Time{}
-		records, err := s.statusChangedRecords(ctx, order, previousStatus)
-		if err != nil {
-			return order, err
-		}
-		if err := s.updateOrder(ctx, order, records...); err != nil {
-			return core.Order{}, err
-		}
-		return order, nil
+		return s.cancelLocalOrder(ctx, order, now, true)
 	}
 	if order.IsExpired(now) {
 		previousStatus := order.Status
@@ -142,6 +119,24 @@ func (s *OrderService) cancelLoadedOrder(ctx context.Context, order core.Order, 
 	records, err := s.statusChangedRecords(ctx, order, previousStatus)
 	if err != nil {
 		return core.Order{}, err
+	}
+	if err := s.updateOrder(ctx, order, records...); err != nil {
+		return core.Order{}, err
+	}
+	return order, nil
+}
+
+func (s *OrderService) cancelLocalOrder(ctx context.Context, order core.Order, now time.Time, clearCancelAllowed bool) (core.Order, error) {
+	previousStatus := order.Status
+	order.Status = core.StatusCanceled
+	order.UpdatedAt = now
+	order.LastError = nil
+	if clearCancelAllowed {
+		order.CancelAllowedAt = time.Time{}
+	}
+	records, err := s.statusChangedRecords(ctx, order, previousStatus)
+	if err != nil {
+		return order, err
 	}
 	if err := s.updateOrder(ctx, order, records...); err != nil {
 		return core.Order{}, err
