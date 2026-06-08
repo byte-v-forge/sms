@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Save, Trash2 } from 'lucide-react';
-import { Badge, Button, DescriptionLine, EmptyBlock, Input, Item, ItemContent, ItemDescription, ItemTitle, Switch, useQuery } from '../ui';
+import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
+import { Button, Card, Descriptions, Empty, Flex, Input, Popconfirm, Space, Spin, Switch, Tag, Typography } from 'antd';
+import { useQuery } from '@tanstack/react-query';
 import { getSmsProviderBalance, smsKeys, type SaveSmsProviderSettingRequest, type SmsProviderOption, type SmsProviderSetting } from './sms-api';
 import { moneyText } from './sms-format';
 
@@ -8,8 +9,6 @@ type ProviderCardDescriptor = {
   option: SmsProviderOption;
   config?: SmsProviderSetting;
 };
-
-type ProviderBadgeVariant = 'default' | 'secondary' | 'outline';
 
 type SmsSettingsTabProps = {
   providerOptions: SmsProviderOption[];
@@ -25,32 +24,34 @@ export function SmsSettingsTab(props: SmsSettingsTabProps) {
   const providers = mergeProviderOptions(props.providerOptions, props.configs);
   const enabledCount = props.configs.filter((config) => config.enabled).length;
   return (
-    <div className="min-h-0 flex-1 overflow-auto bg-muted/20 p-4">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+    <div className="sms-fill" style={{ overflow: 'auto', padding: 16 }}>
+      <Flex align="center" justify="space-between" gap={12} wrap="wrap" style={{ marginBottom: 16 }}>
         <div>
-          <div className="text-sm font-semibold">SMS Provider</div>
-          <div className="text-xs text-muted-foreground">每个平台在卡片内直接配置。</div>
+          <Typography.Title level={5} style={{ margin: 0 }}>SMS Provider</Typography.Title>
+          <Typography.Text type="secondary">每个平台在卡片内直接配置，配置仅保存在 SMS 服务。</Typography.Text>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="secondary">{props.providerOptions.length} 插件</Badge>
-          <Badge variant="outline">{props.configs.length} 已配置</Badge>
-          <Badge variant={enabledCount > 0 ? 'default' : 'secondary'}>{enabledCount} 启用</Badge>
-        </div>
-      </div>
-      <div className="flex flex-wrap items-start gap-3">
-        {providers.map(({ option, config }) => (
-          <ProviderCard
-            key={option.provider_key}
-            config={config}
-            provider={option}
-            saving={props.savingProviderKey === option.provider_key}
-            deleting={props.deletingProviderKey === option.provider_key}
-            onSave={props.onSave}
-            onDelete={props.onDelete}
-          />
-        ))}
-        {!props.busy && providers.length === 0 && <EmptyBlock text="暂无接码源插件" />}
-      </div>
+        <Space wrap>
+          <Tag color="blue">{props.providerOptions.length} 插件</Tag>
+          <Tag>{props.configs.length} 已配置</Tag>
+          <Tag color={enabledCount > 0 ? 'green' : 'default'}>{enabledCount} 启用</Tag>
+        </Space>
+      </Flex>
+      <Spin spinning={!!props.busy && providers.length === 0}>
+        <Flex align="flex-start" gap={16} wrap="wrap">
+          {providers.map(({ option, config }) => (
+            <ProviderCard
+              key={option.provider_key}
+              config={config}
+              provider={option}
+              saving={props.savingProviderKey === option.provider_key}
+              deleting={props.deletingProviderKey === option.provider_key}
+              onSave={props.onSave}
+              onDelete={props.onDelete}
+            />
+          ))}
+          {!props.busy && providers.length === 0 && <Empty description="暂无接码源插件" />}
+        </Flex>
+      </Spin>
     </div>
   );
 }
@@ -77,49 +78,27 @@ function ProviderCard({ config, provider, saving, deleting, onSave, onDelete }: 
   });
   const hasCredential = !!apiKey.trim() || !!config?.api_key_set;
   const canSave = enabled === false || hasCredential;
-  const statusText = providerStatusText(config, enabled);
   return (
-    <Item className="w-[320px] max-w-full flex-none bg-background transition hover:border-primary/40 hover:bg-muted/20" variant="outline">
-      <ItemContent className="min-w-0 gap-3">
-        <div>
-          <ItemTitle className="w-full justify-between">
-            <span className="truncate">{provider.display_name || provider.provider_key}</span>
-            <Badge aria-label={statusText} className="h-5 w-5 rounded-full px-0" variant={providerBadgeVariant(config, enabled)}>
-              <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
-            </Badge>
-          </ItemTitle>
-          <ItemDescription>{provider.provider_key}</ItemDescription>
-        </div>
-        <div className="grid gap-2">
-          <Input
-            type="password"
-            placeholder={config?.api_key_set ? '留空保留 API Key' : 'Provider API Key'}
-            value={apiKey}
-            onChange={(event) => setAPIKey(event.target.value)}
-          />
-          <div className="flex h-9 items-center justify-end rounded-lg border border-border/70 px-3">
-            <Switch aria-label="启用" checked={enabled} onCheckedChange={setEnabled} />
-          </div>
-        </div>
-        <div className="grid gap-1 rounded-lg bg-muted/30 p-2">
-          <DescriptionLine label="余额" value={balanceText(config, balance.isLoading, moneyText(balance.data?.balance))} />
-          <DescriptionLine label="API Key" value={config?.api_key_set ? '已配置' : '未配置'} />
-        </div>
-        <div className="flex justify-end gap-2">
-          <Button
-            aria-label="保存"
-            size="icon"
-            disabled={saving || !canSave}
-            onClick={() => onSave({ provider_key: provider.provider_key, enabled, api_key: apiKey.trim() || undefined })}
-          >
-            <Save className="size-4" />
-          </Button>
-          <Button aria-label="删除" variant="outline" size="icon" disabled={!config?.provider_key || deleting} onClick={() => onDelete(provider.provider_key)}>
-            <Trash2 className="size-4" />
-          </Button>
-        </div>
-      </ItemContent>
-    </Item>
+    <Card style={{ width: 340 }} title={provider.display_name || provider.provider_key} extra={providerStatusTag(config, enabled)}>
+      <Space direction="vertical" size={12} style={{ width: '100%' }}>
+        <Typography.Text type="secondary">{provider.provider_key}</Typography.Text>
+        <Input.Password placeholder={config?.api_key_set ? '留空保留 API Key' : 'Provider API Key'} value={apiKey} onChange={(event) => setAPIKey(event.target.value)} />
+        <Flex align="center" justify="space-between">
+          <Typography.Text>启用接码源</Typography.Text>
+          <Switch checked={enabled} onChange={setEnabled} />
+        </Flex>
+        <Descriptions column={1} size="small" bordered>
+          <Descriptions.Item label="余额">{balanceText(config, balance.isLoading, moneyText(balance.data?.balance))}</Descriptions.Item>
+          <Descriptions.Item label="API Key">{config?.api_key_set ? '已配置' : '未配置'}</Descriptions.Item>
+        </Descriptions>
+        <Flex justify="flex-end" gap={8}>
+          <Button aria-label="保存" title="保存" type="primary" icon={<SaveOutlined />} loading={saving} disabled={!canSave} onClick={() => onSave({ provider_key: provider.provider_key, enabled, api_key: apiKey.trim() || undefined })} />
+          <Popconfirm title="删除接码源配置？" okText="删除" cancelText="保留" disabled={!config?.provider_key || deleting} onConfirm={() => onDelete(provider.provider_key)}>
+            <Button aria-label="删除" title="删除" danger icon={<DeleteOutlined />} loading={deleting} disabled={!config?.provider_key} />
+          </Popconfirm>
+        </Flex>
+      </Space>
+    </Card>
   );
 }
 
@@ -138,12 +117,7 @@ function balanceText(config: SmsProviderSetting | undefined, loading: boolean, b
   return loading ? '读取中' : balance;
 }
 
-function providerStatusText(config: SmsProviderSetting | undefined, enabled: boolean) {
-  if (!config) return '未配置';
-  return enabled ? '启用' : '停用';
-}
-
-function providerBadgeVariant(config: SmsProviderSetting | undefined, enabled: boolean): ProviderBadgeVariant {
-  if (!config) return 'outline';
-  return enabled ? 'default' : 'secondary';
+function providerStatusTag(config: SmsProviderSetting | undefined, enabled: boolean) {
+  if (!config) return <Tag>未配置</Tag>;
+  return enabled ? <Tag color="green">启用</Tag> : <Tag color="default">停用</Tag>;
 }

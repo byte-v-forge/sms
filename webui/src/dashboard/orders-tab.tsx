@@ -1,8 +1,11 @@
-import { useState } from 'react';
-import { Ban, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui';
+import { useMemo, useState } from 'react';
+import { StopOutlined } from '@ant-design/icons';
+import { Button, Empty, Flex, Popconfirm, Segmented, Table, Typography } from 'antd';
+import type { TableColumnsType } from 'antd';
 import type { SmsOrderCodeView, SmsOrderView } from '../proto/byte/v/forge/sms/internal/v1/sms_internal';
 import { canCancelStatus, dateTimeText, moneyText, remainingText, statusText } from './sms-format';
+
+type OrderMode = 'active' | 'history';
 
 type OrdersTabProps = {
   orders: SmsOrderView[];
@@ -12,81 +15,59 @@ type OrdersTabProps = {
 };
 
 export function OrdersTab({ orders, codes, cancelingId, onCancel }: OrdersTabProps) {
-  const [mode, setMode] = useState<'active' | 'history'>('active');
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(20);
-  const rows = orders.filter((item) => mode === 'active' ? canCancelStatus(item.order?.status) : !canCancelStatus(item.order?.status));
-  const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
-  const visible = rows.slice(page * pageSize, page * pageSize + pageSize);
-  const codesByOrder = groupCodes(codes);
-
-  function changeMode(next: 'active' | 'history') {
-    setMode(next);
-    setPage(0);
-  }
-
+  const [mode, setMode] = useState<OrderMode>('active');
+  const codesByOrder = useMemo(() => groupCodes(codes), [codes]);
+  const rows = useMemo(() => orders.filter((item) => mode === 'active' ? canCancelStatus(item.order?.status) : !canCancelStatus(item.order?.status)), [mode, orders]);
+  const columns = useMemo<TableColumnsType<SmsOrderView>>(() => [
+    { title: '号码', dataIndex: ['order', 'phone_number', 'e164_number'], render: (_, item) => orderNumber(item) },
+    { title: 'Provider', dataIndex: 'provider_key', render: (value: string) => value || '-' },
+    { title: '状态', dataIndex: ['order', 'status'], render: (value: string) => statusText(value) },
+    { title: '剩余', dataIndex: ['order', 'expires_at'], render: (value: string) => remainingText(value) },
+    { title: '最新 OTP', render: (_, item) => <CodesCell codes={codesByOrder.get(item.order?.order_id || '') || []} /> },
+    { title: '价格', dataIndex: ['order', 'price'], render: (_, item) => moneyText(item.order?.price) },
+    { title: '', width: 64, align: 'right', render: (_, item) => <CancelAction item={item} cancelingId={cancelingId} onCancel={onCancel} /> }
+  ], [cancelingId, codesByOrder, onCancel]);
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex items-center justify-between border-b border-border/70 px-3 py-2">
-        <div className="flex gap-2">
-          <Button size="sm" variant={mode === 'active' ? 'default' : 'outline'} onClick={() => changeMode('active')}>进行中</Button>
-          <Button size="sm" variant={mode === 'history' ? 'default' : 'outline'} onClick={() => changeMode('history')}>历史订单</Button>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <select className="h-8 rounded-lg border border-border bg-background px-2" value={pageSize} onChange={(event) => { setPageSize(Number(event.target.value)); setPage(0); }}>
-            <option value="20">20/页</option>
-            <option value="50">50/页</option>
-            <option value="100">100/页</option>
-          </select>
-          <Button size="icon-sm" variant="outline" disabled={page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))}><ChevronLeft className="size-4" /></Button>
-          <span>{page + 1}/{pageCount}</span>
-          <Button size="icon-sm" variant="outline" disabled={page + 1 >= pageCount} onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}><ChevronRight className="size-4" /></Button>
-        </div>
-      </div>
-      <div className="min-h-0 overflow-auto">
-        <Table>
-          <TableHeader><TableRow><TableHead>号码</TableHead><TableHead>Provider</TableHead><TableHead>状态</TableHead><TableHead>剩余</TableHead><TableHead>最新OTP</TableHead><TableHead>价格</TableHead><TableHead /></TableRow></TableHeader>
-          <TableBody>
-            {visible.map((item) => <OrderRow key={item.order?.order_id || item.provider_key} item={item} codes={codesByOrder.get(item.order?.order_id || '') || []} cancelingId={cancelingId} onCancel={onCancel} />)}
-            {visible.length === 0 && <TableRow><TableCell colSpan={7} className="h-24 text-center text-muted-foreground">暂无订单</TableCell></TableRow>}
-          </TableBody>
-        </Table>
-      </div>
+    <div className="sms-fill" style={{ padding: 16 }}>
+      <Flex align="center" justify="space-between" style={{ marginBottom: 12 }}>
+        <Segmented<OrderMode> value={mode} onChange={setMode} options={[{ label: '进行中', value: 'active' }, { label: '历史订单', value: 'history' }]} />
+        <Typography.Text type="secondary">{rows.length} 条订单</Typography.Text>
+      </Flex>
+      <Table
+        rowKey={(item) => item.order?.order_id || item.provider_key}
+        columns={columns}
+        dataSource={rows}
+        size="middle"
+        sticky
+        locale={{ emptyText: <Empty description="暂无订单" /> }}
+        pagination={{ defaultPageSize: 20, showSizeChanger: true, pageSizeOptions: [20, 50, 100], showTotal: (total) => `${total} 条` }}
+        scroll={{ y: 'calc(100vh - 260px)', x: 980 }}
+      />
     </div>
   );
 }
 
-function OrderRow({ item, codes, cancelingId, onCancel }: { item: SmsOrderView; codes: SmsOrderCodeView[]; cancelingId?: string; onCancel: (id: string) => void }) {
-  const order = item.order;
-  const id = order?.order_id || '';
-  const cancelable = canCancelStatus(order?.status);
+function CancelAction({ item, cancelingId, onCancel }: { item: SmsOrderView; cancelingId?: string; onCancel: (id: string) => void }) {
+  const id = item.order?.order_id || '';
+  const disabled = !canCancelStatus(item.order?.status) || cancelingId === id;
   return (
-    <TableRow>
-      <TableCell className="font-mono text-xs">{order?.phone_number?.e164_number || order?.phone_number?.national_number || '-'}</TableCell>
-      <TableCell>{item.provider_key || '-'}</TableCell>
-      <TableCell>{statusText(order?.status)}</TableCell>
-      <TableCell>{remainingText(order?.expires_at)}</TableCell>
-      <TableCell><CodesCell codes={codes} /></TableCell>
-      <TableCell>{moneyText(order?.price)}</TableCell>
-      <TableCell className="text-right">
-        <Button size="icon-sm" variant="outline" disabled={!cancelable || cancelingId === id} onClick={() => onCancel(id)}><Ban className="size-4" /></Button>
-      </TableCell>
-    </TableRow>
+    <Popconfirm title="取消号码订单？" okText="取消订单" cancelText="保留" disabled={disabled} onConfirm={() => onCancel(id)}>
+      <Button aria-label="取消订单" title="取消订单" icon={<StopOutlined />} size="small" disabled={disabled} />
+    </Popconfirm>
   );
 }
 
 function CodesCell({ codes }: { codes: SmsOrderCodeView[] }) {
-  if (codes.length === 0) return <span className="text-muted-foreground">-</span>;
+  if (codes.length === 0) return <Typography.Text type="secondary">-</Typography.Text>;
   return (
-    <div className="grid gap-1">
+    <Flex vertical gap={2}>
       {codes.slice(0, 3).map((item) => (
-        <div key={`${item.order_id}-${item.code?.secret_ref?.secret_id}-${item.code?.received_at}`} className="flex items-center gap-2">
-          <span className="text-xs">{item.code?.secret_ref?.secret_id ? '已捕获' : '-'}</span>
-          <span className="text-[11px] text-muted-foreground">{dateTimeText(item.code?.received_at)}</span>
-        </div>
+        <Typography.Text key={`${item.order_id}-${item.code?.secret_ref?.secret_id}-${item.code?.received_at}`} style={{ fontSize: 12 }}>
+          {item.code?.secret_ref?.secret_id ? '已捕获' : '-'} · {dateTimeText(item.code?.received_at)}
+        </Typography.Text>
       ))}
-      {codes.length > 3 && <div className="text-[11px] text-muted-foreground">+{codes.length - 3} 条历史</div>}
-    </div>
+      {codes.length > 3 && <Typography.Text type="secondary" style={{ fontSize: 12 }}>+{codes.length - 3} 条历史</Typography.Text>}
+    </Flex>
   );
 }
 
@@ -98,4 +79,8 @@ function groupCodes(codes: SmsOrderCodeView[]) {
     grouped.set(id, [...(grouped.get(id) || []), item]);
   }
   return grouped;
+}
+
+function orderNumber(item: SmsOrderView) {
+  return <Typography.Text code>{item.order?.phone_number?.e164_number || item.order?.phone_number?.national_number || '-'}</Typography.Text>;
 }

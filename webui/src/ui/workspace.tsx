@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
-import { NavLink } from 'react-router';
-import { buttonClassName } from './primitives';
+import { Card, Flex, Menu, Typography } from 'antd';
+import type { MenuProps } from 'antd';
+import { Link, useLocation } from 'react-router';
 
 type RouteTab = {
   to: string;
@@ -9,24 +10,25 @@ type RouteTab = {
 };
 
 export function WorkspaceRoutedPanel({ title, meta, tabs, children }: { title: ReactNode; meta?: string; tabs: RouteTab[]; children: ReactNode }) {
+  const location = useLocation();
+  const selected = tabs.find((tab) => routeMatches(location.pathname, tab))?.to || tabs[0]?.to;
+  const items: MenuProps['items'] = tabs.map((tab) => ({ key: tab.to, label: <Link to={tab.to}>{tab.label}</Link> }));
   return (
-    <main className="mx-auto flex h-screen max-w-7xl flex-col p-4">
-      <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
+    <main className="sms-shell">
+      <Card className="sms-shell-card" variant="borderless">
+        <Flex align="center" justify="space-between" gap={16} wrap="wrap" style={{ padding: '16px 20px', borderBottom: '1px solid #edf0f5' }}>
           <div>
-            <h1 className="text-lg font-semibold">{title}</h1>
-            {meta && <p className="text-xs text-muted-foreground">{meta}</p>}
+            <Typography.Title level={4} style={{ margin: 0 }}>{title}</Typography.Title>
+            {meta && <Typography.Text type="secondary">{meta}</Typography.Text>}
           </div>
-          <nav className="flex gap-2">
-            {tabs.map((tab) => (
-              <NavLink key={tab.to} to={tab.to} end={tab.end ?? true} className={({ isActive }) => buttonClassName(isActive ? 'default' : 'outline', 'sm')}>
-                {tab.label}
-              </NavLink>
-            ))}
-          </nav>
-        </header>
-        <div className="flex min-h-0 flex-1 flex-col">{children}</div>
-      </section>
+          <Menu className="sms-route-tabs" mode="horizontal" selectedKeys={selected ? [selected] : []} items={items} style={{ minWidth: 280, borderBottom: 0 }} />
+        </Flex>
+        <div className="sms-route-body">{children}</div>
+      </Card>
     </main>
   );
+}
+
+function routeMatches(pathname: string, tab: RouteTab) {
+  return tab.end ?? true ? pathname === tab.to : pathname.startsWith(tab.to);
 }
