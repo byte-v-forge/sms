@@ -1,0 +1,9 @@
+.git
+.gitignore
+Dockerfile
+webui/node_modules
+webui/dist
+webui/*.log
+webui/*.tsbuildinfo
+*.log
+.DS_Store
