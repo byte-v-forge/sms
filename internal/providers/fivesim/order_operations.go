@@ -60,7 +60,9 @@ func (c *Client) GetStatus(ctx context.Context, upstreamOrderID string) (core.Pr
 
 func (c *Client) SetStatus(ctx context.Context, upstreamOrderID string, action core.ProviderAction) error {
 	switch action {
-	case core.ActionMarkMessageSent, core.ActionRequestAdditional:
+	case core.ActionMarkMessageSent:
+		return core.NewError(core.CodeUnsupportedOperation, "5sim does not expose mark-message-sent status", false)
+	case core.ActionRequestAdditional:
 		return nil
 	case core.ActionCompleteOrder:
 		var payload order

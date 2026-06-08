@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"net/url"
-	"strconv"
 	"strings"
 
 	"github.com/byte-v-forge/sms/internal/core"
@@ -87,26 +86,35 @@ func (c *Client) acquireParams(request core.ProviderAcquireRequest) url.Values {
 
 func (c *Client) parseGetNumberV2(result string, request core.ProviderAcquireRequest) (core.ProviderOrder, error) {
 	var payload struct {
-		OrderID          int64  `json:"activationId"`
-		PhoneNumber      string `json:"phoneNumber"`
-		OrderCost        string `json:"activationCost"`
-		CountryCode      string `json:"countryCode"`
-		CanGetAnotherSMS string `json:"canGetAnotherSms"`
-		OrderTime        string `json:"activationTime"`
+		OrderID          json.RawMessage `json:"activationId"`
+		PhoneNumber      json.RawMessage `json:"phoneNumber"`
+		OrderCost        json.RawMessage `json:"activationCost"`
+		CanGetAnotherSMS json.RawMessage `json:"canGetAnotherSms"`
+		OrderTime        json.RawMessage `json:"activationTime"`
 	}
 	if err := json.Unmarshal([]byte(result), &payload); err != nil {
 		return core.ProviderOrder{}, core.NewError(core.CodeUpstreamRejected, "bad getNumberV2 json response", false)
 	}
-	if payload.OrderID <= 0 {
-		return core.ProviderOrder{}, core.NewError(core.CodeUpstreamRejected, "missing activationId in getNumberV2 response", false)
+	orderID := rawJSONScalar(payload.OrderID)
+	rawPhone := rawJSONScalar(payload.PhoneNumber)
+	if orderID == "" || rawPhone == "" {
+		return core.ProviderOrder{}, core.NewError(core.CodeUpstreamRejected, "missing activationId or phoneNumber in getNumberV2 response", false)
 	}
-	orderID := strconv.FormatInt(payload.OrderID, 10)
-	e164, national := phone.Normalize(payload.PhoneNumber, request.Target.CountryISO2, request.Target.CountryCallingCode)
+	e164, national := phone.Normalize(rawPhone, request.Target.CountryISO2, request.Target.CountryCallingCode)
 	return core.ProviderOrder{
 		UpstreamOrderID:          orderID,
 		PhoneNumber:              core.PhoneNumber{E164: e164, NationalNumber: national, CountryISO2: request.Target.CountryISO2, CountryCallingCode: request.Target.CountryCallingCode},
-		Price:                    core.Money{AmountDecimal: strings.TrimSpace(payload.OrderCost)},
-		AcquiredAt:               parseOrderTimeText(payload.OrderTime),
-		CanRequestAdditionalCode: payload.CanGetAnotherSMS == "1",
+		Price:                    core.Money{AmountDecimal: rawJSONScalar(payload.OrderCost)},
+		AcquiredAt:               parseOrderTimeText(rawJSONScalar(payload.OrderTime)),
+		CanRequestAdditionalCode: providerTruthy(payload.CanGetAnotherSMS),
 	}, nil
+}
+
+func providerTruthy(raw json.RawMessage) bool {
+	switch strings.ToLower(rawJSONScalar(raw)) {
+	case "1", "true", "yes":
+		return true
+	default:
+		return false
+	}
 }

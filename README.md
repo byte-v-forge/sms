@@ -59,6 +59,14 @@ cd webui && npm install --ignore-scripts && npm run proto
 
 provider API key 通过 SMS 设置页或 `SmsProviderAdminService` 写入。
 
+## Provider API 与 SDK 取舍
+
+- `5sim`：按官方 API 文档的 `guest/countries`、`guest/prices`、`user/buy/activation`、`user/check`、`user/finish`、`user/cancel` 和 `user/profile` 端点实现；官方未提供稳定 Go SDK，本仓保留轻量 HTTP adapter。
+- `smsbower`：按官方 `handler_api.php` 协议的 `getNumberV2`、`getStatus`、`setStatus`、`getBalance`、`getServicesList`、`getCountries` 和 `getPricesV3` action 实现；官方未提供稳定 Go SDK，本仓复用内部 `handlerapi` adapter。
+- `herosms`：按官方 SMS-Activate 兼容协议实现取号、查码、改状态和余额查询；报价目录使用 HeroSMS 自有 API 端点；官方未提供稳定 Go SDK，本仓复用内部 `handlerapi` adapter 并只保留必要 OpenAPI 查询客户端。
+
+当前未引入第三方非官方 SDK，避免把 provider 状态码、错误码和凭据处理交给维护状态不明确的依赖。
+
 ## 镜像
 
 在目标构建环境中以本仓库为 build context 构建：

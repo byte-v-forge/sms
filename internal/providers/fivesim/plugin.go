@@ -14,11 +14,10 @@ func Plugin() providerspi.Plugin {
 		ProviderKey: ProviderKey,
 		DisplayName: "5sim",
 		Capabilities: &smsinternalv1.SmsProviderCapabilities{
-			SupportsBalance:         true,
-			RequiresMarkMessageSent: true,
-			SupportsAdditionalCode:  true,
-			SupportsCatalog:         true,
-			SupportsPriceLookup:     true,
+			SupportsBalance:        true,
+			SupportsAdditionalCode: true,
+			SupportsCatalog:        true,
+			SupportsPriceLookup:    true,
 		},
 		DefaultPolicy: core.ProviderPolicy{OrderTTL: 20 * time.Minute, PollInterval: 5 * time.Second},
 		Factory: func(config *smsinternalv1.SmsProviderConfig, client *http.Client) (core.Provider, error) {

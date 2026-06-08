@@ -21,7 +21,10 @@ func parseStatus(result string) (core.ProviderCodeResult, error) {
 	case result == "STATUS_WAIT_RESEND":
 		return core.ProviderCodeResult{Status: core.StatusPendingCode}, nil
 	case strings.HasPrefix(result, "STATUS_WAIT_RETRY"):
-		return core.ProviderCodeResult{Status: core.StatusAdditionalCodeRequested}, nil
+		return core.ProviderCodeResult{
+			Status: core.StatusAdditionalCodeRequested,
+			Code:   strings.TrimSpace(strings.TrimPrefix(strings.TrimPrefix(result, "STATUS_WAIT_RETRY"), ":")),
+		}, nil
 	case result == "STATUS_CANCEL":
 		return core.ProviderCodeResult{Status: core.StatusCanceled}, nil
 	default:
