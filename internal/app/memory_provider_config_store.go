@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"sort"
-	"strings"
 	"sync"
 
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
@@ -46,11 +45,11 @@ func (s *MemoryProviderConfigStore) UpsertProviderConfig(ctx context.Context, in
 	} else {
 		config.CreatedAt = cloneTimestamp(now)
 	}
-	if config.GetEnabled() && config.GetCredentialSecret() == "" {
-		return nil, core.NewError(core.CodeValidationFailed, "credential_secret is required for enabled sms provider", false)
+	if err := validateProviderConfigCredential(config); err != nil {
+		return nil, err
 	}
 	config.UpdatedAt = cloneTimestamp(now)
-	config.CredentialSecretSet = config.GetCredentialSecret() != ""
+	markProviderConfigCredentialState(config)
 	s.configs[config.GetProviderKey()] = cloneProviderConfig(config)
 	return cloneProviderConfig(config), nil
 }
@@ -119,15 +118,13 @@ func (s *MemoryProviderConfigStore) GetEnabledProviderConfig(ctx context.Context
 }
 
 func (s *MemoryProviderConfigStore) prepareForSave(input *smsinternalv1.SmsProviderConfig) (*smsinternalv1.SmsProviderConfig, error) {
-	config := cloneProviderConfig(input)
-	config.ProviderKey = normalizeProviderKey(config.GetProviderKey())
-	if config.GetProviderKey() == "" {
-		return nil, core.NewError(core.CodeValidationFailed, "provider_key is required", false)
+	config, err := normalizeProviderConfigInput(input)
+	if err != nil {
+		return nil, err
 	}
-	if s.providers != nil && !s.providers.Supports(config.GetProviderKey()) {
-		return nil, core.NewError(core.CodeUnsupportedOperation, "unsupported sms provider", false)
+	if err := validateProviderConfigSupported(s.providers, config.GetProviderKey()); err != nil {
+		return nil, err
 	}
-	config.CredentialSecret = strings.TrimSpace(config.GetCredentialSecret())
 	return config, nil
 }
 

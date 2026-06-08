@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"strings"
 
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	"github.com/byte-v-forge/sms/internal/core"
@@ -36,24 +35,22 @@ func (s *PostgresProviderConfigStore) DeleteProviderConfig(ctx context.Context, 
 }
 
 func (s *PostgresProviderConfigStore) normalizeForSave(ctx context.Context, input *smsinternalv1.SmsProviderConfig) (*smsinternalv1.SmsProviderConfig, error) {
-	config := cloneProviderConfig(input)
-	config.ProviderKey = normalizeProviderKey(config.GetProviderKey())
-	if config.GetProviderKey() == "" {
-		return nil, core.NewError(core.CodeValidationFailed, "provider_key is required", false)
+	config, err := normalizeProviderConfigInput(input)
+	if err != nil {
+		return nil, err
 	}
-	if !s.providers.Supports(config.GetProviderKey()) {
-		return nil, core.NewError(core.CodeUnsupportedOperation, "unsupported sms provider", false)
+	if err := validateProviderConfigSupported(s.providers, config.GetProviderKey()); err != nil {
+		return nil, err
 	}
-	config.CredentialSecret = strings.TrimSpace(config.GetCredentialSecret())
 	if config.GetCredentialSecret() == "" {
 		existing, err := s.GetProviderConfig(ctx, config.GetProviderKey())
 		if err == nil {
 			config.CredentialSecret = existing.GetCredentialSecret()
 		}
 	}
-	if config.GetEnabled() && config.GetCredentialSecret() == "" {
-		return nil, core.NewError(core.CodeValidationFailed, "credential_secret is required for enabled sms provider", false)
+	if err := validateProviderConfigCredential(config); err != nil {
+		return nil, err
 	}
-	config.CredentialSecretSet = strings.TrimSpace(config.GetCredentialSecret()) != ""
+	markProviderConfigCredentialState(config)
 	return config, nil
 }
