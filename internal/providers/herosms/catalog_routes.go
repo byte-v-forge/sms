@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/stringx"
 )
 
 func (c *Client) ListRouteOffers(ctx context.Context, query core.RouteOfferQuery) ([]core.RouteOffer, error) {
@@ -30,7 +31,7 @@ func (c *Client) ListRouteOffers(ctx context.Context, query core.RouteOfferQuery
 		if metadata.ID == "" {
 			metadata = heroSMSCountryByID(countries, offer.CountryID)
 		}
-		applicationKey := firstHeroSMSString(query.ApplicationKey, heroSMSPublicApplicationKey(offer.UpstreamServiceKey), offer.UpstreamServiceKey)
+		applicationKey := stringx.FirstNonEmpty(query.ApplicationKey, heroSMSPublicApplicationKey(offer.UpstreamServiceKey), offer.UpstreamServiceKey)
 		route := core.Route{
 			ProviderKey:        ProviderKey,
 			ApplicationKey:     applicationKey,
@@ -46,7 +47,7 @@ func (c *Client) ListRouteOffers(ctx context.Context, query core.RouteOfferQuery
 			ApplicationKey:       applicationKey,
 			ApplicationName:      heroSMSApplicationName(offer.UpstreamServiceKey),
 			CountryISO2:          metadata.ISO2,
-			CountryName:          firstHeroSMSString(metadata.Name, offer.CountryID),
+			CountryName:          stringx.FirstNonEmpty(metadata.Name, offer.CountryID),
 			CountryCallingCode:   metadata.CallingCode,
 			Price:                offer.Price,
 			AvailableCount:       offer.AvailableCount,
