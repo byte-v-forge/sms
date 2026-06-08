@@ -1,5 +1,5 @@
 import type { SmsPriceOffer } from '../proto/byte/v/forge/contracts/sms/v1/sms';
-import type { SmsProviderOption, SmsProviderSetting } from './sms-api';
+import type { SmsProviderConfig, SmsProviderPluginDescriptor } from '../proto/byte/v/forge/sms/internal/v1/sms_internal';
 
 export type OfferSort = 'price' | 'available' | 'provider';
 
@@ -10,7 +10,7 @@ export type ProviderChoice = {
   configured: boolean;
 };
 
-export function providerChoices(options: SmsProviderOption[], configs: SmsProviderSetting[]): ProviderChoice[] {
+export function providerChoices(options: SmsProviderPluginDescriptor[], configs: SmsProviderConfig[]): ProviderChoice[] {
   const configByKey = new Map(configs.map((config) => [config.provider_key, config]));
   const choices = options.map((option) => {
     const config = configByKey.get(option.provider_key);

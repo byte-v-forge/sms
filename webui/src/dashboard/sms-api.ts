@@ -11,26 +11,12 @@ import type {
   GetProviderBalanceResponse,
   ListOrderCodesResponse,
   ListOrdersResponse,
+  ListProviderConfigsResponse,
+  ListProviderPluginsResponse,
   SmsProviderConfig,
-  SmsProviderPluginDescriptor
+  UpsertProviderConfigRequest,
+  UpsertProviderConfigResponse
 } from '../proto/byte/v/forge/sms/internal/v1/sms_internal';
-
-export type SmsProviderOption = Pick<SmsProviderPluginDescriptor, 'provider_key' | 'display_name'>;
-export type SmsProviderSetting = Pick<SmsProviderConfig, 'provider_key' | 'enabled'> & {
-  api_key_set?: boolean;
-};
-export type ListSmsProviderSettingsResponse = {
-  provider_options?: SmsProviderOption[];
-  providers?: SmsProviderSetting[];
-};
-export type SaveSmsProviderSettingRequest = {
-  provider_key: string;
-  enabled?: boolean;
-  api_key?: string;
-};
-export type SaveSmsProviderSettingResponse = {
-  provider?: SmsProviderSetting;
-};
 
 export type SmsPriceOfferQuery = {
   applicationKey: string;
@@ -41,7 +27,8 @@ export type SmsPriceOfferQuery = {
 };
 
 export const smsKeys = {
-  settingsProviders: ['sms', 'settings', 'providers'] as const,
+  providerPlugins: ['sms', 'settings', 'provider-plugins'] as const,
+  providerConfigs: ['sms', 'settings', 'provider-configs'] as const,
   orders: ['sms', 'orders'] as const,
   orderCodesRoot: ['sms', 'order-codes'] as const,
   orderCodes: (orderIds: string[]) => ['sms', 'order-codes', orderIds.join(',')] as const,
@@ -49,15 +36,20 @@ export const smsKeys = {
   priceOffers: (query?: SmsPriceOfferQuery) => ['sms', 'price-offers', query] as const
 };
 
-export function listSmsProviderSettings() {
-  return api<ListSmsProviderSettingsResponse>('/api/sms/settings/providers');
+export function listSmsProviderPlugins() {
+  return api<ListProviderPluginsResponse>('/api/sms/settings/provider-plugins');
 }
 
-export function saveSmsProviderSetting(input: SaveSmsProviderSettingRequest) {
-  return api<SaveSmsProviderSettingResponse>('/api/sms/settings/providers', { method: 'POST', body: JSON.stringify(input) });
+export function listSmsProviderConfigs() {
+  return api<ListProviderConfigsResponse>('/api/sms/settings/providers');
 }
 
-export function deleteSmsProviderSetting(providerKey: string) {
+export function saveSmsProviderConfig(config: SmsProviderConfig) {
+  const request: UpsertProviderConfigRequest = { config };
+  return api<UpsertProviderConfigResponse>('/api/sms/settings/providers', { method: 'POST', body: JSON.stringify(request) });
+}
+
+export function deleteSmsProviderConfig(providerKey: string) {
   return api<DeleteProviderConfigResponse>(`/api/sms/settings/providers/${encodeURIComponent(providerKey)}`, { method: 'DELETE' });
 }
 

@@ -4,25 +4,23 @@ import { toast } from 'sonner';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Outlet } from 'react-router';
 import type { SmsPriceOffer } from '../proto/byte/v/forge/contracts/sms/v1/sms';
-import type { SmsOrderCodeView, SmsOrderView } from '../proto/byte/v/forge/sms/internal/v1/sms_internal';
+import type { SmsOrderCodeView, SmsOrderView, SmsProviderConfig, SmsProviderPluginDescriptor } from '../proto/byte/v/forge/sms/internal/v1/sms_internal';
 import { createHotStreamURL, useHotStreamInvalidation, WorkspaceRoutedPanel } from '../ui';
 import {
   acquireSmsFromOffer,
   cancelSmsOrder,
-  deleteSmsProviderSetting,
+  deleteSmsProviderConfig,
+  listSmsProviderConfigs,
+  listSmsProviderPlugins,
   listSmsOrderCodes,
   listSmsOrders,
-  listSmsProviderSettings,
-  saveSmsProviderSetting,
-  smsKeys,
-  type SaveSmsProviderSettingRequest,
-  type SmsProviderOption,
-  type SmsProviderSetting
+  saveSmsProviderConfig,
+  smsKeys
 } from './sms-api';
 
 export type SmsPageContext = {
-  providerOptions: SmsProviderOption[];
-  configs: SmsProviderSetting[];
+  providerOptions: SmsProviderPluginDescriptor[];
+  configs: SmsProviderConfig[];
   settingsBusy: boolean;
   orders: SmsOrderView[];
   codes: SmsOrderCodeView[];
@@ -32,22 +30,23 @@ export type SmsPageContext = {
   deletingProviderKey?: string;
   onAcquire: (offer: SmsPriceOffer) => void;
   onCancel: (id: string) => void;
-  onSave: (input: SaveSmsProviderSettingRequest) => void;
+  onSave: (config: SmsProviderConfig) => void;
   onDelete: (id: string) => void;
 };
 
 export function SmsPage() {
   const queryClient = useQueryClient();
-  const settingsQuery = useQuery({ queryKey: smsKeys.settingsProviders, queryFn: listSmsProviderSettings });
+  const providerPluginsQuery = useQuery({ queryKey: smsKeys.providerPlugins, queryFn: listSmsProviderPlugins });
+  const providerConfigsQuery = useQuery({ queryKey: smsKeys.providerConfigs, queryFn: listSmsProviderConfigs });
   const ordersQuery = useQuery({ queryKey: smsKeys.orders, queryFn: listSmsOrders });
   const orderIds = (ordersQuery.data?.orders || []).map((item) => item.order?.order_id || '').filter(Boolean);
   const codesQuery = useQuery({ queryKey: smsKeys.orderCodes(orderIds), queryFn: () => listSmsOrderCodes(orderIds, 5), enabled: orderIds.length > 0 });
-  const configs = settingsQuery.data?.providers || [];
-  const options = settingsQuery.data?.provider_options || [];
+  const configs = providerConfigsQuery.data?.configs || [];
+  const options = providerPluginsQuery.data?.plugins || [];
   const streamRules = useMemo(() => [
     { queryKey: smsKeys.orders, eventTypes: ['sms.order.updated'], resourceTypes: ['sms.order'] },
     { queryKey: smsKeys.orderCodesRoot, eventTypes: ['sms.order.updated'], resourceTypes: ['sms.order'] },
-    { queryKey: smsKeys.settingsProviders, eventTypes: ['sms.provider_config.updated', 'sms.provider_config.deleted'], resourceTypes: ['sms.provider_config'] }
+    { queryKey: smsKeys.providerConfigs, eventTypes: ['sms.provider_config.updated', 'sms.provider_config.deleted'], resourceTypes: ['sms.provider_config'] }
   ], []);
 
   useHotStreamInvalidation({
@@ -55,8 +54,8 @@ export function SmsPage() {
     rules: streamRules
   });
 
-  const saveMutation = useMutation({ mutationFn: saveSmsProviderSetting, onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: smsKeys.settingsProviders }); toast.success('接码源已保存'); }, onError: showError });
-  const deleteMutation = useMutation({ mutationFn: deleteSmsProviderSetting, onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: smsKeys.settingsProviders }); toast.success('接码源已删除'); }, onError: showError });
+  const saveMutation = useMutation({ mutationFn: saveSmsProviderConfig, onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: smsKeys.providerConfigs }); toast.success('接码源已保存'); }, onError: showError });
+  const deleteMutation = useMutation({ mutationFn: deleteSmsProviderConfig, onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: smsKeys.providerConfigs }); toast.success('接码源已删除'); }, onError: showError });
   const cancelMutation = useMutation({ mutationFn: cancelSmsOrder, onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: smsKeys.orders }); toast.success('号码已取消'); }, onError: showError });
   const acquireMutation = useMutation({
     mutationFn: acquireSmsFromOffer,
@@ -73,7 +72,7 @@ export function SmsPage() {
   const pageContext: SmsPageContext = {
     providerOptions: options,
     configs,
-    settingsBusy: settingsQuery.isLoading,
+    settingsBusy: providerPluginsQuery.isLoading || providerConfigsQuery.isLoading,
     orders: ordersQuery.data?.orders || [],
     codes: codesQuery.data?.codes || [],
     cancelingId: cancelMutation.variables,

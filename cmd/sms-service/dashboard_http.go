@@ -58,6 +58,7 @@ func startDashboardHTTP(ctx context.Context, listenAddr, staticDir string, admin
 
 func (s *dashboardServer) routes() http.Handler {
 	mux := http.NewServeMux()
+	mux.HandleFunc("/settings/provider-plugins", s.handleSMSSettingsProviderPlugins)
 	mux.HandleFunc("/settings/providers/", s.handleSMSSettingsProvider)
 	mux.HandleFunc("/settings/providers", s.handleSMSSettingsProviders)
 	mux.HandleFunc("/price-offers", s.handleSMSPriceOffers)
@@ -81,11 +82,6 @@ func (s *dashboardServer) handleHealth(w http.ResponseWriter, _ *http.Request) {
 
 func readProtoJSON(r *http.Request, dst proto.Message) error {
 	return protojsonhttp.ReadRequest(r, dst)
-}
-
-func readJSON(r *http.Request, dst any) error {
-	defer r.Body.Close()
-	return json.NewDecoder(r.Body).Decode(dst)
 }
 
 func writeProtoJSON(w http.ResponseWriter, status int, value proto.Message) {

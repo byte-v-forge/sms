@@ -5,7 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { Badge, Button, Card, Checkbox, Input, Select } from '../ui';
 import type { SmsPriceOffer } from '../proto/byte/v/forge/contracts/sms/v1/sms';
-import { listSmsPriceOffers, smsKeys, type SmsPriceOfferQuery, type SmsProviderOption, type SmsProviderSetting } from './sms-api';
+import type { SmsProviderConfig, SmsProviderPluginDescriptor } from '../proto/byte/v/forge/sms/internal/v1/sms_internal';
+import { listSmsPriceOffers, smsKeys, type SmsPriceOfferQuery } from './sms-api';
 import { bestOffer, enabledProviderKeys, filterAndSortOffers, providerChoices, type OfferSort, type ProviderChoice } from './sms-compare-data';
 import { CompareSummary, OffersTable } from './sms-compare-table';
 
@@ -19,8 +20,8 @@ type CompareQuery = {
 };
 
 type SmsCompareTabProps = {
-  providerOptions: SmsProviderOption[];
-  configs: SmsProviderSetting[];
+  providerOptions: SmsProviderPluginDescriptor[];
+  configs: SmsProviderConfig[];
   acquiringOfferId?: string;
   onAcquire: (offer: SmsPriceOffer) => void;
 };
