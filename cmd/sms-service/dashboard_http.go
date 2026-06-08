@@ -12,12 +12,12 @@ import (
 	"strings"
 	"time"
 
-	smsv1 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/sms/v1"
-	"github.com/byte-v-forge/common-lib/hotstream"
-	"github.com/byte-v-forge/common-lib/httpsse"
-	"github.com/byte-v-forge/common-lib/protojsonhttp"
+	smsv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/sms/v1"
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	"github.com/byte-v-forge/sms/internal/app"
+	"github.com/byte-v-forge/sms/internal/platform/hotstream"
+	"github.com/byte-v-forge/sms/internal/platform/httpsse"
+	"github.com/byte-v-forge/sms/internal/platform/protojsonhttp"
 	"google.golang.org/protobuf/proto"
 )
 

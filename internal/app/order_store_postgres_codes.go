@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/byte-v-forge/common-lib/eventoutbox"
-	"github.com/byte-v-forge/common-lib/secretref"
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/eventoutbox"
+	"github.com/byte-v-forge/sms/internal/platform/secretref"
 	"github.com/jackc/pgx/v5"
 )
 

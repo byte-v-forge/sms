@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/byte-v-forge/common-lib/stringx"
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/stringx"
 	"github.com/byte-v-forge/sms/internal/providers/handlerapi"
 )
 

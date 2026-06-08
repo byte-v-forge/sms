@@ -4,9 +4,9 @@ import (
 	"errors"
 	"time"
 
-	smsv1 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/sms/v1"
-	"github.com/byte-v-forge/common-lib/secretref"
+	smsv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/sms/v1"
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/secretref"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

@@ -5,19 +5,18 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/byte-v-forge/common-lib/eventoutbox"
-	"github.com/byte-v-forge/common-lib/redisx"
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/eventoutbox"
 )
 
 const terminalOrderTTL = 30 * time.Minute
 
 type RedisOrderStore struct {
-	store *redisx.StringStore
+	store TTLStringStore
 	clock core.Clock
 }
 
-func NewRedisOrderStore(store *redisx.StringStore, clock core.Clock) *RedisOrderStore {
+func NewRedisOrderStore(store TTLStringStore, clock core.Clock) *RedisOrderStore {
 	if clock == nil {
 		clock = SystemClock{}
 	}

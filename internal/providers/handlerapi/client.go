@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/byte-v-forge/common-lib/httpx"
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/httpx"
 )
 
 type HTTPDoer interface {

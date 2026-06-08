@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/byte-v-forge/common-lib/eventbus"
-	"github.com/byte-v-forge/common-lib/eventoutbox"
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	"github.com/byte-v-forge/sms/internal/core"
 	smseventcatalog "github.com/byte-v-forge/sms/internal/eventcatalog"
+	"github.com/byte-v-forge/sms/internal/platform/eventbus"
+	"github.com/byte-v-forge/sms/internal/platform/eventoutbox"
 )
 
 func (b *OrderEventRecorder) OrderPollRequested(ctx context.Context, order core.Order, reason string) (eventoutbox.Record, error) {

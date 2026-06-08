@@ -1,0 +1,330 @@
+syntax = "proto3";
+
+package byte.v.forge.contracts.sms.v1;
+
+import "byte/v/forge/contracts/common/v1/common.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "ByteVForge.Contracts.Sms.V1";
+option go_package = "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/sms/v1;smsv1";
+option java_multiple_files = true;
+option java_outer_classname = "SmsProto";
+option java_package = "com.bytevforge.contracts.sms.v1";
+option php_namespace = "ByteVForge\\Contracts\\Sms\\V1";
+
+service SmsOrderService {
+  rpc AcquireNumber(AcquireNumberRequest) returns (AcquireNumberResponse);
+  rpc GetOrder(GetOrderRequest) returns (GetOrderResponse);
+  rpc ResolveSmsCodeSecret(ResolveSmsCodeSecretRequest) returns (ResolveSmsCodeSecretResponse);
+  rpc MarkMessageSent(MarkMessageSentRequest) returns (MarkMessageSentResponse);
+  rpc RequestAdditionalCode(RequestAdditionalCodeRequest) returns (RequestAdditionalCodeResponse);
+  rpc CompleteOrder(CompleteOrderRequest) returns (CompleteOrderResponse);
+  rpc CancelOrder(CancelOrderRequest) returns (CancelOrderResponse);
+}
+
+service SmsCatalogService {
+  rpc ListSmsProviders(ListSmsProvidersRequest) returns (ListSmsProvidersResponse);
+  rpc ListSmsApplications(ListSmsApplicationsRequest) returns (ListSmsApplicationsResponse);
+  rpc ListSmsCountries(ListSmsCountriesRequest) returns (ListSmsCountriesResponse);
+  rpc ListSmsPriceOffers(ListSmsPriceOffersRequest) returns (ListSmsPriceOffersResponse);
+  rpc RecommendSmsRoutes(RecommendSmsRoutesRequest) returns (RecommendSmsRoutesResponse);
+}
+
+enum SmsOrderStatus {
+  SMS_ORDER_STATUS_UNSPECIFIED = 0;
+  SMS_ORDER_STATUS_PENDING_CODE = 1;
+  SMS_ORDER_STATUS_MESSAGE_SENT = 2;
+  SMS_ORDER_STATUS_CODE_RECEIVED = 3;
+  SMS_ORDER_STATUS_ADDITIONAL_CODE_REQUESTED = 4;
+  SMS_ORDER_STATUS_COMPLETED = 5;
+  SMS_ORDER_STATUS_CANCELED = 6;
+  SMS_ORDER_STATUS_EXPIRED = 7;
+  SMS_ORDER_STATUS_FAILED = 8;
+  SMS_ORDER_STATUS_ACQUIRE_REQUESTED = 9;
+}
+
+enum SmsErrorCode {
+  SMS_ERROR_CODE_UNSPECIFIED = 0;
+  SMS_ERROR_CODE_VALIDATION_FAILED = 1;
+  SMS_ERROR_CODE_ROUTE_NOT_FOUND = 2;
+  SMS_ERROR_CODE_ORDER_NOT_FOUND = 3;
+  SMS_ERROR_CODE_ORDER_ALREADY_FINALIZED = 4;
+  SMS_ERROR_CODE_NO_NUMBER_AVAILABLE = 5;
+  reserved 6;
+  SMS_ERROR_CODE_RATE_LIMITED = 7;
+  SMS_ERROR_CODE_SUPPLY_UNAVAILABLE = 8;
+  SMS_ERROR_CODE_UPSTREAM_REJECTED = 9;
+  SMS_ERROR_CODE_TIMEOUT = 10;
+  SMS_ERROR_CODE_UNSUPPORTED_OPERATION = 11;
+  SMS_ERROR_CODE_ORDER_EXPIRED = 12;
+  SMS_ERROR_CODE_CANCEL_NOT_ALLOWED = 13;
+  SMS_ERROR_CODE_INSUFFICIENT_BALANCE = 14;
+  SMS_ERROR_CODE_INTERNAL = 15;
+}
+
+message SmsError {
+  SmsErrorCode code = 1;
+  string message = 2;
+  bool retryable = 3;
+}
+
+message DecimalMoney {
+  string currency_code = 1;
+  string amount_decimal = 2;
+}
+
+message PhoneNumber {
+  string e164_number = 1;
+  string national_number = 2;
+  string country_iso2 = 3;
+  string country_calling_code = 4;
+}
+
+message SmsTarget {
+  string application_key = 1;
+  string country_iso2 = 2;
+  string country_calling_code = 3;
+}
+
+message SmsOfferRef {
+  string offer_id = 1;
+  string provider_key = 2;
+  SmsTarget target = 3;
+}
+
+message SmsNumberAcquireParams {
+  SmsOfferRef offer_ref = 1;
+  string application_key = 10;
+  string country_iso2 = 11;
+  string country_calling_code = 12;
+  int32 min_available_count = 13;
+  SmsRouteFailurePolicy route_failure_policy = 14;
+  DecimalMoney max_price = 15;
+  DecimalMoney min_price = 16;
+}
+
+message SmsCode {
+  byte.v.forge.contracts.common.v1.SecretRef secret_ref = 1;
+  google.protobuf.Timestamp received_at = 2;
+}
+
+message SmsOrder {
+  string order_id = 1;
+  string request_id = 2;
+  SmsTarget target = 3;
+  PhoneNumber phone_number = 4;
+  SmsOrderStatus status = 5;
+  DecimalMoney price = 6;
+  google.protobuf.Timestamp acquired_at = 7;
+  google.protobuf.Timestamp expires_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+  SmsError last_error = 10;
+  bool can_request_additional_code = 11;
+  google.protobuf.Timestamp cancel_allowed_at = 12;
+}
+
+message AcquireNumberRequest {
+  string request_id = 1;
+  google.protobuf.Duration lease_duration = 6;
+  SmsNumberAcquireParams acquire_params = 8;
+}
+
+message AcquireNumberResponse {
+  SmsOrder order = 1;
+  SmsError error = 2;
+}
+
+message GetOrderRequest {
+  string order_id = 1;
+}
+
+message GetOrderResponse {
+  SmsOrder order = 1;
+  SmsError error = 2;
+}
+
+message ResolveSmsCodeSecretRequest {
+  string order_id = 1;
+  byte.v.forge.contracts.common.v1.SecretRef secret_ref = 2;
+}
+
+message ResolveSmsCodeSecretResponse {
+  string code_value = 1;
+  SmsError error = 2;
+}
+
+message MarkMessageSentRequest {
+  string order_id = 1;
+  string request_id = 2;
+}
+
+message RequestAdditionalCodeRequest {
+  string order_id = 1;
+  string request_id = 2;
+}
+
+message CompleteOrderRequest {
+  string order_id = 1;
+  string request_id = 2;
+}
+
+message CancelOrderRequest {
+  string order_id = 1;
+  string request_id = 2;
+  string reason = 3;
+}
+
+message MarkMessageSentResponse {
+  SmsOrder order = 1;
+  SmsError error = 2;
+}
+
+message RequestAdditionalCodeResponse {
+  SmsOrder order = 1;
+  SmsError error = 2;
+}
+
+message CompleteOrderResponse {
+  SmsOrder order = 1;
+  SmsError error = 2;
+}
+
+message CancelOrderResponse {
+  SmsOrder order = 1;
+  SmsError error = 2;
+}
+
+message SmsApplicationInfo {
+  string application_key = 1;
+  string display_name = 2;
+}
+
+message SmsCountry {
+  string country_iso2 = 1;
+  string name = 2;
+  string country_calling_code = 3;
+}
+
+message SmsPriceOffer {
+  string application_key = 2;
+  string application_name = 3;
+  string country_iso2 = 4;
+  string country_name = 5;
+  string country_calling_code = 6;
+  DecimalMoney price = 7;
+  int32 available_count = 8;
+  string provider_key = 9;
+  string provider_display_name = 10;
+  bool supports_cancel = 11;
+  bool supports_additional_code = 12;
+  bool requires_mark_message_sent = 13;
+  google.protobuf.Timestamp observed_at = 14;
+  reserved 15, 16;
+  reserved "upstream_provider_id", "upstream_provider_name";
+  SmsOfferRef offer_ref = 17;
+}
+
+enum SmsRouteStrategy {
+  SMS_ROUTE_STRATEGY_UNSPECIFIED = 0;
+  SMS_ROUTE_STRATEGY_BALANCED = 1;
+  SMS_ROUTE_STRATEGY_LOWEST_PRICE = 2;
+  SMS_ROUTE_STRATEGY_MOST_AVAILABLE = 3;
+}
+
+message SmsRoutePolicy {
+  SmsRouteStrategy strategy = 1;
+  DecimalMoney max_price = 2;
+  int32 limit = 3;
+  int32 min_available_count = 5;
+  SmsRouteFailurePolicy failure_policy = 6;
+  DecimalMoney min_price = 7;
+}
+
+message SmsRouteFailurePolicy {
+  string scope_key = 1;
+  int32 failure_threshold = 2;
+  int32 failure_window_seconds = 3;
+  int32 disable_ttl_seconds = 4;
+}
+
+message RecommendSmsRoutesRequest {
+  SmsTarget target = 1;
+  SmsRoutePolicy policy = 2;
+  repeated string provider_keys = 3;
+}
+
+message SmsRouteRecommendation {
+  SmsPriceOffer offer = 1;
+  int32 score = 2;
+}
+
+message RecommendSmsRoutesResponse {
+  repeated SmsRouteRecommendation recommendations = 1;
+  SmsError error = 2;
+}
+
+message SmsProviderInfo {
+  string provider_key = 1;
+  string display_name = 2;
+  bool supports_balance = 3;
+  bool supports_catalog = 4;
+  bool supports_additional_code = 5;
+  bool requires_mark_message_sent = 6;
+}
+
+message ListSmsProvidersRequest {}
+
+message ListSmsProvidersResponse {
+  repeated SmsProviderInfo providers = 1;
+  SmsError error = 2;
+}
+
+message ListSmsApplicationsRequest {
+  string provider_key = 1;
+}
+
+message ListSmsApplicationsResponse {
+  repeated SmsApplicationInfo applications = 1;
+  SmsError error = 2;
+}
+
+message ListSmsCountriesRequest {
+  string provider_key = 1;
+}
+
+message ListSmsCountriesResponse {
+  repeated SmsCountry countries = 1;
+  SmsError error = 2;
+}
+
+message ListSmsPriceOffersRequest {
+  string application_key = 1;
+  string country_iso2 = 2;
+  string country_calling_code = 3;
+  string provider_key = 4;
+}
+
+message ListSmsPriceOffersResponse {
+  repeated SmsPriceOffer offers = 1;
+  SmsError error = 2;
+}
+
+message SmsOrderAcquiredEvent {
+  byte.v.forge.contracts.common.v1.EventMetadata metadata = 1;
+  SmsOrder order = 2;
+}
+
+message SmsCodeReceivedEvent {
+  byte.v.forge.contracts.common.v1.EventMetadata metadata = 1;
+  string order_id = 2;
+  SmsCode code = 3;
+}
+
+message SmsOrderStatusChangedEvent {
+  byte.v.forge.contracts.common.v1.EventMetadata metadata = 1;
+  string order_id = 2;
+  SmsOrderStatus previous_status = 3;
+  SmsOrderStatus current_status = 4;
+  SmsError error = 5;
+}

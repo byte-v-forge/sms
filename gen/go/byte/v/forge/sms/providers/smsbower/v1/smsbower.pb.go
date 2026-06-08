@@ -7,7 +7,7 @@
 package smsbowerv1
 
 import (
-	v11 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/sms/v1"
+	v11 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/sms/v1"
 	v1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"

@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/byte-v-forge/common-lib/eventbus"
-	"github.com/byte-v-forge/common-lib/hotstream"
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
+	"github.com/byte-v-forge/sms/internal/platform/eventbus"
+	"github.com/byte-v-forge/sms/internal/platform/hotstream"
 )
 
 func (s *ProviderAdminService) publishProviderConfig(ctx context.Context, eventType string, config *smsinternalv1.SmsProviderConfig) {

@@ -5,11 +5,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/byte-v-forge/common-lib/eventbus"
-	"github.com/byte-v-forge/common-lib/eventcatalog"
-	"github.com/byte-v-forge/common-lib/eventoutbox"
-	commonv1 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/common/v1"
+	commonv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/common/v1"
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/eventbus"
+	"github.com/byte-v-forge/sms/internal/platform/eventcatalog"
+	"github.com/byte-v-forge/sms/internal/platform/eventoutbox"
 	"google.golang.org/protobuf/proto"
 )
 

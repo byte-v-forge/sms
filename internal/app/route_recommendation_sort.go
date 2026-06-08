@@ -4,7 +4,7 @@ import (
 	"sort"
 	"strings"
 
-	smsv1 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/sms/v1"
+	smsv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/sms/v1"
 )
 
 func sortRouteCandidates(candidates []routeCandidate, strategy smsv1.SmsRouteStrategy) {

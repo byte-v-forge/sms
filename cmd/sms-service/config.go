@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/byte-v-forge/common-lib/envx"
-	"github.com/byte-v-forge/common-lib/natseventbus"
+	"github.com/byte-v-forge/sms/internal/platform/envx"
+	"github.com/byte-v-forge/sms/internal/platform/natseventbus"
 )
 
 type config struct {

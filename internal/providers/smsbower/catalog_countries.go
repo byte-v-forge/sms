@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/byte-v-forge/common-lib/geox"
-	"github.com/byte-v-forge/common-lib/stringx"
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/geox"
+	"github.com/byte-v-forge/sms/internal/platform/stringx"
 )
 
 func (c *Client) ListCountries(ctx context.Context) ([]Country, error) {

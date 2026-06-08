@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/byte-v-forge/common-lib/eventbus"
-	"github.com/byte-v-forge/common-lib/eventcatalog"
-	"github.com/byte-v-forge/common-lib/eventoutbox"
-	smsv1 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/sms/v1"
+	smsv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/sms/v1"
 	"github.com/byte-v-forge/sms/internal/app"
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/eventbus"
+	"github.com/byte-v-forge/sms/internal/platform/eventcatalog"
+	"github.com/byte-v-forge/sms/internal/platform/eventoutbox"
 )
 
 func (b *OrderEventRecorder) CodeReceived(ctx context.Context, order core.Order, code core.SMSCode) (eventoutbox.Record, error) {

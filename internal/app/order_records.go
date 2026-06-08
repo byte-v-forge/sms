@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/byte-v-forge/common-lib/eventoutbox"
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/eventoutbox"
 )
 
 func (s *OrderService) orderAcquiredRecords(ctx context.Context, order core.Order, reason string) ([]eventoutbox.Record, error) {

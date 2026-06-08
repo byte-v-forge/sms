@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package byte.v.forge.contracts.common.v1;
+
+import "byte/v/forge/contracts/common/v1/common.proto";
+
+option csharp_namespace = "ByteVForge.Contracts.Common.V1";
+option go_package = "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/common/v1;commonv1";
+option java_multiple_files = true;
+option java_outer_classname = "EventbusProto";
+option java_package = "com.bytevforge.contracts.common.v1";
+option php_namespace = "ByteVForge\\Contracts\\Common\\V1";
+
+message EventEnvelope {
+  EventMetadata metadata = 1;
+  string subject = 2;
+  string payload_type = 3;
+  bytes payload = 4;
+  string data_content_type = 5;
+  map<string, string> extensions = 6;
+}
+
+enum EventKind {
+  EVENT_KIND_UNSPECIFIED = 0;
+  EVENT_KIND_FACT = 1;
+  EVENT_KIND_COMMAND = 2;
+}
+
+message EventDefinition {
+  string subject = 1;
+  string event_name = 2;
+  string event_version = 3;
+  EventKind kind = 4;
+  string payload_type = 5;
+  string owner_service = 6;
+  string consumer_durable = 7;
+  bool retryable = 8;
+  int32 max_deliveries = 9;
+  int32 retry_delay_seconds = 10;
+}
+
+message EventCatalog {
+  string stream_name = 1;
+  string stream_subject = 2;
+  repeated EventDefinition definitions = 3;
+}
+
+message EventPublishAck {
+  string stream = 1;
+  uint64 sequence = 2;
+  bool duplicate = 3;
+}
+
+message DeadLetterEvent {
+  EventMetadata metadata = 1;
+  string original_subject = 2;
+  string original_event_id = 3;
+  string original_event_type = 4;
+  string original_event_version = 5;
+  string original_source = 6;
+  string consumer_durable = 7;
+  int32 delivery_attempt = 8;
+  string error_code = 9;
+  string error_message = 10;
+  string correlation_id = 11;
+}

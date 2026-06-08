@@ -8,8 +8,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/byte-v-forge/common-lib/httpx"
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/httpx"
 )
 
 func (c *Client) getJSON(ctx context.Context, path string, params url.Values, authenticated bool, out any) error {

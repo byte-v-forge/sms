@@ -3,8 +3,8 @@ package fivesim
 import (
 	"strings"
 
-	"github.com/byte-v-forge/common-lib/stringx"
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/stringx"
 )
 
 func orderToCodeResult(payload order) core.ProviderCodeResult {

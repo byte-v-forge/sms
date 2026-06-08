@@ -4,14 +4,14 @@ import (
 	"context"
 	"strings"
 
-	"github.com/byte-v-forge/common-lib/eventbus"
-	"github.com/byte-v-forge/common-lib/eventcatalog"
-	"github.com/byte-v-forge/common-lib/eventoutbox"
-	smsv1 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/sms/v1"
+	smsv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/sms/v1"
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	"github.com/byte-v-forge/sms/internal/app"
 	"github.com/byte-v-forge/sms/internal/core"
 	smseventcatalog "github.com/byte-v-forge/sms/internal/eventcatalog"
+	"github.com/byte-v-forge/sms/internal/platform/eventbus"
+	"github.com/byte-v-forge/sms/internal/platform/eventcatalog"
+	"github.com/byte-v-forge/sms/internal/platform/eventoutbox"
 )
 
 func (b *OrderEventRecorder) OrderAcquireRequested(ctx context.Context, order core.Order, route core.Route, reason string) (eventoutbox.Record, error) {

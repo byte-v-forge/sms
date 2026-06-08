@@ -1,8 +1,8 @@
 package app
 
 import (
-	"github.com/byte-v-forge/common-lib/eventbus"
-	"github.com/byte-v-forge/common-lib/eventoutbox"
+	"github.com/byte-v-forge/sms/internal/platform/eventbus"
+	"github.com/byte-v-forge/sms/internal/platform/eventoutbox"
 )
 
 func NewOrderOutboxProcessor(store *PostgresOrderStore, publisher eventbus.Publisher) eventoutbox.PendingProcessor {

@@ -1,6 +1,6 @@
 package eventcatalog
 
-import commoncatalog "github.com/byte-v-forge/common-lib/eventcatalog"
+import commoncatalog "github.com/byte-v-forge/sms/internal/platform/eventcatalog"
 
 var (
 	OrderAcquireRequested = commoncatalog.Definition{

@@ -4,9 +4,9 @@ import (
 	"sort"
 	"strings"
 
-	smsv1 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/sms/v1"
-	"github.com/byte-v-forge/common-lib/pagex"
+	smsv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/sms/v1"
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/pagex"
 )
 
 func sortedProviderFilterKeys(providerFilter map[string]struct{}) []string {

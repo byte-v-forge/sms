@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	smsv1 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/sms/v1"
-	"github.com/byte-v-forge/common-lib/httpclient"
+	smsv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/sms/v1"
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/httpclient"
 	providerspi "github.com/byte-v-forge/sms/internal/providers/spi"
 )
 

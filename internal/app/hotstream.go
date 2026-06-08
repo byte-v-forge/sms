@@ -6,11 +6,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/byte-v-forge/common-lib/eventbus"
-	"github.com/byte-v-forge/common-lib/eventoutbox"
-	"github.com/byte-v-forge/common-lib/hotstream"
-	"github.com/byte-v-forge/common-lib/secretref"
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/eventbus"
+	"github.com/byte-v-forge/sms/internal/platform/eventoutbox"
+	"github.com/byte-v-forge/sms/internal/platform/hotstream"
+	"github.com/byte-v-forge/sms/internal/platform/secretref"
 )
 
 const (

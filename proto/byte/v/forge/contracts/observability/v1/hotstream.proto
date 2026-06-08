@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package byte.v.forge.contracts.observability.v1;
+
+import "byte/v/forge/contracts/common/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/observability/v1;observabilityv1";
+
+message HotStreamEvent {
+  byte.v.forge.contracts.common.v1.EventMetadata metadata = 1;
+  reserved 2, 3;
+  reserved "event_type", "source_service";
+  string resource_type = 4;
+  string resource_id = 5;
+  string scope = 6;
+  reserved 7, 8, 9;
+  reserved "occurred_at", "correlation_id", "trace_id";
+  map<string, string> attributes = 10;
+}
+
+enum HotStreamControlKind {
+  HOT_STREAM_CONTROL_KIND_UNSPECIFIED = 0;
+  HOT_STREAM_CONTROL_KIND_CONNECTED = 1;
+  HOT_STREAM_CONTROL_KIND_HEARTBEAT = 2;
+  HOT_STREAM_CONTROL_KIND_RESYNC_REQUIRED = 3;
+  HOT_STREAM_CONTROL_KIND_ERROR = 4;
+}
+
+message HotStreamControlEvent {
+  HotStreamControlKind kind = 1;
+  string message = 2;
+  google.protobuf.Timestamp occurred_at = 3;
+  map<string, string> attributes = 4;
+}

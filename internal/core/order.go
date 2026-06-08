@@ -3,7 +3,7 @@ package core
 import (
 	"time"
 
-	commonv1 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/common/v1"
+	commonv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/common/v1"
 )
 
 type SMSCode struct {

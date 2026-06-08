@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/byte-v-forge/common-lib/httpx"
+	"github.com/byte-v-forge/sms/internal/platform/httpx"
 
-	smsv1 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/sms/v1"
+	smsv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/sms/v1"
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	"github.com/byte-v-forge/sms/internal/app"
 	"google.golang.org/protobuf/proto"

@@ -3,8 +3,8 @@ package app
 import (
 	"context"
 
-	"github.com/byte-v-forge/common-lib/eventoutbox"
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/eventoutbox"
 )
 
 type OrderService struct {

@@ -4,9 +4,9 @@ import (
 	"context"
 	"strings"
 
-	commonv1 "github.com/byte-v-forge/common-lib/gen/go/byte/v/forge/contracts/common/v1"
-	"github.com/byte-v-forge/common-lib/secretref"
+	commonv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/common/v1"
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/secretref"
 )
 
 func (s *OrderService) ResolveCodeSecret(ctx context.Context, orderID string, ref *commonv1.SecretRef) (string, error) {

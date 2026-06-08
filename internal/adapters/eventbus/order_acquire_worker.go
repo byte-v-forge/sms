@@ -6,11 +6,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/byte-v-forge/common-lib/eventbus"
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	"github.com/byte-v-forge/sms/internal/app"
 	"github.com/byte-v-forge/sms/internal/core"
 	smseventcatalog "github.com/byte-v-forge/sms/internal/eventcatalog"
+	"github.com/byte-v-forge/sms/internal/platform/eventbus"
 )
 
 const defaultAcquireRetryDelay = 15 * time.Second

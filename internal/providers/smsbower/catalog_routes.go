@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/byte-v-forge/common-lib/stringx"
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/stringx"
 )
 
 func (c *Client) ListRouteOffers(ctx context.Context, query core.RouteOfferQuery) ([]core.RouteOffer, error) {

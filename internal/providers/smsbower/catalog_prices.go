@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"net/url"
 
-	"github.com/byte-v-forge/common-lib/stringx"
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/stringx"
 )
 
 func (c *Client) ListPriceOffers(ctx context.Context, serviceKey, countryID string) ([]PriceOffer, error) {
