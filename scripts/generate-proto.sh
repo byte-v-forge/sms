@@ -16,9 +16,6 @@ protoc -I "$ROOT/proto" \
   "$ROOT/proto/byte/v/forge/contracts/common/v1/eventbus.proto" \
   "$ROOT/proto/byte/v/forge/contracts/observability/v1/hotstream.proto" \
   "$ROOT/proto/byte/v/forge/contracts/sms/v1/sms.proto" \
-  "$ROOT/proto/byte/v/forge/sms/internal/v1/sms_internal.proto" \
-  "$ROOT/proto/byte/v/forge/sms/providers/fivesim/v1/fivesim.proto" \
-  "$ROOT/proto/byte/v/forge/sms/providers/herosms/v1/herosms.proto" \
-  "$ROOT/proto/byte/v/forge/sms/providers/smsbower/v1/smsbower.proto"
+  "$ROOT/proto/byte/v/forge/sms/internal/v1/sms_internal.proto"
 
 gofmt -w "$ROOT/gen/go"
