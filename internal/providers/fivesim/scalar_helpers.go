@@ -2,7 +2,6 @@ package fivesim
 
 import (
 	"encoding/json"
-	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -44,10 +43,4 @@ func rawJSONScalar(raw json.RawMessage) string {
 		return strconv.FormatFloat(floatValue, 'f', -1, 64)
 	}
 	return strings.Trim(string(raw), "\"")
-}
-
-func setBool(values url.Values, key string, value bool) {
-	if value {
-		values.Set(key, "1")
-	}
 }

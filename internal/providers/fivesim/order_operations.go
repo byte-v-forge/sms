@@ -24,11 +24,10 @@ func (c *Client) AcquireNumber(ctx context.Context, request core.ProviderAcquire
 	if err != nil {
 		return core.ProviderOrder{}, err
 	}
-	params := c.buyParams()
 	path := fmt.Sprintf("/v1/user/buy/activation/%s/%s/%s", url.PathEscape(country), url.PathEscape(operator), url.PathEscape(product))
 
 	var payload order
-	if err := c.getJSON(ctx, path, params, true, &payload); err != nil {
+	if err := c.getJSON(ctx, path, nil, true, &payload); err != nil {
 		return core.ProviderOrder{}, err
 	}
 	orderID := rawJSONScalar(payload.ID)
@@ -83,20 +82,6 @@ func (c *Client) GetBalance(ctx context.Context) (core.Money, error) {
 		return core.Money{}, err
 	}
 	return core.Money{CurrencyCode: c.currencyCode, AmountDecimal: rawJSONScalar(payload.Balance)}, nil
-}
-
-func (c *Client) buyParams() url.Values {
-	params := url.Values{}
-	setBool(params, "reuse", c.reuse)
-	setBool(params, "voice", c.voice)
-	setBool(params, "forwarding", c.forwarding)
-	if c.forwardingNumber != "" {
-		params.Set("number", c.forwardingNumber)
-	}
-	if c.ref != "" {
-		params.Set("ref", c.ref)
-	}
-	return params
 }
 
 func operatorForRoute(route core.Route) (string, error) {
