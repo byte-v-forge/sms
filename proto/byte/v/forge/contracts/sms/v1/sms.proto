@@ -302,7 +302,7 @@ message ListSmsPriceOffersRequest {
   string application_key = 1;
   string country_iso2 = 2;
   string country_calling_code = 3;
-  string provider_key = 4;
+  repeated string provider_keys = 4;
 }
 
 message ListSmsPriceOffersResponse {

@@ -65,22 +65,6 @@ func (s *CatalogService) listRecommendationOffers(ctx context.Context, target co
 		CountryISO2:        target.CountryISO2,
 		CountryCallingCode: target.CountryCallingCode,
 	}
-	if len(providerFilter) == 0 {
-		return s.ListPriceOffers(ctx, query)
-	}
-	var out []core.RouteOffer
-	var lastErr error
-	for _, providerKey := range sortedProviderFilterKeys(providerFilter) {
-		query.ProviderKey = providerKey
-		offers, err := s.ListPriceOffers(ctx, query)
-		if err != nil {
-			lastErr = err
-			continue
-		}
-		out = append(out, offers...)
-	}
-	if len(out) == 0 && lastErr != nil {
-		return nil, lastErr
-	}
-	return out, nil
+	query.ProviderKeys = sortedProviderFilterKeys(providerFilter)
+	return s.ListPriceOffers(ctx, query)
 }

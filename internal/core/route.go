@@ -27,7 +27,7 @@ type RouteOfferQuery struct {
 	ApplicationKey     string
 	CountryISO2        string
 	CountryCallingCode string
-	ProviderKey        string
+	ProviderKeys       []string
 }
 
 type RouteOffer struct {

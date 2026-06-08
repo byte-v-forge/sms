@@ -13,7 +13,7 @@ func (s *CatalogServer) ListSmsPriceOffers(ctx context.Context, request *smsv1.L
 		ApplicationKey:     request.GetApplicationKey(),
 		CountryISO2:        request.GetCountryIso2(),
 		CountryCallingCode: request.GetCountryCallingCode(),
-		ProviderKey:        request.GetProviderKey(),
+		ProviderKeys:       request.GetProviderKeys(),
 	})
 	if err != nil {
 		return &smsv1.ListSmsPriceOffersResponse{Error: toProtoError(err)}, nil

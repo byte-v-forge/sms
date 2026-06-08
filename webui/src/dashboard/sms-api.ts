@@ -76,7 +76,7 @@ export function listSmsPriceOffers(query: SmsPriceOfferQuery) {
   params.set('application_key', query.applicationKey);
   if (query.countryISO2) params.set('country_iso2', query.countryISO2);
   if (query.countryCallingCode) params.set('country_calling_code', query.countryCallingCode);
-  if (query.providerKeys.length === 1) params.set('provider_key', query.providerKeys[0]);
+  query.providerKeys.forEach((providerKey) => params.append('provider_key', providerKey));
   return api<ListSmsPriceOffersResponse>(`/api/sms/price-offers?${params.toString()}`);
 }
 

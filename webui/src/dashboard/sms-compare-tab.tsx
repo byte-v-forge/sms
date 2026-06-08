@@ -155,7 +155,7 @@ function SearchHint({ applicationKey, countryISO2, countryCallingCode, providerK
   if (!applicationKey.trim()) hints.push('填写应用');
   if (!countryISO2.trim() && !countryCallingCode.trim()) hints.push('填写国家 ISO2 或区号');
   if (providerKeys.length === 0) hints.push('至少选择一个启用平台');
-  if (hints.length === 0) return <p className="text-xs text-muted-foreground">支持刷新和分享当前查询链接；多平台查询会先请求全部启用平台，再在前端按选择过滤。</p>;
+  if (hints.length === 0) return <p className="text-xs text-muted-foreground">支持刷新和分享当前查询链接；后端只查询当前选中的接码平台。</p>;
   return <p className="text-xs text-muted-foreground">还需要：{hints.join('、')}</p>;
 }
 

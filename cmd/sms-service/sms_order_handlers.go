@@ -49,13 +49,24 @@ func (s *dashboardServer) handleSMSPriceOffers(w http.ResponseWriter, r *http.Re
 		ApplicationKey:     strings.TrimSpace(query.Get("application_key")),
 		CountryIso2:        strings.ToUpper(strings.TrimSpace(query.Get("country_iso2"))),
 		CountryCallingCode: strings.TrimPrefix(strings.TrimSpace(query.Get("country_calling_code")), "+"),
-		ProviderKey:        strings.TrimSpace(query.Get("provider_key")),
+		ProviderKeys:       smsProviderKeysFromQuery(query),
 	})
 	if err != nil {
 		writeProtoJSON(w, http.StatusOK, &smsv1.ListSmsPriceOffersResponse{Error: app.PublicError(err)})
 		return
 	}
 	writeProtoJSON(w, http.StatusOK, resp)
+}
+
+func smsProviderKeysFromQuery(query map[string][]string) []string {
+	values := query["provider_key"]
+	out := make([]string, 0, len(values))
+	for _, value := range values {
+		if value = strings.TrimSpace(value); value != "" {
+			out = append(out, value)
+		}
+	}
+	return out
 }
 
 func (s *dashboardServer) handleSMSOrderAcquire(w http.ResponseWriter, r *http.Request) {

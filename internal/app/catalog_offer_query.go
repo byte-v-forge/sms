@@ -10,12 +10,12 @@ func normalizeOfferQuery(query core.RouteOfferQuery) core.RouteOfferQuery {
 	query.ApplicationKey = strings.TrimSpace(query.ApplicationKey)
 	query.CountryISO2 = strings.ToUpper(strings.TrimSpace(query.CountryISO2))
 	query.CountryCallingCode = strings.TrimPrefix(strings.TrimSpace(query.CountryCallingCode), "+")
-	query.ProviderKey = normalizeProviderKey(query.ProviderKey)
+	query.ProviderKeys = sortedProviderFilterKeys(normalizedProviderFilter(query.ProviderKeys))
 	return query
 }
 
 func routeOfferMatches(offer core.RouteOffer, query core.RouteOfferQuery) bool {
-	if query.ProviderKey != "" && !strings.EqualFold(offer.ProviderKey, query.ProviderKey) {
+	if !providerIncluded(offer.ProviderKey, normalizedProviderFilter(query.ProviderKeys)) {
 		return false
 	}
 	if query.ApplicationKey != "" && !routeApplicationMatches(offer, query.ApplicationKey) {

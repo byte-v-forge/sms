@@ -2496,7 +2496,7 @@ type ListSmsPriceOffersRequest struct {
 	ApplicationKey     string                 `protobuf:"bytes,1,opt,name=application_key,json=applicationKey,proto3" json:"application_key,omitempty"`
 	CountryIso2        string                 `protobuf:"bytes,2,opt,name=country_iso2,json=countryIso2,proto3" json:"country_iso2,omitempty"`
 	CountryCallingCode string                 `protobuf:"bytes,3,opt,name=country_calling_code,json=countryCallingCode,proto3" json:"country_calling_code,omitempty"`
-	ProviderKey        string                 `protobuf:"bytes,4,opt,name=provider_key,json=providerKey,proto3" json:"provider_key,omitempty"`
+	ProviderKeys       []string               `protobuf:"bytes,4,rep,name=provider_keys,json=providerKeys,proto3" json:"provider_keys,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -2552,11 +2552,11 @@ func (x *ListSmsPriceOffersRequest) GetCountryCallingCode() string {
 	return ""
 }
 
-func (x *ListSmsPriceOffersRequest) GetProviderKey() string {
+func (x *ListSmsPriceOffersRequest) GetProviderKeys() []string {
 	if x != nil {
-		return x.ProviderKey
+		return x.ProviderKeys
 	}
-	return ""
+	return nil
 }
 
 type ListSmsPriceOffersResponse struct {
@@ -2976,12 +2976,12 @@ const file_byte_v_forge_contracts_sms_v1_sms_proto_rawDesc = "" +
 	"\fprovider_key\x18\x01 \x01(\tR\vproviderKey\"\xa2\x01\n" +
 	"\x18ListSmsCountriesResponse\x12G\n" +
 	"\tcountries\x18\x01 \x03(\v2).byte.v.forge.contracts.sms.v1.SmsCountryR\tcountries\x12=\n" +
-	"\x05error\x18\x02 \x01(\v2'.byte.v.forge.contracts.sms.v1.SmsErrorR\x05error\"\xbc\x01\n" +
+	"\x05error\x18\x02 \x01(\v2'.byte.v.forge.contracts.sms.v1.SmsErrorR\x05error\"\xbe\x01\n" +
 	"\x19ListSmsPriceOffersRequest\x12'\n" +
 	"\x0fapplication_key\x18\x01 \x01(\tR\x0eapplicationKey\x12!\n" +
 	"\fcountry_iso2\x18\x02 \x01(\tR\vcountryIso2\x120\n" +
-	"\x14country_calling_code\x18\x03 \x01(\tR\x12countryCallingCode\x12!\n" +
-	"\fprovider_key\x18\x04 \x01(\tR\vproviderKey\"\xa1\x01\n" +
+	"\x14country_calling_code\x18\x03 \x01(\tR\x12countryCallingCode\x12#\n" +
+	"\rprovider_keys\x18\x04 \x03(\tR\fproviderKeys\"\xa1\x01\n" +
 	"\x1aListSmsPriceOffersResponse\x12D\n" +
 	"\x06offers\x18\x01 \x03(\v2,.byte.v.forge.contracts.sms.v1.SmsPriceOfferR\x06offers\x12=\n" +
 	"\x05error\x18\x02 \x01(\v2'.byte.v.forge.contracts.sms.v1.SmsErrorR\x05error\"\xa3\x01\n" +
