@@ -1,7 +1,7 @@
-import { ButtonHTMLAttributes, HTMLAttributes, InputHTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, HTMLAttributes, InputHTMLAttributes, ReactNode } from 'react';
 
-type ButtonVariant = 'default' | 'outline' | 'secondary';
-type ButtonSize = 'sm' | 'icon-sm' | 'icon';
+export type ButtonVariant = 'default' | 'outline' | 'secondary';
+export type ButtonSize = 'sm' | 'icon-sm' | 'icon';
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
@@ -9,6 +9,10 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 export function Button({ className, variant = 'default', size = 'sm', ...props }: ButtonProps) {
+  return <button className={buttonClassName(variant, size, className)} type="button" {...props} />;
+}
+
+export function buttonClassName(variant: ButtonVariant = 'default', size: ButtonSize = 'sm', className?: string) {
   const base = 'inline-flex items-center justify-center rounded-lg border font-medium transition disabled:cursor-not-allowed disabled:opacity-50';
   const variants = {
     default: 'border-primary bg-primary text-primary-foreground hover:bg-primary/90',
@@ -20,7 +24,7 @@ export function Button({ className, variant = 'default', size = 'sm', ...props }
     'icon-sm': 'h-8 w-8 p-0',
     icon: 'h-9 w-9 p-0'
   } satisfies Record<ButtonSize, string>;
-  return <button className={cn(base, variants[variant], sizes[size], className)} type="button" {...props} />;
+  return cn(base, variants[variant], sizes[size], className);
 }
 
 export function Badge({ className, variant = 'default', ...props }: HTMLAttributes<HTMLSpanElement> & { variant?: ButtonVariant }) {

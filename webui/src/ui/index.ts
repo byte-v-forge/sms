@@ -3,4 +3,4 @@ export { api } from './api';
 export { createHotStreamURL, useHotStreamInvalidation } from './hotstream';
 export * from './primitives';
 export { ToastMessage, useToastMessage } from './toast';
-export { WorkspaceTabbedPanel } from './workspace';
+export { WorkspaceRoutedPanel } from './workspace';

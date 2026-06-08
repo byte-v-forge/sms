@@ -1,5 +1,11 @@
 import { api } from '../ui';
 import type {
+  AcquireNumberRequest,
+  AcquireNumberResponse,
+  ListSmsPriceOffersResponse,
+  SmsPriceOffer
+} from '../proto/byte/v/forge/contracts/sms/v1/sms';
+import type {
   CancelProviderOrderResponse,
   DeleteProviderConfigResponse,
   GetProviderBalanceResponse,
@@ -26,12 +32,21 @@ export type SaveSmsProviderSettingResponse = {
   provider?: SmsProviderSetting;
 };
 
+export type SmsPriceOfferQuery = {
+  applicationKey: string;
+  countryISO2: string;
+  countryCallingCode: string;
+  providerKeys: string[];
+  minAvailable: number;
+};
+
 export const smsKeys = {
   settingsProviders: ['sms', 'settings', 'providers'] as const,
   orders: ['sms', 'orders'] as const,
   orderCodesRoot: ['sms', 'order-codes'] as const,
   orderCodes: (orderIds: string[]) => ['sms', 'order-codes', orderIds.join(',')] as const,
-  balance: (providerKey: string) => ['sms', 'balance', providerKey] as const
+  balance: (providerKey: string) => ['sms', 'balance', providerKey] as const,
+  priceOffers: (query?: SmsPriceOfferQuery) => ['sms', 'price-offers', query] as const
 };
 
 export function listSmsProviderSettings() {
@@ -62,4 +77,39 @@ export function listSmsOrderCodes(orderIds: string[], limitPerOrder = 5) {
 
 export function cancelSmsOrder(id: string) {
   return api<CancelProviderOrderResponse>(`/api/sms/orders/${encodeURIComponent(id)}/cancel`, { method: 'POST', body: JSON.stringify({}) });
+}
+
+export function listSmsPriceOffers(query: SmsPriceOfferQuery) {
+  const params = new URLSearchParams();
+  params.set('application_key', query.applicationKey);
+  if (query.countryISO2) params.set('country_iso2', query.countryISO2);
+  if (query.countryCallingCode) params.set('country_calling_code', query.countryCallingCode);
+  if (query.providerKeys.length === 1) params.set('provider_key', query.providerKeys[0]);
+  return api<ListSmsPriceOffersResponse>(`/api/sms/price-offers?${params.toString()}`);
+}
+
+export function acquireSmsFromOffer(offer: SmsPriceOffer) {
+  const request: AcquireNumberRequest = {
+    request_id: randomRequestID(),
+    lease_duration: undefined,
+    acquire_params: {
+      offer_ref: offer.offer_ref,
+      application_key: offer.application_key,
+      country_iso2: offer.country_iso2,
+      country_calling_code: offer.country_calling_code,
+      min_available_count: 1,
+      route_failure_policy: undefined,
+      max_price: offer.price,
+      min_price: undefined
+    }
+  };
+  return api<AcquireNumberResponse>('/api/sms/orders/acquire?wait_seconds=60', {
+    method: 'POST',
+    body: JSON.stringify(request)
+  });
+}
+
+function randomRequestID() {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
+  return `sms-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }

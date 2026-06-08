@@ -1,25 +1,46 @@
 import { MessageSquareText } from 'lucide-react';
+import { Outlet } from 'react-router';
+import type { SmsPriceOffer } from '../proto/byte/v/forge/contracts/sms/v1/sms';
+import type { SmsOrderCodeView, SmsOrderView } from '../proto/byte/v/forge/sms/internal/v1/sms_internal';
 import {
   createHotStreamURL,
   ToastMessage,
   useHotStreamInvalidation,
-  WorkspaceTabbedPanel,
+  WorkspaceRoutedPanel,
   useMutation,
   useQuery,
   useQueryClient,
   useToastMessage
 } from '../ui';
 import {
+  acquireSmsFromOffer,
   cancelSmsOrder,
   deleteSmsProviderSetting,
   listSmsOrderCodes,
   listSmsOrders,
   listSmsProviderSettings,
+  type SaveSmsProviderSettingRequest,
+  type SmsProviderOption,
+  type SmsProviderSetting,
   saveSmsProviderSetting,
   smsKeys
 } from './sms-api';
-import { OrdersTab } from './orders-tab';
-import { SmsSettingsTab } from './sms-settings-tab';
+
+export type SmsPageContext = {
+  providerOptions: SmsProviderOption[];
+  configs: SmsProviderSetting[];
+  settingsBusy: boolean;
+  orders: SmsOrderView[];
+  codes: SmsOrderCodeView[];
+  cancelingId?: string;
+  acquiringOfferId?: string;
+  savingProviderKey?: string;
+  deletingProviderKey?: string;
+  onAcquire: (offer: SmsPriceOffer) => void;
+  onCancel: (id: string) => void;
+  onSave: (input: SaveSmsProviderSettingRequest) => void;
+  onDelete: (id: string) => void;
+};
 
 export function SmsPage() {
   const queryClient = useQueryClient();
@@ -68,44 +89,48 @@ export function SmsPage() {
     },
     onError: toast.showError
   });
+  const acquireMutation = useMutation({
+    mutationFn: acquireSmsFromOffer,
+    onSuccess: async (response) => {
+      if (response.error) {
+        toast.showError(response.error.message || response.error.code);
+        return;
+      }
+      await queryClient.invalidateQueries({ queryKey: smsKeys.orders });
+      toast.showOK('号码已获取');
+    },
+    onError: toast.showError
+  });
+  const pageContext: SmsPageContext = {
+    providerOptions: options,
+    configs,
+    settingsBusy: settingsQuery.isLoading,
+    orders: ordersQuery.data?.orders || [],
+    codes: codesQuery.data?.codes || [],
+    cancelingId: cancelMutation.variables,
+    acquiringOfferId: acquireMutation.variables?.offer_ref?.offer_id,
+    savingProviderKey: saveMutation.variables?.provider_key,
+    deletingProviderKey: deleteMutation.variables,
+    onAcquire: (offer) => acquireMutation.mutate(offer),
+    onCancel: (id) => cancelMutation.mutate(id),
+    onSave: (input) => saveMutation.mutate(input),
+    onDelete: (id) => deleteMutation.mutate(id)
+  };
 
   return (
     <>
       <ToastMessage toast={toast.toast} />
-      <WorkspaceTabbedPanel
-        defaultValue="orders"
+      <WorkspaceRoutedPanel
         title={<span className="inline-flex items-center gap-2"><MessageSquareText className="size-4" />SMS</span>}
         meta={`${configs.length}个接码源 · ${ordersQuery.data?.orders?.length || 0}个订单`}
         tabs={[
-          {
-            value: 'orders',
-            label: '号码订单',
-            content: (
-              <OrdersTab
-                orders={ordersQuery.data?.orders || []}
-                codes={codesQuery.data?.codes || []}
-                cancelingId={cancelMutation.variables}
-                onCancel={(id) => cancelMutation.mutate(id)}
-              />
-            )
-          },
-          {
-            value: 'settings',
-            label: '设置',
-            content: (
-              <SmsSettingsTab
-                providerOptions={options}
-                configs={configs}
-                busy={settingsQuery.isLoading}
-                savingProviderKey={saveMutation.variables?.provider_key}
-                deletingProviderKey={deleteMutation.variables}
-                onSave={(input) => saveMutation.mutate(input)}
-                onDelete={(id) => deleteMutation.mutate(id)}
-              />
-            )
-          }
+          { to: '/compare', label: '平台比价' },
+          { to: '/orders', label: '号码订单' },
+          { to: '/settings', label: '设置' }
         ]}
-      />
+      >
+        <Outlet context={pageContext} />
+      </WorkspaceRoutedPanel>
     </>
   );
 }

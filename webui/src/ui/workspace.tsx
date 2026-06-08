@@ -1,15 +1,14 @@
-import { ReactNode, useState } from 'react';
-import { Button } from './primitives';
+import type { ReactNode } from 'react';
+import { NavLink } from 'react-router';
+import { buttonClassName } from './primitives';
 
-type Tab = {
-  value: string;
+type RouteTab = {
+  to: string;
   label: string;
-  content: ReactNode;
+  end?: boolean;
 };
 
-export function WorkspaceTabbedPanel({ defaultValue, title, meta, tabs }: { defaultValue: string; title: ReactNode; meta?: string; tabs: Tab[] }) {
-  const [active, setActive] = useState(defaultValue);
-  const current = tabs.find((tab) => tab.value === active) || tabs[0];
+export function WorkspaceRoutedPanel({ title, meta, tabs, children }: { title: ReactNode; meta?: string; tabs: RouteTab[]; children: ReactNode }) {
   return (
     <main className="mx-auto flex h-screen max-w-7xl flex-col p-4">
       <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
@@ -20,13 +19,13 @@ export function WorkspaceTabbedPanel({ defaultValue, title, meta, tabs }: { defa
           </div>
           <nav className="flex gap-2">
             {tabs.map((tab) => (
-              <Button key={tab.value} size="sm" variant={tab.value === current.value ? 'default' : 'outline'} onClick={() => setActive(tab.value)}>
+              <NavLink key={tab.to} to={tab.to} end={tab.end ?? true} className={({ isActive }) => buttonClassName(isActive ? 'default' : 'outline', 'sm')}>
                 {tab.label}
-              </Button>
+              </NavLink>
             ))}
           </nav>
         </header>
-        <div className="flex min-h-0 flex-1 flex-col">{current.content}</div>
+        <div className="flex min-h-0 flex-1 flex-col">{children}</div>
       </section>
     </main>
   );
