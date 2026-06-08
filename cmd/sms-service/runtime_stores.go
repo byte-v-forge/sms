@@ -61,6 +61,7 @@ func newRuntimeStores(ctx context.Context, cfg config, providers *providerspi.Re
 		store.routeHealth = app.NewRedisRouteHealthStore(redisClient)
 	} else {
 		store.codeSecrets = app.NewSMSCodeSecretStore(app.NewMemoryTTLStringStore("sms:code-secret", 30*time.Minute, clock), clock)
+		store.routeHealth = app.NewMemoryRouteHealthStore(clock)
 	}
 	return store, nil
 }
