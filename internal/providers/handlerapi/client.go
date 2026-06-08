@@ -19,15 +19,20 @@ import (
 type HTTPDoer = providerhttp.HTTPDoer
 
 type Client struct {
-	endpoint   string
+	endpoint   url.URL
 	apiKey     string
 	httpClient HTTPDoer
 	userAgent  string
 }
 
-func New(endpoint, apiKey string, httpClient HTTPDoer) (*Client, error) {
-	if strings.TrimSpace(endpoint) == "" {
+func New(rawEndpoint, apiKey string, httpClient HTTPDoer) (*Client, error) {
+	rawEndpoint = strings.TrimSpace(rawEndpoint)
+	if rawEndpoint == "" {
 		return nil, core.NewError(core.CodeValidationFailed, "handler api endpoint is required", false)
+	}
+	endpoint, err := url.Parse(rawEndpoint)
+	if err != nil {
+		return nil, core.NewError(core.CodeValidationFailed, "invalid handler api endpoint", false)
 	}
 	if strings.TrimSpace(apiKey) == "" {
 		return nil, core.NewError(core.CodeValidationFailed, "handler api key is required", false)
@@ -36,7 +41,7 @@ func New(endpoint, apiKey string, httpClient HTTPDoer) (*Client, error) {
 		httpClient = &http.Client{Timeout: 15 * time.Second}
 	}
 	return &Client{
-		endpoint:   endpoint,
+		endpoint:   *endpoint,
 		apiKey:     apiKey,
 		httpClient: httpClient,
 		userAgent:  "sms/1.0",
@@ -45,10 +50,7 @@ func New(endpoint, apiKey string, httpClient HTTPDoer) (*Client, error) {
 
 func (c *Client) Do(ctx context.Context, action string, params url.Values) (string, error) {
 	response, err := providerhttp.Do(ctx, c.httpClient, func(ctx context.Context) (*http.Request, error) {
-		endpoint, err := url.Parse(c.endpoint)
-		if err != nil {
-			return nil, core.NewError(core.CodeValidationFailed, "invalid handler api endpoint", false)
-		}
+		endpoint := c.endpoint
 		query := endpoint.Query()
 		for key, values := range params {
 			for _, value := range values {
