@@ -2,7 +2,6 @@ package redisx
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -24,15 +23,4 @@ func NewClient(ctx context.Context, rawURL string) (*redis.Client, error) {
 		return nil, fmt.Errorf("ping redis: %w", err)
 	}
 	return client, nil
-}
-
-func NewRequiredClient(ctx context.Context, rawURL string, requiredMessage string) (*redis.Client, error) {
-	if strings.TrimSpace(rawURL) == "" {
-		requiredMessage = strings.TrimSpace(requiredMessage)
-		if requiredMessage == "" {
-			requiredMessage = "redis url is required"
-		}
-		return nil, errors.New(requiredMessage)
-	}
-	return NewClient(ctx, rawURL)
 }
