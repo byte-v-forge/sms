@@ -57,10 +57,10 @@ func routeCandidateKey(candidate routeCandidate) string {
 	offer := candidate.offer
 	return strings.Join([]string{
 		normalizeProviderKey(offer.ProviderKey),
-		strings.TrimSpace(offer.ApplicationKey),
-		strings.TrimSpace(offer.CountryISO2),
-		strings.TrimSpace(offer.CountryCallingCode),
-		strings.TrimSpace(offer.UpstreamProviderID),
-		strings.TrimSpace(offer.UpstreamProviderName),
+		routeText(offer.ApplicationKey),
+		routeCountryISO2(offer.CountryISO2),
+		routeCallingCode(offer.CountryCallingCode),
+		routeText(offer.UpstreamProviderID),
+		routeText(offer.UpstreamProviderName),
 	}, "\x00")
 }

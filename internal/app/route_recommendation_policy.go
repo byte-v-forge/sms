@@ -19,9 +19,9 @@ func sortedProviderFilterKeys(providerFilter map[string]struct{}) []string {
 }
 
 func normalizeRecommendationTarget(target core.Target) core.Target {
-	target.ApplicationKey = strings.TrimSpace(target.ApplicationKey)
-	target.CountryISO2 = strings.ToUpper(strings.TrimSpace(target.CountryISO2))
-	target.CountryCallingCode = strings.TrimPrefix(strings.TrimSpace(target.CountryCallingCode), "+")
+	target.ApplicationKey = routeText(target.ApplicationKey)
+	target.CountryISO2 = routeCountryISO2(target.CountryISO2)
+	target.CountryCallingCode = routeCallingCode(target.CountryCallingCode)
 	return target
 }
 

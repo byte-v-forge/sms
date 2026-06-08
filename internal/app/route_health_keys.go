@@ -42,8 +42,8 @@ func routeHealthKey(route core.Route) string {
 		strconv.Itoa(seconds(policy.DisableTTL)),
 		providerKey,
 		normalizeRouteHealthToken(firstNonEmpty(route.UpstreamServiceKey, route.ApplicationKey)),
-		strings.ToUpper(strings.TrimSpace(route.CountryISO2)),
-		strings.TrimPrefix(strings.TrimSpace(route.CountryCallingCode), "+"),
+		routeCountryISO2(route.CountryISO2),
+		routeCallingCode(route.CountryCallingCode),
 		normalizeRouteHealthToken(route.ProviderCountryID),
 		normalizeRouteHealthToken(route.UpstreamProviderID),
 	}
