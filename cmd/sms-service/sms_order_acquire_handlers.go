@@ -15,8 +15,7 @@ import (
 )
 
 func (s *dashboardServer) handleSMSOrderAcquire(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+	if !requireHTTPMethod(w, r, http.MethodPost) {
 		return
 	}
 	if s.smsOrderClient == nil {

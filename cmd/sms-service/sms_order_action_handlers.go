@@ -14,8 +14,7 @@ func (s *dashboardServer) handleSMSOrder(w http.ResponseWriter, r *http.Request)
 		writeError(w, http.StatusNotFound, errors.New("sms order action not found"))
 		return
 	}
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+	if !requireHTTPMethod(w, r, http.MethodPost) {
 		return
 	}
 	switch action {

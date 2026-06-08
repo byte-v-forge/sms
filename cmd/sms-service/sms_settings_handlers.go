@@ -8,8 +8,7 @@ import (
 )
 
 func (s *dashboardServer) handleSMSSettingsProviderPlugins(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+	if !requireHTTPMethod(w, r, http.MethodGet) {
 		return
 	}
 	resp, err := s.smsAdminClient.ListProviderPlugins(r.Context(), &smsinternalv1.ListProviderPluginsRequest{})

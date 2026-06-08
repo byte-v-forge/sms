@@ -12,8 +12,7 @@ import (
 )
 
 func (s *dashboardServer) handleSMSOrders(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+	if !requireHTTPMethod(w, r, http.MethodGet) {
 		return
 	}
 	resp, err := s.smsAdminClient.ListOrders(r.Context(), &smsinternalv1.ListOrdersRequest{
@@ -31,8 +30,7 @@ func (s *dashboardServer) handleSMSOrders(w http.ResponseWriter, r *http.Request
 }
 
 func (s *dashboardServer) handleSMSPriceOffers(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+	if !requireHTTPMethod(w, r, http.MethodGet) {
 		return
 	}
 	if s.smsCatalogClient == nil {
@@ -54,8 +52,7 @@ func (s *dashboardServer) handleSMSPriceOffers(w http.ResponseWriter, r *http.Re
 }
 
 func (s *dashboardServer) handleSMSOrderCodes(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+	if !requireHTTPMethod(w, r, http.MethodGet) {
 		return
 	}
 	orderIDs := orderIDsFromQuery(r)
