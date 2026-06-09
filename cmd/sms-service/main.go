@@ -11,7 +11,6 @@ import (
 	smsv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/sms/v1"
 	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	grpcadapter "github.com/byte-v-forge/sms/internal/adapters/grpc"
-	"github.com/byte-v-forge/sms/internal/platform/grpcclient"
 	"github.com/byte-v-forge/sms/internal/platform/grpchealth"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -69,21 +68,11 @@ func main() {
 		server.GracefulStop()
 	}()
 
-	dashboardConn, err := grpcclient.NewInsecure(grpcclient.SelfTarget(cfg.ListenAddr))
+	closeDashboard, err := startDashboardBFF(groupCtx, group, cfg, hotStream)
 	if err != nil {
-		log.Fatalf("connect sms dashboard admin API: %v", err)
+		log.Fatalf("initialize sms dashboard BFF: %v", err)
 	}
-	defer dashboardConn.Close()
-	startDashboardHTTP(
-		groupCtx,
-		group,
-		cfg.DashboardHTTPAddr,
-		cfg.DashboardStaticDir,
-		smsinternalv1.NewSmsProviderAdminServiceClient(dashboardConn),
-		smsv1.NewSmsOrderServiceClient(dashboardConn),
-		smsv1.NewSmsCatalogServiceClient(dashboardConn),
-		hotStream,
-	)
+	defer closeDashboard()
 
 	log.Printf("sms-service listening on %s", cfg.ListenAddr)
 	group.Go(func() error {
