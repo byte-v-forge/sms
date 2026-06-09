@@ -34,14 +34,15 @@ func (c *Client) buyActivation(ctx context.Context, request core.ProviderAcquire
 }
 
 func activationPurchaseFromRoute(route core.Route) activationPurchaseRequest {
+	cost := heroSMSCost(route.MaxPrice.AmountDecimal)
 	return activationPurchaseRequest{
 		Owner:          6,
-		FixedPrice:     false,
+		FixedPrice:     cost != nil,
 		ActivationType: heroSMSActivationTypeSMS,
 		Service:        route.UpstreamServiceKey,
 		Country:        heroSMSCountryID(route.ProviderCountryID),
 		Operator:       heroSMSOperator(route.UpstreamProviderID),
-		Cost:           heroSMSCost(route.MaxPrice.AmountDecimal),
+		Cost:           cost,
 		Amount:         1,
 	}
 }
