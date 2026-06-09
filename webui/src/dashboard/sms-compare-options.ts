@@ -52,6 +52,8 @@ export function matchApplicationChoice(value: string, choices: ApplicationChoice
   if (!normalized) return undefined;
   const exact = choices.find((choice) => applicationSearchTokens(choice).some((item) => item === normalized));
   if (exact) return exact;
+  const primaryExact = choices.filter((choice) => normalizeChoiceToken(primaryApplicationName(choice.displayName)) === normalized);
+  if (primaryExact.length === 1) return primaryExact[0];
   const partial = choices.filter((choice) => applicationChoiceMatches(choice, value));
   return partial.length === 1 ? partial[0] : undefined;
 }

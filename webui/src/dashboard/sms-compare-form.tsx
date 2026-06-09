@@ -18,6 +18,7 @@ type SmsCompareFormProps = {
   minAvailable: number;
   sort: OfferSort;
   canSubmit: boolean;
+  countriesLoading: boolean;
   onServiceTextChange: (value: string) => void;
   onApplicationChange: (value: string) => void;
   onCountryChange: (value: string) => void;
@@ -34,7 +35,7 @@ export function SmsCompareForm(props: SmsCompareFormProps) {
       <form className="grid gap-3" onSubmit={props.onSubmit}>
         <div className="grid gap-2 lg:grid-cols-12">
           <div className="lg:col-span-5"><SearchSelect label="应用服务" placeholder="搜索服务名称" emptyText="输入服务名称后选择匹配项" value={props.applicationId} searchValue={props.serviceText} options={applicationSelectOptions(props.applications)} shouldFilter={false} contentClassName="lg:w-[32rem]" onSearchChange={props.onServiceTextChange} onValueChange={props.onApplicationChange} /></div>
-          <div className="lg:col-span-3"><SearchSelect label="国家" placeholder="搜索国家/区号" emptyText="没有匹配国家" value={props.countryValue} options={countrySelectOptions(props.countries)} contentClassName="w-[min(20rem,calc(100vw-2rem))]" onValueChange={props.onCountryChange} /></div>
+          <div className="lg:col-span-3"><SearchSelect label="国家" placeholder="搜索国家/区号" emptyText={props.countriesLoading ? "正在加载支持国家" : "选服务后加载支持国家"} value={props.countryValue} options={countrySelectOptions(props.countries)} contentClassName="w-[min(20rem,calc(100vw-2rem))]" onValueChange={props.onCountryChange} /></div>
           <Field label="最低库存"><Input min={0} type="number" value={props.minAvailable} onChange={(event) => props.onMinAvailableChange(numberInputValue(event.target.value))} /></Field>
           <Field label="排序" className="lg:col-span-2"><Select value={props.sort} onChange={(event) => props.onSortChange(event.target.value as OfferSort)}><option value="price">按低价</option><option value="available">按库存</option><option value="provider">按平台</option></Select></Field>
         </div>
