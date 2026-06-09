@@ -2,7 +2,6 @@ package app
 
 import (
 	"strings"
-	"time"
 
 	smsv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/sms/v1"
 	"github.com/byte-v-forge/sms/internal/core"
@@ -34,28 +33,7 @@ func protoRouteFailurePolicy(policy core.RouteFailurePolicy) *smsv1.SmsRouteFail
 	return &smsv1.SmsRouteFailurePolicy{
 		ScopeKey:             strings.TrimSpace(policy.ScopeKey),
 		FailureThreshold:     int32(policy.FailureThreshold),
-		FailureWindowSeconds: int32(durationSeconds(policy.FailureWindow)),
-		DisableTtlSeconds:    int32(durationSeconds(policy.DisableTTL)),
+		FailureWindowSeconds: int32(seconds(policy.FailureWindow)),
+		DisableTtlSeconds:    int32(seconds(policy.DisableTTL)),
 	}
-}
-
-func routeFailurePolicyIsZero(policy core.RouteFailurePolicy) bool {
-	return strings.TrimSpace(policy.ScopeKey) == "" &&
-		policy.FailureThreshold == 0 &&
-		policy.FailureWindow <= 0 &&
-		policy.DisableTTL <= 0
-}
-
-func secondsDuration(seconds int32) time.Duration {
-	if seconds <= 0 {
-		return 0
-	}
-	return time.Duration(seconds) * time.Second
-}
-
-func durationSeconds(duration time.Duration) int {
-	if duration <= 0 {
-		return 0
-	}
-	return int(duration.Round(time.Second) / time.Second)
 }
