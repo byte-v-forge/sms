@@ -20,12 +20,7 @@ func catalogApplicationIdentity(app core.CatalogApplication) string {
 }
 
 func catalogApplicationQueryKey(key string, display string) string {
-	keyToken := normalizeCatalogToken(key)
-	displayToken := normalizeCatalogToken(display)
-	if keyToken != "" && (displayToken == "" || keyToken == displayToken) {
-		return key
-	}
-	return firstNonEmpty(display, key)
+	return firstNonEmpty(key, display)
 }
 
 func normalizedCatalogApplicationAliases(key string, display string, aliases []string) []string {
