@@ -1,7 +1,7 @@
 FROM docker.io/library/node:22-alpine AS dashboard_builder
 
 WORKDIR /app/webui
-RUN apk add --no-cache protobuf
+RUN apk add --no-cache protobuf protobuf-dev
 COPY webui/package.json webui/package-lock.json ./
 RUN npm ci
 COPY proto /app/proto
