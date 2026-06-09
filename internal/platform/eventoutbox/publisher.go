@@ -28,23 +28,3 @@ func PublishRows(ctx context.Context, publisher eventbus.Publisher, rows []Row, 
 	}
 	return published, nil
 }
-
-func publishRow(ctx context.Context, publisher eventbus.Publisher, row Row, updates Updates, options PublishOptions) (bool, error) {
-	message, err := MessageFromEnvelope(row.Envelope)
-	if err != nil {
-		discardedAt := optionNow(options).Unix()
-		return false, updates.MarkDiscarded(ctx, row.EventID, TruncateError(err), discardedAt)
-	}
-
-	publishCtx, cancel := context.WithTimeout(ctx, publishTimeout(options))
-	_, err = publisher.Publish(publishCtx, message)
-	cancel()
-	if err != nil {
-		nextAttempt := row.AttemptCount + 1
-		updatedAt := optionNow(options)
-		nextAttemptAt := updatedAt.Add(retryDelay(options, nextAttempt)).Unix()
-		return false, updates.MarkRetry(ctx, row.EventID, nextAttempt, nextAttemptAt, TruncateError(err), updatedAt.Unix())
-	}
-	publishedAt := optionNow(options).Unix()
-	return true, updates.MarkPublished(ctx, row.EventID, publishedAt)
-}
