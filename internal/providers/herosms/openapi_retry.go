@@ -7,3 +7,9 @@ func heroSMSOpenAPIRetryPolicy() providerhttp.RetryPolicy {
 	policy.MaxBodyBytes = 8 << 20
 	return policy
 }
+
+func heroSMSOpenAPINonRetryPolicy() providerhttp.RetryPolicy {
+	policy := providerhttp.NoRetry()
+	policy.MaxBodyBytes = 1 << 20
+	return policy
+}

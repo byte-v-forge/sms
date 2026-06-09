@@ -2,21 +2,24 @@ import type { FormEvent, ReactNode } from 'react';
 import { RotateCcw, Search } from 'lucide-react';
 import { Button, Card, Input, Select } from '../ui';
 import { type OfferSort, type ProviderChoice } from './sms-compare-data';
-import { applicationChoiceLabel, countryChoiceLabel, countryChoiceValue, type ApplicationChoice, type CountryChoice } from './sms-compare-options';
+import { applicationSelectOptions, countrySelectOptions, type ApplicationChoice, type CountryChoice } from './sms-compare-options';
 import { numberInputValue } from './sms-compare-query';
 import { ProviderPicker } from './sms-provider-picker';
+import { SearchSelect } from './sms-search-select';
 
 type SmsCompareFormProps = {
   choices: ProviderChoice[];
   applications: ApplicationChoice[];
   countries: CountryChoice[];
   searchText: string;
+  applicationKey: string;
   countryValue: string;
   providerKeys: string[];
   minAvailable: number;
   sort: OfferSort;
   canSubmit: boolean;
   onSearchTextChange: (value: string) => void;
+  onApplicationChange: (value: string) => void;
   onCountryChange: (value: string) => void;
   onProviderKeysChange: (keys: string[]) => void;
   onMinAvailableChange: (value: number) => void;
@@ -29,21 +32,11 @@ export function SmsCompareForm(props: SmsCompareFormProps) {
   return (
     <Card className="m-4 mb-0 p-3">
       <form className="grid gap-3" onSubmit={props.onSubmit}>
-        <div className="grid gap-2 md:grid-cols-6">
-          <Field label="应用服务" className="md:col-span-3">
-            <Input autoComplete="off" list="sms-application-options" placeholder="搜索/选择服务，例如 WhatsApp" value={props.searchText} onChange={(event) => props.onSearchTextChange(event.target.value)} />
-            <datalist id="sms-application-options">
-              {props.applications.map((item) => <option key={item.applicationKey} value={applicationChoiceLabel(item)} />)}
-            </datalist>
-          </Field>
-          <Field label="国家">
-            <Select value={props.countryValue} onChange={(event) => props.onCountryChange(event.target.value)}>
-              <option value="">全部国家</option>
-              {props.countries.map((item) => <option key={countryChoiceValue(item)} value={countryChoiceValue(item)}>{countryChoiceLabel(item)}</option>)}
-            </Select>
-          </Field>
+        <div className="grid gap-2 md:grid-cols-8">
+          <div className="md:col-span-3"><SearchSelect label="应用服务" placeholder="搜索服务名称或代码" emptyText="没有匹配服务" value={props.applicationKey} searchValue={props.searchText} options={applicationSelectOptions(props.applications)} onSearchChange={props.onSearchTextChange} onValueChange={props.onApplicationChange} /></div>
+          <div className="md:col-span-2"><SearchSelect label="国家" placeholder="搜索国家/区号" emptyText="没有匹配国家" value={props.countryValue} options={countrySelectOptions(props.countries)} onValueChange={props.onCountryChange} /></div>
           <Field label="最低库存"><Input min={0} type="number" value={props.minAvailable} onChange={(event) => props.onMinAvailableChange(numberInputValue(event.target.value))} /></Field>
-          <Field label="排序"><Select value={props.sort} onChange={(event) => props.onSortChange(event.target.value as OfferSort)}><option value="price">按低价</option><option value="available">按库存</option><option value="provider">按平台</option></Select></Field>
+          <Field label="排序" className="md:col-span-2"><Select value={props.sort} onChange={(event) => props.onSortChange(event.target.value as OfferSort)}><option value="price">按低价</option><option value="available">按库存</option><option value="provider">按平台</option></Select></Field>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <ProviderPicker choices={props.choices} selectedKeys={props.providerKeys} onChange={props.onProviderKeysChange} />

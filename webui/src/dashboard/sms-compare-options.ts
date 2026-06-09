@@ -1,4 +1,5 @@
 import type { SmsApplicationInfo, SmsCountry, SmsPriceOffer } from '../proto/byte/v/forge/contracts/sms/v1/sms';
+import type { SearchSelectOption } from './sms-search-select';
 
 export type ApplicationChoice = {
   applicationKey: string;
@@ -40,8 +41,12 @@ export function applicationChoiceLabel(choice: ApplicationChoice) {
 }
 
 export function matchApplicationChoice(value: string, choices: ApplicationChoice[]) {
-  const normalized = normalizeChoiceText(value);
-  return choices.find((choice) => [choice.applicationKey, choice.displayName, applicationChoiceLabel(choice)].some((item) => normalizeChoiceText(item) === normalized));
+  const normalized = normalizeChoiceToken(value);
+  if (!normalized) return undefined;
+  const exact = choices.find((choice) => applicationSearchTokens(choice).some((item) => item === normalized));
+  if (exact) return exact;
+  const partial = choices.filter((choice) => applicationSearchTokens(choice).some((item) => item.includes(normalized)));
+  return partial.length === 1 ? partial[0] : undefined;
 }
 
 export function countryChoiceValue(choice: CountryChoice) {
@@ -60,6 +65,26 @@ export function countryValue(iso2: string, callingCode: string) {
 export function parseCountryValue(value: string) {
   const [countryISO2 = '', countryCallingCode = ''] = value.split('|');
   return { countryISO2, countryCallingCode };
+}
+
+export function applicationSelectOptions(choices: ApplicationChoice[]): SearchSelectOption[] {
+  return choices.map((choice) => ({
+    value: choice.applicationKey,
+    label: applicationChoiceLabel(choice),
+    description: choice.applicationKey !== choice.displayName ? choice.applicationKey : undefined,
+    badge: choice.offerCount > 0 ? String(choice.offerCount) : undefined,
+    keywords: applicationSearchTokens(choice)
+  }));
+}
+
+export function countrySelectOptions(choices: CountryChoice[]): SearchSelectOption[] {
+  return choices.map((choice) => ({
+    value: countryChoiceValue(choice),
+    label: choice.countryName || choice.countryISO2 || `+${choice.countryCallingCode}`,
+    description: [choice.countryISO2, choice.countryCallingCode && `+${choice.countryCallingCode}`].filter(Boolean).join(' · '),
+    badge: choice.offerCount > 0 ? String(choice.offerCount) : undefined,
+    keywords: [choice.countryName, choice.countryISO2, choice.countryCallingCode, `+${choice.countryCallingCode}`].filter(Boolean)
+  }));
 }
 
 function upsertApplication(items: Map<string, ApplicationChoice>, key: string, name: string, offerCount: number) {
@@ -92,6 +117,10 @@ function bestDisplayName(current = '', candidate = '', fallback = '') {
   return current;
 }
 
-function normalizeChoiceText(value: string) {
-  return value.trim().toLowerCase();
+function applicationSearchTokens(choice: ApplicationChoice) {
+  return [choice.applicationKey, choice.displayName, applicationChoiceLabel(choice)].map(normalizeChoiceToken).filter(Boolean);
+}
+
+function normalizeChoiceToken(value: string) {
+  return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
 }

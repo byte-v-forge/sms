@@ -22,6 +22,8 @@ func MapTextError(text string) error {
 		return core.NewError(core.CodeOrderNotFound, "upstream order not found", false)
 	case code == "NO_BALANCE":
 		return core.NewError(core.CodeInsufficientBalance, "provider balance is insufficient", false)
+	case strings.Contains(code, "OFFER_NOT_FOUND"):
+		return core.NewError(core.CodeNoNumberAvailable, "upstream offer is no longer available", true)
 	case code == "NO_NUMBERS", code == "NO_NUMBER", strings.Contains(text, "NO_NUMBERS"):
 		return core.NewError(core.CodeNoNumberAvailable, "no upstream number available", true)
 	case code == "EARLY_CANCEL_DENIED":

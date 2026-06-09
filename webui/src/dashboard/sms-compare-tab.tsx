@@ -78,7 +78,8 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
   }
 
   function draftQuery(nextSort: OfferSort, providerKeys: string[]): CompareQuery {
-    return { searchText: searchText.trim(), applicationKey, countryISO2, countryCallingCode, providerKeys: [...providerKeys], minAvailable: Math.max(0, minAvailable), sort: nextSort };
+    const resolvedApplication = applicationKey || matchApplicationChoice(searchText, applicationOptions)?.applicationKey || '';
+    return { searchText: searchText.trim(), applicationKey: resolvedApplication, countryISO2, countryCallingCode, providerKeys: [...providerKeys], minAvailable: Math.max(0, minAvailable), sort: nextSort };
   }
 
   function resetFilters() {
@@ -92,11 +93,19 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
     setSelectedKeys(enabledKeys);
   }
 
-  function changeService(value: string) {
-    const nextApplicationKey = matchApplicationChoice(value, applicationOptions)?.applicationKey || '';
+  function changeServiceSearch(value: string) {
     setSearchText(value);
-    setApplicationKey(nextApplicationKey);
-    if (nextApplicationKey !== applicationKey) changeCountry('');
+    if (applicationKey && value !== applicationLabel(applicationKey)) {
+      setApplicationKey('');
+      changeCountry('');
+    }
+  }
+
+  function changeApplication(value: string) {
+    const selected = applicationOptions.find((item) => item.applicationKey === value);
+    setApplicationKey(value);
+    setSearchText(selected ? selected.displayName || selected.applicationKey : '');
+    if (value !== applicationKey) changeCountry('');
   }
 
   function changeCountry(value: string) {
@@ -112,12 +121,14 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
         applications={applicationOptions}
         countries={countryOptions}
         searchText={searchText}
+        applicationKey={applicationKey}
         countryValue={countryValue(countryISO2, countryCallingCode)}
         providerKeys={activeKeys}
         minAvailable={minAvailable}
         sort={sort}
         canSubmit={canSearch(activeKeys)}
-        onSearchTextChange={changeService}
+        onSearchTextChange={changeServiceSearch}
+        onApplicationChange={changeApplication}
         onCountryChange={changeCountry}
         onProviderKeysChange={setSelectedKeys}
         onMinAvailableChange={setMinAvailable}
@@ -129,4 +140,9 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
       <OffersTable offers={offers} top={top} loading={offersQuery.isLoading} queried={queried} error={error} acquiringOfferId={acquiringOfferId} onAcquire={onAcquire} />
     </div>
   );
+
+  function applicationLabel(key: string) {
+    const selected = applicationOptions.find((item) => item.applicationKey === key);
+    return selected?.displayName || selected?.applicationKey || '';
+  }
 }
