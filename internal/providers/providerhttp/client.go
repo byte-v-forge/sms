@@ -2,22 +2,9 @@ package providerhttp
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/byte-v-forge/sms/internal/platform/timex"
 )
-
-type HTTPDoer interface {
-	Do(req *http.Request) (*http.Response, error)
-}
-
-type RequestFactory func(context.Context) (*http.Request, error)
-
-type Response struct {
-	StatusCode int
-	Header     http.Header
-	Body       []byte
-}
 
 func Do(ctx context.Context, doer HTTPDoer, factory RequestFactory, policy RetryPolicy) (Response, error) {
 	policy = normalizeRetryPolicy(policy)
