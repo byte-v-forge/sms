@@ -6,8 +6,6 @@ import (
 	"time"
 
 	commonv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/contracts/common/v1"
-	"github.com/byte-v-forge/sms/internal/core"
-	"github.com/byte-v-forge/sms/internal/platform/eventbus"
 	"github.com/byte-v-forge/sms/internal/platform/eventcatalog"
 	"github.com/byte-v-forge/sms/internal/platform/eventoutbox"
 	"google.golang.org/protobuf/proto"
@@ -37,21 +35,5 @@ func (b *OrderEventRecorder) record(_ context.Context, definition eventcatalog.D
 }
 
 func (b *OrderEventRecorder) metadata(eventName string, subject string, eventID string, correlationID string, occurredAt time.Time) *commonv1.EventMetadata {
-	return eventbus.NewEventMetadata(eventbus.EventMetadataConfig{
-		EventID:       eventID,
-		EventName:     eventName,
-		EventVersion:  eventcatalog.EventVersionV1,
-		OccurredAt:    occurredAt,
-		SourceService: b.source,
-		Subject:       subject,
-		CorrelationID: correlationID,
-	})
-}
-
-func orderAttributes(order core.Order) map[string]string {
-	return eventbus.Attributes(
-		"order_id", order.ID,
-		"provider_key", order.ProviderKey,
-		"status", string(order.Status),
-	)
+	return newOrderEventMetadata(b.source, eventName, subject, eventID, correlationID, occurredAt)
 }
