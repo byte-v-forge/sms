@@ -2369,7 +2369,7 @@ func (x *ListSmsProvidersResponse) GetError() *SmsError {
 
 type ListSmsApplicationsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProviderKey   string                 `protobuf:"bytes,1,opt,name=provider_key,json=providerKey,proto3" json:"provider_key,omitempty"`
+	ProviderKeys  []string               `protobuf:"bytes,1,rep,name=provider_keys,json=providerKeys,proto3" json:"provider_keys,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2404,11 +2404,11 @@ func (*ListSmsApplicationsRequest) Descriptor() ([]byte, []int) {
 	return file_byte_v_forge_contracts_sms_v1_sms_proto_rawDescGZIP(), []int{34}
 }
 
-func (x *ListSmsApplicationsRequest) GetProviderKey() string {
+func (x *ListSmsApplicationsRequest) GetProviderKeys() []string {
 	if x != nil {
-		return x.ProviderKey
+		return x.ProviderKeys
 	}
-	return ""
+	return nil
 }
 
 type ListSmsApplicationsResponse struct {
@@ -2464,10 +2464,11 @@ func (x *ListSmsApplicationsResponse) GetError() *SmsError {
 }
 
 type ListSmsCountriesRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ProviderKey   string                 `protobuf:"bytes,1,opt,name=provider_key,json=providerKey,proto3" json:"provider_key,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	ProviderKeys   []string               `protobuf:"bytes,1,rep,name=provider_keys,json=providerKeys,proto3" json:"provider_keys,omitempty"`
+	ApplicationKey string                 `protobuf:"bytes,2,opt,name=application_key,json=applicationKey,proto3" json:"application_key,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *ListSmsCountriesRequest) Reset() {
@@ -2500,9 +2501,16 @@ func (*ListSmsCountriesRequest) Descriptor() ([]byte, []int) {
 	return file_byte_v_forge_contracts_sms_v1_sms_proto_rawDescGZIP(), []int{36}
 }
 
-func (x *ListSmsCountriesRequest) GetProviderKey() string {
+func (x *ListSmsCountriesRequest) GetProviderKeys() []string {
 	if x != nil {
-		return x.ProviderKey
+		return x.ProviderKeys
+	}
+	return nil
+}
+
+func (x *ListSmsCountriesRequest) GetApplicationKey() string {
+	if x != nil {
+		return x.ApplicationKey
 	}
 	return ""
 }
@@ -3107,14 +3115,15 @@ const file_byte_v_forge_contracts_sms_v1_sms_proto_rawDesc = "" +
 	"\x17ListSmsProvidersRequest\"\xa7\x01\n" +
 	"\x18ListSmsProvidersResponse\x12L\n" +
 	"\tproviders\x18\x01 \x03(\v2..byte.v.forge.contracts.sms.v1.SmsProviderInfoR\tproviders\x12=\n" +
-	"\x05error\x18\x02 \x01(\v2'.byte.v.forge.contracts.sms.v1.SmsErrorR\x05error\"?\n" +
-	"\x1aListSmsApplicationsRequest\x12!\n" +
-	"\fprovider_key\x18\x01 \x01(\tR\vproviderKey\"\xb3\x01\n" +
+	"\x05error\x18\x02 \x01(\v2'.byte.v.forge.contracts.sms.v1.SmsErrorR\x05error\"A\n" +
+	"\x1aListSmsApplicationsRequest\x12#\n" +
+	"\rprovider_keys\x18\x01 \x03(\tR\fproviderKeys\"\xb3\x01\n" +
 	"\x1bListSmsApplicationsResponse\x12U\n" +
 	"\fapplications\x18\x01 \x03(\v21.byte.v.forge.contracts.sms.v1.SmsApplicationInfoR\fapplications\x12=\n" +
-	"\x05error\x18\x02 \x01(\v2'.byte.v.forge.contracts.sms.v1.SmsErrorR\x05error\"<\n" +
-	"\x17ListSmsCountriesRequest\x12!\n" +
-	"\fprovider_key\x18\x01 \x01(\tR\vproviderKey\"\xa2\x01\n" +
+	"\x05error\x18\x02 \x01(\v2'.byte.v.forge.contracts.sms.v1.SmsErrorR\x05error\"g\n" +
+	"\x17ListSmsCountriesRequest\x12#\n" +
+	"\rprovider_keys\x18\x01 \x03(\tR\fproviderKeys\x12'\n" +
+	"\x0fapplication_key\x18\x02 \x01(\tR\x0eapplicationKey\"\xa2\x01\n" +
 	"\x18ListSmsCountriesResponse\x12G\n" +
 	"\tcountries\x18\x01 \x03(\v2).byte.v.forge.contracts.sms.v1.SmsCountryR\tcountries\x12=\n" +
 	"\x05error\x18\x02 \x01(\v2'.byte.v.forge.contracts.sms.v1.SmsErrorR\x05error\"\xbe\x01\n" +

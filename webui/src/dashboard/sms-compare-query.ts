@@ -41,7 +41,10 @@ export function compareQuerySearchParams(query: CompareQuery) {
 
 export function smsPriceOfferQuery(query: CompareQuery): SmsPriceOfferQuery {
   return {
-    providerKeys: query.providerKeys
+    providerKeys: query.providerKeys,
+    applicationKey: query.applicationKey || undefined,
+    countryISO2: query.countryISO2 || undefined,
+    countryCallingCode: query.countryCallingCode || undefined
   };
 }
 

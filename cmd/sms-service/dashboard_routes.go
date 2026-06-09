@@ -13,6 +13,8 @@ func (s *dashboardServer) routes() http.Handler {
 	mux.HandleFunc("/settings/provider-plugins", s.handleSMSSettingsProviderPlugins)
 	mux.HandleFunc("/settings/providers/", s.handleSMSSettingsProvider)
 	mux.HandleFunc("/settings/providers", s.handleSMSSettingsProviders)
+	mux.HandleFunc("/applications", s.handleSMSApplications)
+	mux.HandleFunc("/countries", s.handleSMSCountries)
 	mux.HandleFunc("/price-offers", s.handleSMSPriceOffers)
 	mux.HandleFunc("/order-codes", s.handleSMSOrderCodes)
 	mux.HandleFunc("/orders/acquire", s.handleSMSOrderAcquire)

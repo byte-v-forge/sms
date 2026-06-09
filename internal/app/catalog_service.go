@@ -14,6 +14,14 @@ type routeOfferProvider interface {
 	ListRouteOffers(context.Context, core.RouteOfferQuery) ([]core.RouteOffer, error)
 }
 
+type applicationCatalogProvider interface {
+	ListCatalogApplications(context.Context) ([]core.CatalogApplication, error)
+}
+
+type countryCatalogProvider interface {
+	ListCatalogCountries(context.Context, string) ([]core.CatalogCountry, error)
+}
+
 type CatalogService struct {
 	configs          ProviderConfigStore
 	providers        *providerspi.Registry

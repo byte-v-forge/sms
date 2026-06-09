@@ -19,5 +19,5 @@ func (c *Client) ListRouteOffers(ctx context.Context, query core.RouteOfferQuery
 	if err != nil {
 		return nil, err
 	}
-	return fiveSimRouteOffers(priceOffers, fiveSimCountriesByID(countries)), nil
+	return fiveSimRouteOffers(priceOffers, fiveSimCountriesByID(countries), c.catalogApplicationNames(ctx)), nil
 }

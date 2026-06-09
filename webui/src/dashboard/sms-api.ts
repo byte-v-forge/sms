@@ -2,6 +2,8 @@ import { api } from '../ui';
 import type {
   AcquireNumberRequest,
   AcquireNumberResponse,
+  ListSmsApplicationsResponse,
+  ListSmsCountriesResponse,
   ListSmsPriceOffersResponse,
   SmsPriceOffer
 } from '../proto/byte/v/forge/contracts/sms/v1/sms';
@@ -20,6 +22,14 @@ import type {
 
 export type SmsPriceOfferQuery = {
   providerKeys: string[];
+  applicationKey?: string;
+  countryISO2?: string;
+  countryCallingCode?: string;
+};
+
+export type SmsCatalogQuery = {
+  providerKeys: string[];
+  applicationKey?: string;
 };
 
 export const smsKeys = {
@@ -29,6 +39,8 @@ export const smsKeys = {
   orderCodesRoot: ['sms', 'order-codes'] as const,
   orderCodes: (orderIds: string[]) => ['sms', 'order-codes', orderIds.join(',')] as const,
   balance: (providerKey: string) => ['sms', 'balance', providerKey] as const,
+  applications: (query?: SmsCatalogQuery) => ['sms', 'applications', query] as const,
+  countries: (query?: SmsCatalogQuery) => ['sms', 'countries', query] as const,
   priceOffers: (query?: SmsPriceOfferQuery) => ['sms', 'price-offers', query] as const
 };
 
@@ -68,9 +80,21 @@ export function cancelSmsOrder(id: string) {
 }
 
 export function listSmsPriceOffers(query: SmsPriceOfferQuery) {
-  const params = new URLSearchParams();
-  query.providerKeys.forEach((providerKey) => params.append('provider_key', providerKey));
+  const params = smsQueryParams(query);
+  if (query.applicationKey) params.set('application_key', query.applicationKey);
+  if (query.countryISO2) params.set('country_iso2', query.countryISO2);
+  if (query.countryCallingCode) params.set('country_calling_code', query.countryCallingCode);
   return api<ListSmsPriceOffersResponse>(`/api/sms/price-offers?${params.toString()}`);
+}
+
+export function listSmsApplications(query: SmsCatalogQuery) {
+  return api<ListSmsApplicationsResponse>(`/api/sms/applications?${smsQueryParams(query).toString()}`);
+}
+
+export function listSmsCountries(query: SmsCatalogQuery) {
+  const params = smsQueryParams(query);
+  if (query.applicationKey) params.set('application_key', query.applicationKey);
+  return api<ListSmsCountriesResponse>(`/api/sms/countries?${params.toString()}`);
 }
 
 export function acquireSmsFromOffer(offer: SmsPriceOffer) {
@@ -97,4 +121,10 @@ export function acquireSmsFromOffer(offer: SmsPriceOffer) {
 function randomRequestID() {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
   return `sms-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function smsQueryParams(query: SmsCatalogQuery) {
+  const params = new URLSearchParams();
+  query.providerKeys.forEach((providerKey) => params.append('provider_key', providerKey));
+  return params;
 }

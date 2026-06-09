@@ -1,7 +1,8 @@
 import type { FormEvent, ReactNode } from 'react';
 import { RotateCcw, Search } from 'lucide-react';
 import { Button, Card, Input, Select } from '../ui';
-import { applicationChoiceLabel, countryChoiceLabel, countryChoiceValue, type ApplicationChoice, type CountryChoice, type OfferSort, type ProviderChoice } from './sms-compare-data';
+import { type OfferSort, type ProviderChoice } from './sms-compare-data';
+import { applicationChoiceLabel, countryChoiceLabel, countryChoiceValue, type ApplicationChoice, type CountryChoice } from './sms-compare-options';
 import { numberInputValue } from './sms-compare-query';
 import { ProviderPicker } from './sms-provider-picker';
 
@@ -30,7 +31,7 @@ export function SmsCompareForm(props: SmsCompareFormProps) {
       <form className="grid gap-3" onSubmit={props.onSubmit}>
         <div className="grid gap-2 md:grid-cols-6">
           <Field label="应用服务" className="md:col-span-3">
-            <Input list="sms-application-options" placeholder="搜索/选择服务，例如 WhatsApp" value={props.searchText} onChange={(event) => props.onSearchTextChange(event.target.value)} />
+            <Input autoComplete="off" list="sms-application-options" placeholder="搜索/选择服务，例如 WhatsApp" value={props.searchText} onChange={(event) => props.onSearchTextChange(event.target.value)} />
             <datalist id="sms-application-options">
               {props.applications.map((item) => <option key={item.applicationKey} value={applicationChoiceLabel(item)} />)}
             </datalist>

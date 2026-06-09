@@ -27,6 +27,20 @@ func smsPriceOffersRequest(r *http.Request) *smsv1.ListSmsPriceOffersRequest {
 	}
 }
 
+func smsApplicationsRequest(r *http.Request) *smsv1.ListSmsApplicationsRequest {
+	return &smsv1.ListSmsApplicationsRequest{
+		ProviderKeys: smsProviderKeysFromQuery(r.URL.Query()),
+	}
+}
+
+func smsCountriesRequest(r *http.Request) *smsv1.ListSmsCountriesRequest {
+	query := r.URL.Query()
+	return &smsv1.ListSmsCountriesRequest{
+		ProviderKeys:   smsProviderKeysFromQuery(query),
+		ApplicationKey: strings.TrimSpace(query.Get("application_key")),
+	}
+}
+
 func smsListOrderCodesRequest(r *http.Request) *smsinternalv1.ListOrderCodesRequest {
 	return &smsinternalv1.ListOrderCodesRequest{
 		OrderIds:      orderIDsFromQuery(r),

@@ -16,13 +16,3 @@ type countryMetadata struct {
 	ISO2        string
 	CallingCode string
 }
-
-var heroSMSServiceAliases = map[string][]string{
-	"gojek":    {"ni"},
-	"whatsapp": {"wa"},
-}
-
-var heroSMSServiceNames = map[string]string{
-	"ni": "Gojek",
-	"wa": "Whatsapp",
-}

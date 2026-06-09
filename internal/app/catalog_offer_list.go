@@ -17,11 +17,10 @@ func (s *CatalogService) ListPriceOffers(ctx context.Context, query core.RouteOf
 
 func (s *CatalogService) ListPriceOffersDetailed(ctx context.Context, query core.RouteOfferQuery) (RouteOfferList, error) {
 	query = normalizeOfferQuery(query)
-	configs, err := s.configs.ListProviderConfigs(ctx, false, singleProviderKey(query.ProviderKeys))
+	configs, err := s.catalogProviderConfigs(ctx, query.ProviderKeys)
 	if err != nil {
 		return RouteOfferList{}, err
 	}
-	configs = filteredCatalogProviderConfigs(configs, normalizedProviderFilter(query.ProviderKeys))
 	results := make([]catalogProviderOffersResult, len(configs))
 	group, groupCtx := errgroup.WithContext(ctx)
 	group.SetLimit(catalogProviderConcurrency)

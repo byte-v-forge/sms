@@ -288,7 +288,7 @@ message ListSmsProvidersResponse {
 }
 
 message ListSmsApplicationsRequest {
-  string provider_key = 1;
+  repeated string provider_keys = 1;
 }
 
 message ListSmsApplicationsResponse {
@@ -297,7 +297,8 @@ message ListSmsApplicationsResponse {
 }
 
 message ListSmsCountriesRequest {
-  string provider_key = 1;
+  repeated string provider_keys = 1;
+  string application_key = 2;
 }
 
 message ListSmsCountriesResponse {

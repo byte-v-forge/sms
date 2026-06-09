@@ -2,7 +2,7 @@ import type { DecimalMoney } from '../proto/byte/v/forge/contracts/sms/v1/sms';
 
 export function moneyText(money?: DecimalMoney) {
   if (!money?.amount_decimal) return '-';
-  return [money.currency_code, money.amount_decimal].filter(Boolean).join(' ');
+  return `$${money.amount_decimal}`;
 }
 
 export function remainingText(expiresAt?: string) {

@@ -21,3 +21,13 @@ type catalogProviderOffersResult struct {
 	offers              []core.RouteOffer
 	err                 error
 }
+
+type catalogProviderApplicationsResult struct {
+	applications []core.CatalogApplication
+	err          error
+}
+
+type catalogProviderCountriesResult struct {
+	countries []core.CatalogCountry
+	err       error
+}

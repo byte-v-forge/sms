@@ -4,9 +4,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import type { SmsPriceOffer } from '../proto/byte/v/forge/contracts/sms/v1/sms';
 import type { SmsProviderConfig, SmsProviderPluginDescriptor } from '../proto/byte/v/forge/sms/internal/v1/sms_internal';
-import { listSmsPriceOffers, smsKeys } from './sms-api';
+import { listSmsApplications, listSmsCountries, listSmsPriceOffers, smsKeys } from './sms-api';
 import { SmsCompareForm } from './sms-compare-form';
-import { applicationChoices, bestOffer, countryChoices, countryValue, enabledProviderKeys, filterAndSortOffers, matchApplicationChoice, parseCountryValue, providerChoices, type OfferSort } from './sms-compare-data';
+import { bestOffer, enabledProviderKeys, filterAndSortOffers, providerChoices, type OfferSort } from './sms-compare-data';
+import { applicationChoices, countryChoices, countryValue, matchApplicationChoice, parseCountryValue } from './sms-compare-options';
 import { canSearch, compareQueryFromSearch, compareQuerySearchParams, smsPriceOfferQuery, type CompareQuery } from './sms-compare-query';
 import { CompareSummary, OffersTable } from './sms-compare-table';
 
@@ -49,13 +50,21 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
   const currentQuery: CompareQuery = { searchText: searchText.trim(), applicationKey, countryISO2, countryCallingCode, providerKeys: activeKeys, minAvailable: Math.max(0, minAvailable), sort };
   const serverQuery = smsPriceOfferQuery(currentQuery);
   const queried = canSearch(serverQuery.providerKeys);
+  const applicationsQuery = useQuery({ queryKey: smsKeys.applications({ providerKeys: activeKeys }), queryFn: () => listSmsApplications({ providerKeys: activeKeys }), enabled: queried });
+  const countriesQuery = useQuery({ queryKey: smsKeys.countries({ providerKeys: activeKeys, applicationKey: applicationKey || undefined }), queryFn: () => listSmsCountries({ providerKeys: activeKeys, applicationKey: applicationKey || undefined }), enabled: queried });
   const offersQuery = useQuery({ queryKey: smsKeys.priceOffers(serverQuery), queryFn: () => listSmsPriceOffers(serverQuery), enabled: queried });
   const allOffers = offersQuery.data?.offers || [];
-  const applicationOptions = applicationChoices(allOffers, activeKeys);
-  const countryOptions = countryChoices(allOffers, activeKeys, applicationKey, searchText);
+  const applicationOptions = applicationChoices(applicationsQuery.data?.applications || [], allOffers);
+  const countryOptions = countryChoices(countriesQuery.data?.countries || [], allOffers);
   const offers = filterAndSortOffers(allOffers, serverQuery.providerKeys, currentQuery.searchText, currentQuery.applicationKey, currentQuery.countryISO2, currentQuery.countryCallingCode, currentQuery.minAvailable, currentQuery.sort);
   const top = bestOffer(offers);
   const error = offersQuery.data?.error?.message;
+
+  useEffect(() => {
+    if (searchText || !applicationKey || applicationOptions.length === 0) return;
+    const selected = applicationOptions.find((item) => item.applicationKey === applicationKey);
+    if (selected) setSearchText(selected.displayName || selected.applicationKey);
+  }, [applicationKey, applicationOptions, searchText]);
 
   function submitQuery(event?: FormEvent) {
     event?.preventDefault();
@@ -84,8 +93,10 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
   }
 
   function changeService(value: string) {
+    const nextApplicationKey = matchApplicationChoice(value, applicationOptions)?.applicationKey || '';
     setSearchText(value);
-    setApplicationKey(matchApplicationChoice(value, applicationOptions)?.applicationKey || '');
+    setApplicationKey(nextApplicationKey);
+    if (nextApplicationKey !== applicationKey) changeCountry('');
   }
 
   function changeCountry(value: string) {

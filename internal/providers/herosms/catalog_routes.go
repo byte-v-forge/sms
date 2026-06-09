@@ -20,5 +20,5 @@ func (c *Client) ListRouteOffers(ctx context.Context, query core.RouteOfferQuery
 	if err != nil {
 		return nil, err
 	}
-	return heroSMSRouteOffersFromPrices(query, priceOffers, countries, country, time.Now().UTC()), nil
+	return heroSMSRouteOffersFromPrices(query, priceOffers, countries, country, c.catalogServiceNames(ctx), time.Now().UTC()), nil
 }

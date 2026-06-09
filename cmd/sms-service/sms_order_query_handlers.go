@@ -39,6 +39,38 @@ func (s *dashboardServer) handleSMSPriceOffers(w http.ResponseWriter, r *http.Re
 	writeProtoJSON(w, http.StatusOK, resp)
 }
 
+func (s *dashboardServer) handleSMSApplications(w http.ResponseWriter, r *http.Request) {
+	if !requireHTTPMethod(w, r, http.MethodGet) {
+		return
+	}
+	if s.smsCatalogClient == nil {
+		writeError(w, http.StatusServiceUnavailable, errors.New("sms catalog service is not configured"))
+		return
+	}
+	resp, err := s.smsCatalogClient.ListSmsApplications(r.Context(), smsApplicationsRequest(r))
+	if err != nil {
+		writeProtoJSON(w, http.StatusOK, &smsv1.ListSmsApplicationsResponse{Error: app.PublicError(err)})
+		return
+	}
+	writeProtoJSON(w, http.StatusOK, resp)
+}
+
+func (s *dashboardServer) handleSMSCountries(w http.ResponseWriter, r *http.Request) {
+	if !requireHTTPMethod(w, r, http.MethodGet) {
+		return
+	}
+	if s.smsCatalogClient == nil {
+		writeError(w, http.StatusServiceUnavailable, errors.New("sms catalog service is not configured"))
+		return
+	}
+	resp, err := s.smsCatalogClient.ListSmsCountries(r.Context(), smsCountriesRequest(r))
+	if err != nil {
+		writeProtoJSON(w, http.StatusOK, &smsv1.ListSmsCountriesResponse{Error: app.PublicError(err)})
+		return
+	}
+	writeProtoJSON(w, http.StatusOK, resp)
+}
+
 func (s *dashboardServer) handleSMSOrderCodes(w http.ResponseWriter, r *http.Request) {
 	if !requireHTTPMethod(w, r, http.MethodGet) {
 		return
