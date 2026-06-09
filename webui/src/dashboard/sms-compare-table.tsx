@@ -3,7 +3,7 @@ import { Badge, Button, Card, EmptyBlock, Table, TableBody, TableCell, TableHead
 import type { SmsPriceOffer, SmsProviderLookupError } from '../proto/byte/v/forge/contracts/sms/v1/sms';
 import { normalizeChoiceToken } from './sms-compare-text';
 import { dateTimeText, moneyText } from './sms-format';
-import { offerRowKey } from './sms-compare-data';
+import { availableCount, offerRowKey } from './sms-compare-data';
 
 type CompareSummaryProps = {
   loading: boolean;
@@ -92,7 +92,7 @@ function OfferRow({ offer, bestKey, acquiringOfferId, serviceName, onAcquire }: 
       <TableCell>{offerApplicationName(offer, serviceName)}</TableCell>
       <TableCell>{[offer.country_name, offer.country_iso2, offer.country_calling_code && `+${offer.country_calling_code}`].filter(Boolean).join(' · ') || '-'}</TableCell>
       <TableCell>{key === bestKey ? <Badge>{moneyText(offer.price)}</Badge> : moneyText(offer.price)}</TableCell>
-      <TableCell>{offer.available_count}</TableCell>
+      <TableCell>{availableCount(offer)}</TableCell>
       <TableCell><CapabilityBadges offer={offer} /></TableCell>
       <TableCell>{dateTimeText(offer.observed_at)}</TableCell>
       <TableCell className="text-right"><Button aria-label="按此报价取号" title="按此报价取号" size="icon-sm" disabled={!offer.offer_ref || acquiringOfferId === key} onClick={() => onAcquire(offer)}>{acquiringOfferId === key ? <LoaderCircle className="size-4 animate-spin" /> : <PhoneCall className="size-4" />}</Button></TableCell>

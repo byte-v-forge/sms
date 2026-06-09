@@ -39,7 +39,7 @@ export function filterAndSortOffers(offers: SmsPriceOffer[], providerKeys: strin
   return offers
     .filter((offer) => providerFilter.size === 0 || providerFilter.has(offer.provider_key))
     .filter((offer) => countryMatches(offer, countryISO2, countryCallingCode))
-    .filter((offer) => offer.available_count >= minAvailable)
+    .filter((offer) => availableCount(offer) >= minAvailable)
     .sort((left, right) => compareOffers(left, right, sort));
 }
 
@@ -47,14 +47,18 @@ export function bestOffer(offers: SmsPriceOffer[]) {
   return [...offers].sort((left, right) => compareOffers(left, right, 'price'))[0];
 }
 
+export function availableCount(offer: SmsPriceOffer) {
+  return Number(offer.available_count || 0);
+}
+
 export function offerRowKey(offer: SmsPriceOffer) {
   return offer.offer_ref?.offer_id || [offer.provider_key, offer.application_key, offer.country_iso2, offer.country_calling_code, offer.price?.amount_decimal].join(':');
 }
 
 function compareOffers(left: SmsPriceOffer, right: SmsPriceOffer, sort: OfferSort) {
-  if (sort === 'available') return right.available_count - left.available_count || compareMoney(left, right);
+  if (sort === 'available') return availableCount(right) - availableCount(left) || compareMoney(left, right);
   if (sort === 'provider') return left.provider_display_name.localeCompare(right.provider_display_name) || compareMoney(left, right);
-  return compareMoney(left, right) || right.available_count - left.available_count;
+  return compareMoney(left, right) || availableCount(right) - availableCount(left);
 }
 
 function compareMoney(left: SmsPriceOffer, right: SmsPriceOffer) {

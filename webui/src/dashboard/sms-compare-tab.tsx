@@ -29,7 +29,7 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
   const [applicationSnapshot, setApplicationSnapshot] = useState<ApplicationChoice>();
   const [countryISO2, setCountryISO2] = useState('');
   const [countryCallingCode, setCountryCallingCode] = useState('');
-  const [minAvailable, setMinAvailable] = useState(1);
+  const [minAvailable, setMinAvailable] = useState(0);
   const [sort, setSort] = useState<OfferSort>('price');
   const searchKey = searchParams.toString();
   const routeQuery = useMemo(() => compareQueryFromSearch(new URLSearchParams(searchKey)), [searchKey]);
@@ -99,7 +99,7 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
     setApplicationSnapshot(undefined);
     setCountryISO2('');
     setCountryCallingCode('');
-    setMinAvailable(1);
+    setMinAvailable(0);
     setSort('price');
     setSelectedKeys(enabledKeys);
   }
@@ -108,6 +108,7 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
     setServiceText(value);
     setApplicationId('');
     setApplicationSnapshot(undefined);
+    changeCountry('');
   }
 
   function changeApplication(value: string) {
@@ -115,6 +116,7 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
     setApplicationId(value);
     setApplicationSnapshot(selected);
     setServiceText(selected?.displayName || '');
+    changeCountry('');
   }
 
   function changeCountry(value: string) {

@@ -24,7 +24,7 @@ export function compareQueryFromSearch(params: URLSearchParams): CompareQuery {
     countryISO2: params.get('country_iso2') || '',
     countryCallingCode: params.get('country_calling_code') || '',
     providerKeys: [],
-    minAvailable: Math.max(0, numberInputValue(params.get('min_available') || '1')),
+    minAvailable: Math.max(0, numberInputValue(params.get('min_available') || '0')),
     sort: offerSort(params.get('sort'))
   };
 }
