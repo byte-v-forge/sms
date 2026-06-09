@@ -2,16 +2,12 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"strings"
 	"time"
 
 	eventbusadapter "github.com/byte-v-forge/sms/internal/adapters/eventbus"
 	"github.com/byte-v-forge/sms/internal/app"
-	smseventcatalog "github.com/byte-v-forge/sms/internal/eventcatalog"
-	"github.com/byte-v-forge/sms/internal/platform/eventbus"
-	"github.com/byte-v-forge/sms/internal/platform/eventcatalog"
 	"github.com/byte-v-forge/sms/internal/platform/eventoutbox"
 	"github.com/byte-v-forge/sms/internal/platform/natseventbus"
 	"golang.org/x/sync/errgroup"
@@ -51,47 +47,4 @@ func startEventWorkers(group *errgroup.Group, ctx context.Context, cfg config, p
 		group.Go(start)
 	}
 	return nil
-}
-
-func orderEventWorkerStarts(ctx context.Context, cfg config, platformEventBus *natseventbus.Bus, orderService *app.OrderService) ([]func() error, error) {
-	workers := []orderEventWorker{
-		{
-			name:       "SMS order acquire",
-			definition: smseventcatalog.OrderAcquireRequested,
-			run: func(consumer eventbus.Consumer) error {
-				return eventbusadapter.RunOrderAcquireWorker(ctx, consumer, orderService)
-			},
-		},
-		{
-			name:       "SMS order poll",
-			definition: smseventcatalog.OrderPollRequested,
-			run: func(consumer eventbus.Consumer) error {
-				return eventbusadapter.RunOrderPollWorker(ctx, consumer, orderService)
-			},
-		},
-		{
-			name:       "SMS order cancel",
-			definition: smseventcatalog.OrderCancelRequested,
-			run: func(consumer eventbus.Consumer) error {
-				return eventbusadapter.RunOrderCancelWorker(ctx, consumer, orderService)
-			},
-		},
-	}
-	starts := make([]func() error, 0, len(workers))
-	for _, worker := range workers {
-		consumer, err := platformEventBus.PullWorkerForDefinition(cfg.EventStreamName, worker.definition, orderEventWorkerBatch, orderEventWorkerAckWait)
-		if err != nil {
-			return nil, fmt.Errorf("initialize %s worker: %w", worker.name, err)
-		}
-		run := worker.run
-		consumerForWorker := consumer
-		starts = append(starts, func() error { return run(consumerForWorker) })
-	}
-	return starts, nil
-}
-
-type orderEventWorker struct {
-	name       string
-	definition eventcatalog.Definition
-	run        func(eventbus.Consumer) error
 }
