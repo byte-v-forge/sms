@@ -6,6 +6,7 @@ type PriceOffer struct {
 	CountryID          string
 	UpstreamServiceKey string
 	Operator           string
+	OperatorName       string
 	Price              core.Money
 	AvailableCount     int
 }

@@ -16,7 +16,7 @@ func (c *Client) ListRouteOffers(ctx context.Context, query core.RouteOfferQuery
 	if query.ApplicationKey != "" && service == "" {
 		return nil, nil
 	}
-	countries, err := c.ListCountries(ctx)
+	countries, err := c.listRouteCountries(ctx, service)
 	if err != nil {
 		return nil, err
 	}

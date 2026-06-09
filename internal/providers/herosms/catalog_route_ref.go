@@ -10,7 +10,7 @@ func heroSMSRoute(applicationKey string, offer PriceOffer, metadata countryMetad
 		CountryISO2:        metadata.ISO2,
 		CountryCallingCode: metadata.CallingCode,
 		ProviderCountryID:  offer.CountryID,
-		UpstreamProviderID: "any",
+		UpstreamProviderID: heroSMSOperator(offer.Operator),
 		MaxPrice:           offer.Price,
 	}
 }

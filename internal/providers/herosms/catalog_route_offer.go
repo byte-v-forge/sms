@@ -9,9 +9,11 @@ import (
 
 func heroSMSRouteOffer(query core.RouteOfferQuery, offer PriceOffer, metadata countryMetadata, serviceNames map[string]string, observedAt time.Time) core.RouteOffer {
 	applicationKey := heroSMSOfferApplicationKey(query, offer)
+	operator := heroSMSOperator(offer.Operator)
 	return core.RouteOffer{
 		ProviderKey:          ProviderKey,
-		UpstreamProviderName: "any",
+		UpstreamProviderID:   operator,
+		UpstreamProviderName: stringx.FirstNonEmpty(offer.OperatorName, operator),
 		ApplicationKey:       applicationKey,
 		ApplicationName:      heroSMSApplicationName(offer.UpstreamServiceKey, serviceNames),
 		CountryISO2:          metadata.ISO2,
