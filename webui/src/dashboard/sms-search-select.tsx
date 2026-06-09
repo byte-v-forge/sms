@@ -20,6 +20,7 @@ type SearchSelectProps = {
   options: SearchSelectOption[];
   contentClassName?: string;
   shouldFilter?: boolean;
+  disabled?: boolean;
   onSearchChange?: (value: string) => void;
   onValueChange: (value: string) => void;
 };
@@ -42,17 +43,22 @@ export function SearchSelect(props: SearchSelectProps) {
   }
 
   function clearValue() {
+    if (props.disabled) return;
     props.onValueChange('');
     changeSearch('');
+  }
+
+  function changeOpen(value: boolean) {
+    setOpen(props.disabled ? false : value);
   }
 
   return (
     <div className="grid gap-1 text-xs font-medium text-muted-foreground">
       <span>{props.label}</span>
       <div className="flex gap-1">
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={open && !props.disabled} onOpenChange={changeOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="h-9 min-w-0 flex-1 justify-between bg-background px-3 font-normal text-foreground">
+            <Button disabled={props.disabled} variant="outline" className="h-9 min-w-0 flex-1 justify-between bg-background px-3 font-normal text-foreground disabled:opacity-70">
               <span className={cn('truncate', !selected && !props.searchValue && 'text-muted-foreground')}>{selectedLabel}</span>
               <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
             </Button>
@@ -67,7 +73,7 @@ export function SearchSelect(props: SearchSelectProps) {
             </Command>
           </PopoverContent>
         </Popover>
-        {(props.value || props.searchValue) && (
+        {!props.disabled && (props.value || props.searchValue) && (
           <Button aria-label={`清空${props.label}`} title={`清空${props.label}`} size="icon" variant="outline" onClick={clearValue}>
             <X className="size-4" />
           </Button>

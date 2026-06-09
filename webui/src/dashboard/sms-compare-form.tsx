@@ -19,6 +19,7 @@ type SmsCompareFormProps = {
   sort: OfferSort;
   canSubmit: boolean;
   countriesLoading: boolean;
+  serviceSelected: boolean;
   onServiceTextChange: (value: string) => void;
   onApplicationChange: (value: string) => void;
   onCountryChange: (value: string) => void;
@@ -34,8 +35,8 @@ export function SmsCompareForm(props: SmsCompareFormProps) {
     <Card className="m-4 mb-0 p-3">
       <form className="grid gap-3" onSubmit={props.onSubmit}>
         <div className="grid gap-2 lg:grid-cols-12">
-          <div className="lg:col-span-5"><SearchSelect label="应用服务" placeholder="搜索服务名称" emptyText="输入服务名称后选择匹配项" value={props.applicationId} searchValue={props.serviceText} options={applicationSelectOptions(props.applications)} shouldFilter={false} contentClassName="lg:w-[32rem]" onSearchChange={props.onServiceTextChange} onValueChange={props.onApplicationChange} /></div>
-          <div className="lg:col-span-3"><SearchSelect label="国家" placeholder="搜索国家/区号" emptyText={props.countriesLoading ? "正在加载支持国家" : "选服务后加载支持国家"} value={props.countryValue} options={countrySelectOptions(props.countries)} contentClassName="w-[min(20rem,calc(100vw-2rem))]" onValueChange={props.onCountryChange} /></div>
+          <div className="lg:col-span-5"><SearchSelect label="1. 应用/服务" placeholder="搜索并选择服务名称" emptyText="输入服务名称后选择匹配项" value={props.applicationId} searchValue={props.serviceText} options={applicationSelectOptions(props.applications)} shouldFilter={false} contentClassName="lg:w-[32rem]" onSearchChange={props.onServiceTextChange} onValueChange={props.onApplicationChange} /></div>
+          <div className="lg:col-span-3"><SearchSelect disabled={!props.serviceSelected} label="2. 支持国家" placeholder={props.serviceSelected ? "选择支持国家" : "先选择应用/服务"} emptyText={countryEmptyText(props.serviceSelected, props.countriesLoading)} value={props.countryValue} options={countrySelectOptions(props.countries)} contentClassName="w-[min(18rem,calc(100vw-2rem))]" onValueChange={props.onCountryChange} /></div>
           <Field label="最低库存"><Input min={0} type="number" value={props.minAvailable} onChange={(event) => props.onMinAvailableChange(numberInputValue(event.target.value))} /></Field>
           <Field label="排序" className="lg:col-span-2"><Select value={props.sort} onChange={(event) => props.onSortChange(event.target.value as OfferSort)}><option value="price">按低价</option><option value="available">按库存</option><option value="provider">按平台</option></Select></Field>
         </div>
@@ -46,7 +47,7 @@ export function SmsCompareForm(props: SmsCompareFormProps) {
             <Button disabled={!props.canSubmit} type="submit"><Search className="size-4" />搜索</Button>
           </div>
         </div>
-        <SearchHint providerKeys={props.providerKeys} />
+        <SearchHint providerKeys={props.providerKeys} serviceSelected={props.serviceSelected} />
       </form>
     </Card>
   );
@@ -56,7 +57,13 @@ function Field({ label, className, children }: { label: string; className?: stri
   return <label className={`grid gap-1 text-xs font-medium text-muted-foreground ${className || ''}`}><span>{label}</span>{children}</label>;
 }
 
-function SearchHint({ providerKeys }: { providerKeys: string[] }) {
+function SearchHint({ providerKeys, serviceSelected }: { providerKeys: string[]; serviceSelected: boolean }) {
   if (providerKeys.length === 0) return <p className="text-xs text-muted-foreground">至少启用并选择一个接码平台后才会加载服务和国家。</p>;
-  return <p className="text-xs text-muted-foreground">直接搜索服务名称，可先选国家；平台内部服务代码只用于后台路由，不在页面展示。</p>;
+  if (!serviceSelected) return <p className="text-xs text-muted-foreground">先搜索并选择应用/服务；选中后再加载该服务在各平台支持的国家。</p>;
+  return <p className="text-xs text-muted-foreground">国家下拉只展示当前服务可用国家；平台内部服务代码只用于后台路由，不在页面展示。</p>;
+}
+
+function countryEmptyText(serviceSelected: boolean, loading: boolean) {
+  if (!serviceSelected) return '先选择应用/服务';
+  return loading ? '正在加载支持国家' : '当前服务没有可用国家';
 }

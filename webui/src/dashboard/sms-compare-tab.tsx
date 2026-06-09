@@ -8,7 +8,7 @@ import { listSmsApplicationsByProvider, smsKeys } from './sms-api';
 import { SmsCompareForm } from './sms-compare-form';
 import { bestOffer, enabledProviderKeys, filterAndSortOffers, providerChoices, type OfferSort } from './sms-compare-data';
 import { applicationChoices, countryChoices, countryValue, matchApplicationChoice, parseCountryValue, type ApplicationChoice } from './sms-compare-options';
-import { canSearch, canUseCatalog, compareQueryFromSearch, compareQuerySearchParams, type CompareQuery } from './sms-compare-query';
+import { canUseCatalog, compareQueryFromSearch, compareQuerySearchParams, type CompareQuery } from './sms-compare-query';
 import { CompareSummary, OffersTable } from './sms-compare-table';
 import { listSmsProviderOfferSearch } from './sms-provider-offer-search';
 
@@ -55,8 +55,9 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
   const applicationOptions = applicationChoices(applicationsQuery.data || [], []);
   const optionApplication = applicationOptions.find((item) => item.id === applicationId) || matchApplicationChoice(currentQuery.serviceText, applicationOptions);
   const selectedApplication = selectedApplicationChoice(optionApplication, applicationSnapshot, applicationId);
+  const serviceSelected = canUseCatalog(activeKeys) && Boolean(applicationId && selectedApplication);
   const offerSearchKey = ['sms', 'provider-offer-search', currentQuery, selectedApplication?.id, selectedApplication?.providerApplicationKeys] as const;
-  const offersQuery = useQuery({ queryKey: offerSearchKey, queryFn: () => listSmsProviderOfferSearch(currentQuery, selectedApplication), enabled: canSearch(activeKeys, currentQuery.serviceText) });
+  const offersQuery = useQuery({ queryKey: offerSearchKey, queryFn: () => listSmsProviderOfferSearch(currentQuery, selectedApplication), enabled: serviceSelected });
   const allOffers = offersQuery.data?.offers || [];
   const mergedApplicationOptions = applicationChoices(applicationsQuery.data || [], allOffers);
   const countryOptions = countryChoices([], allOffers);
@@ -76,13 +77,14 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
 
   function submitQuery(event?: FormEvent) {
     event?.preventDefault();
+    if (!serviceSelected) return;
     setSearchParams(compareQuerySearchParams(draftQuery(sort, activeKeys)));
   }
 
   function changeSort(next: OfferSort) {
     setSort(next);
     const draft = draftQuery(next, activeKeys);
-    if (canSearch(draft.providerKeys, draft.serviceText)) setSearchParams(compareQuerySearchParams(draft));
+    if (serviceSelected) setSearchParams(compareQuerySearchParams(draft));
   }
 
   function draftQuery(nextSort: OfferSort, providerKeys: string[]): CompareQuery {
@@ -135,8 +137,9 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
         providerKeys={activeKeys}
         minAvailable={minAvailable}
         sort={sort}
-        canSubmit={canSearch(activeKeys, serviceText)}
+        canSubmit={serviceSelected}
         countriesLoading={offersQuery.isLoading}
+        serviceSelected={serviceSelected}
         onServiceTextChange={changeServiceSearch}
         onApplicationChange={changeApplication}
         onCountryChange={changeCountry}
@@ -147,7 +150,7 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
         onReset={resetFilters}
       />
       <CompareSummary loading={offersQuery.isLoading} total={offers.length} providerCount={new Set(offers.map((offer) => offer.provider_key)).size} best={top} error={error} providerErrors={offersQuery.data?.provider_errors || []} />
-      <OffersTable offers={offers} top={top} loading={offersQuery.isLoading} queried={canSearch(activeKeys, currentQuery.serviceText)} error={error} acquiringOfferId={acquiringOfferId} serviceName={currentQuery.serviceText} onAcquire={onAcquire} />
+      <OffersTable offers={offers} top={top} loading={offersQuery.isLoading} queried={serviceSelected} error={error} acquiringOfferId={acquiringOfferId} serviceName={currentQuery.serviceText} serviceSelected={serviceSelected} onAcquire={onAcquire} />
     </div>
   );
 }

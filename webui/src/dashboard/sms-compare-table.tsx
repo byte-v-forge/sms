@@ -22,6 +22,7 @@ type OffersTableProps = {
   error?: string;
   acquiringOfferId?: string;
   serviceName: string;
+  serviceSelected: boolean;
   onAcquire: (offer: SmsPriceOffer) => void;
 };
 
@@ -61,7 +62,7 @@ function SummaryMetric({ label, value, hint, loading }: { label: string; value: 
   );
 }
 
-export function OffersTable({ offers, top, loading, queried, error, acquiringOfferId, serviceName, onAcquire }: OffersTableProps) {
+export function OffersTable({ offers, top, loading, queried, error, acquiringOfferId, serviceName, serviceSelected, onAcquire }: OffersTableProps) {
   const bestKey = top ? offerRowKey(top) : '';
   return (
     <div className="min-h-0 flex-1 overflow-auto px-4 pb-4">
@@ -76,7 +77,7 @@ export function OffersTable({ offers, top, loading, queried, error, acquiringOff
             {offers.map((offer) => <OfferRow key={offerRowKey(offer)} offer={offer} bestKey={bestKey} acquiringOfferId={acquiringOfferId} serviceName={serviceName} onAcquire={onAcquire} />)}
             {loading && <TableRow><TableCell colSpan={8}><EmptyBlock text={<span className="inline-flex items-center gap-2"><LoaderCircle className="size-4 animate-spin" />查询中</span>} /></TableCell></TableRow>}
             {!loading && queried && offers.length === 0 && <TableRow><TableCell colSpan={8}><EmptyBlock text={error || '没有匹配报价，请换个关键词或放宽库存/平台筛选'} /></TableCell></TableRow>}
-            {!queried && <TableRow><TableCell colSpan={8}><EmptyBlock text="启用接码平台后搜索服务名称即可查询报价" /></TableCell></TableRow>}
+            {!queried && <TableRow><TableCell colSpan={8}><EmptyBlock text={serviceSelected ? '正在准备该服务支持国家与报价' : '先搜索并选择应用/服务，再选择该服务支持的国家'} /></TableCell></TableRow>}
           </TableBody>
         </Table>
       </div>
