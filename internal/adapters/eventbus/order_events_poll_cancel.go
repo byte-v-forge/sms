@@ -2,44 +2,15 @@ package eventbusadapter
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
-	smsinternalv1 "github.com/byte-v-forge/sms/gen/go/byte/v/forge/sms/private/v1"
 	"github.com/byte-v-forge/sms/internal/core"
-	smseventcatalog "github.com/byte-v-forge/sms/internal/eventcatalog"
-	"github.com/byte-v-forge/sms/internal/platform/eventbus"
 	"github.com/byte-v-forge/sms/internal/platform/eventoutbox"
 )
 
 func (b *OrderEventRecorder) OrderPollRequested(ctx context.Context, order core.Order, reason string) (eventoutbox.Record, error) {
-	reason = strings.TrimSpace(reason)
-	metadata := b.metadata(
-		smseventcatalog.OrderPollRequested.EventName,
-		smseventcatalog.OrderPollRequested.Subject,
-		eventbus.StableEventID("order-poll-", order.ID, reason, fmt.Sprintf("%d", order.UpdatedAt.UnixNano())),
-		order.ID,
-		order.UpdatedAt,
-	)
-	return b.record(ctx, smseventcatalog.OrderPollRequested, &smsinternalv1.SmsOrderPollRequest{
-		OrderId: order.ID,
-		Reason:  reason,
-	}, metadata, eventbus.WithNonEmptyAttribute(orderAttributes(order), "reason", reason))
+	return b.recordOrderPollRequested(ctx, order, reason)
 }
 
 func (b *OrderEventRecorder) OrderCancelRequested(ctx context.Context, order core.Order, requestID string, reason string) (eventoutbox.Record, error) {
-	requestID = strings.TrimSpace(requestID)
-	reason = strings.TrimSpace(reason)
-	metadata := b.metadata(
-		smseventcatalog.OrderCancelRequested.EventName,
-		smseventcatalog.OrderCancelRequested.Subject,
-		eventbus.StableEventID("order-cancel-", order.ID, requestID, reason),
-		order.ID,
-		order.UpdatedAt,
-	)
-	return b.record(ctx, smseventcatalog.OrderCancelRequested, &smsinternalv1.SmsOrderCancelRequest{
-		OrderId:   order.ID,
-		RequestId: requestID,
-		Reason:    reason,
-	}, metadata, eventbus.WithNonEmptyAttribute(eventbus.WithNonEmptyAttribute(orderAttributes(order), "request_id", requestID), "reason", reason))
+	return b.recordOrderCancelRequested(ctx, order, requestID, reason)
 }
