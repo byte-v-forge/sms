@@ -21,8 +21,8 @@ export function canSearch(providerKeys: string[], serviceText: string) {
 export function compareQueryFromSearch(params: URLSearchParams): CompareQuery {
   return {
     serviceText: params.get('q') || params.get('application_key') || '',
-    countryISO2: params.get('country_iso2') || '',
-    countryCallingCode: params.get('country_calling_code') || '',
+    countryISO2: (params.get('country_iso2') || '').toUpperCase(),
+    countryCallingCode: (params.get('country_calling_code') || '').replace(/^\+/, ''),
     providerKeys: [],
     minAvailable: Math.max(0, numberInputValue(params.get('min_available') || '0')),
     sort: offerSort(params.get('sort'))

@@ -1,8 +1,9 @@
 import type { ListSmsPriceOffersResponse, SmsError, SmsProviderLookupError } from '../proto/byte/v/forge/contracts/sms/v1/sms';
 import { SmsErrorCode } from '../proto/byte/v/forge/contracts/sms/v1/sms';
-import { listSmsApplications, listSmsPriceOffers } from './sms-api';
-import { applicationChoices, matchApplicationChoice, providerApplicationKey, type ApplicationChoice } from './sms-compare-options';
+import { listSmsPriceOffers } from './sms-api';
+import type { ApplicationChoice } from './sms-compare-options';
 import type { CompareQuery } from './sms-compare-query';
+import { resolveSmsProviderApplicationKey } from './sms-provider-application-resolver';
 
 export async function listSmsProviderOfferSearch(query: CompareQuery, application: ApplicationChoice | undefined) {
   const responses = await Promise.all(query.providerKeys.map((providerKey) => listProviderOfferSearch(providerKey, query, application)));
@@ -11,7 +12,7 @@ export async function listSmsProviderOfferSearch(query: CompareQuery, applicatio
 
 async function listProviderOfferSearch(providerKey: string, query: CompareQuery, application: ApplicationChoice | undefined) {
   try {
-    const applicationKey = await providerSearchApplicationKey(providerKey, query.serviceText, application);
+    const applicationKey = await resolveSmsProviderApplicationKey(providerKey, query.serviceText, application);
     return await listSmsPriceOffers({
       providerKeys: [providerKey],
       applicationKey,
@@ -21,19 +22,6 @@ async function listProviderOfferSearch(providerKey: string, query: CompareQuery,
   } catch (error) {
     return { offers: [], provider_errors: [providerLookupError(providerKey, error)], error: undefined };
   }
-}
-
-async function providerSearchApplicationKey(providerKey: string, serviceText: string, application: ApplicationChoice | undefined) {
-  const selectedKey = application?.providerApplicationKeys[providerKey];
-  if (selectedKey) return selectedKey;
-  const response = await listSmsApplications({ providerKeys: [providerKey], searchText: serviceText });
-  const choices = applicationChoices([{ providerKey, applications: response.applications || [], error: response.error }], []);
-  const choice = matchApplicationChoice(serviceText, choices) || singleChoice(choices);
-  return providerApplicationKey(choice, providerKey, serviceText);
-}
-
-function singleChoice(choices: ApplicationChoice[]) {
-  return choices.length === 1 ? choices[0] : undefined;
 }
 
 function mergeSmsPriceOfferResponses(responses: ListSmsPriceOffersResponse[]): ListSmsPriceOffersResponse {

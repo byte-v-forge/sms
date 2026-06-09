@@ -3,6 +3,7 @@ import type {
   AcquireNumberRequest,
   AcquireNumberResponse,
   ListSmsApplicationsResponse,
+  ListSmsCountriesResponse,
   ListSmsPriceOffersResponse,
   SmsApplicationInfo,
   SmsError,
@@ -35,6 +36,11 @@ export type SmsCatalogQuery = {
   searchText?: string;
 };
 
+export type SmsCountryQuery = {
+  providerKeys: string[];
+  applicationKey?: string;
+};
+
 export type SmsProviderApplications = {
   providerKey: string;
   applications: SmsApplicationInfo[];
@@ -50,6 +56,7 @@ export const smsKeys = {
   balance: (providerKey: string) => ['sms', 'balance', providerKey] as const,
   applications: (query?: SmsCatalogQuery) => ['sms', 'applications', query] as const,
   providerApplications: (query?: SmsCatalogQuery) => ['sms', 'provider-applications', query] as const,
+  countries: (query?: SmsCountryQuery) => ['sms', 'countries', query] as const,
   priceOffers: (query?: SmsPriceOfferQuery) => ['sms', 'price-offers', query] as const
 };
 
@@ -100,6 +107,12 @@ export function listSmsApplications(query: SmsCatalogQuery) {
   const params = smsQueryParams(query);
   if (query.searchText) params.set('search_text', query.searchText);
   return api<ListSmsApplicationsResponse>(`/api/sms/applications?${params.toString()}`);
+}
+
+export function listSmsCountries(query: SmsCountryQuery) {
+  const params = smsQueryParams(query);
+  if (query.applicationKey) params.set('application_key', query.applicationKey);
+  return api<ListSmsCountriesResponse>(`/api/sms/countries?${params.toString()}`);
 }
 
 export function listSmsApplicationsByProvider(query: SmsCatalogQuery) {

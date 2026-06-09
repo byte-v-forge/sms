@@ -10,6 +10,7 @@ import { bestOffer, enabledProviderKeys, filterAndSortOffers, providerChoices, t
 import { applicationChoices, countryChoices, countryValue, matchApplicationChoice, parseCountryValue, type ApplicationChoice } from './sms-compare-options';
 import { canUseCatalog, compareQueryFromSearch, compareQuerySearchParams, type CompareQuery } from './sms-compare-query';
 import { CompareSummary, OffersTable } from './sms-compare-table';
+import { listSmsProviderCountrySearch } from './sms-provider-country-search';
 import { listSmsProviderOfferSearch } from './sms-provider-offer-search';
 
 type SmsCompareTabProps = {
@@ -56,14 +57,25 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
   const optionApplication = applicationOptions.find((item) => item.id === applicationId) || matchApplicationChoice(currentQuery.serviceText, applicationOptions);
   const selectedApplication = selectedApplicationChoice(optionApplication, applicationSnapshot, applicationId);
   const serviceSelected = canUseCatalog(activeKeys) && Boolean(applicationId && selectedApplication);
+  const selectedCountryValue = countryValue(countryISO2, countryCallingCode);
+  const countrySelected = serviceSelected && Boolean(selectedCountryValue);
+  const countrySearchKey = ['sms', 'provider-country-search', currentQuery.serviceText, activeKeys, selectedApplication?.id, selectedApplication?.providerApplicationKeys] as const;
+  const countriesQuery = useQuery({ queryKey: countrySearchKey, queryFn: () => listSmsProviderCountrySearch(currentQuery, selectedApplication), enabled: serviceSelected });
   const offerSearchKey = ['sms', 'provider-offer-search', currentQuery, selectedApplication?.id, selectedApplication?.providerApplicationKeys] as const;
-  const offersQuery = useQuery({ queryKey: offerSearchKey, queryFn: () => listSmsProviderOfferSearch(currentQuery, selectedApplication), enabled: serviceSelected });
+  const offersQuery = useQuery({ queryKey: offerSearchKey, queryFn: () => listSmsProviderOfferSearch(currentQuery, selectedApplication), enabled: countrySelected });
   const allOffers = offersQuery.data?.offers || [];
   const mergedApplicationOptions = applicationChoices(applicationsQuery.data || [], allOffers);
-  const countryOptions = countryChoices([], allOffers);
+  const countryOptions = countryChoices(countriesQuery.data?.countries || [], allOffers);
   const offers = filterAndSortOffers(allOffers, activeKeys, currentQuery.countryISO2, currentQuery.countryCallingCode, currentQuery.minAvailable, currentQuery.sort);
   const top = bestOffer(offers);
   const error = offersQuery.data?.error?.message;
+
+  useEffect(() => {
+    if (!serviceSelected || !selectedCountryValue || countriesQuery.isLoading || countryOptions.length === 0) return;
+    if (countryOptions.some((item) => countryValue(item.countryISO2, item.countryCallingCode) === selectedCountryValue)) return;
+    setCountryISO2('');
+    setCountryCallingCode('');
+  }, [countryOptions, countriesQuery.isLoading, selectedCountryValue, serviceSelected]);
 
   useEffect(() => {
     if (applicationId || !currentQuery.serviceText || mergedApplicationOptions.length === 0) return;
@@ -77,14 +89,14 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
 
   function submitQuery(event?: FormEvent) {
     event?.preventDefault();
-    if (!serviceSelected) return;
+    if (!countrySelected) return;
     setSearchParams(compareQuerySearchParams(draftQuery(sort, activeKeys)));
   }
 
   function changeSort(next: OfferSort) {
     setSort(next);
     const draft = draftQuery(next, activeKeys);
-    if (serviceSelected) setSearchParams(compareQuerySearchParams(draft));
+    if (countrySelected) setSearchParams(compareQuerySearchParams(draft));
   }
 
   function draftQuery(nextSort: OfferSort, providerKeys: string[]): CompareQuery {
@@ -133,12 +145,12 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
         countries={countryOptions}
         serviceText={serviceText}
         applicationId={applicationId}
-        countryValue={countryValue(countryISO2, countryCallingCode)}
+        countryValue={selectedCountryValue}
         providerKeys={activeKeys}
         minAvailable={minAvailable}
         sort={sort}
-        canSubmit={serviceSelected}
-        countriesLoading={offersQuery.isLoading}
+        canSubmit={countrySelected}
+        countriesLoading={countriesQuery.isLoading}
         serviceSelected={serviceSelected}
         onServiceTextChange={changeServiceSearch}
         onApplicationChange={changeApplication}
@@ -150,9 +162,14 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
         onReset={resetFilters}
       />
       <CompareSummary loading={offersQuery.isLoading} total={offers.length} providerCount={new Set(offers.map((offer) => offer.provider_key)).size} best={top} error={error} providerErrors={offersQuery.data?.provider_errors || []} />
-      <OffersTable offers={offers} top={top} loading={offersQuery.isLoading} queried={serviceSelected} error={error} acquiringOfferId={acquiringOfferId} serviceName={currentQuery.serviceText} serviceSelected={serviceSelected} onAcquire={onAcquire} />
+      <OffersTable offers={offers} top={top} loading={offersQuery.isLoading} queried={countrySelected} error={error} acquiringOfferId={acquiringOfferId} serviceName={currentQuery.serviceText} emptyText={emptyOfferText(serviceSelected)} onAcquire={onAcquire} />
     </div>
   );
+}
+
+function emptyOfferText(serviceSelected: boolean) {
+  if (!serviceSelected) return '先搜索并选择应用/服务，再选择该服务支持的国家';
+  return '选择该服务支持国家后开始比价';
 }
 
 function selectedApplicationChoice(option: ApplicationChoice | undefined, snapshot: ApplicationChoice | undefined, applicationId: string) {
