@@ -1,9 +1,7 @@
-FROM docker.io/library/node:22-bookworm-slim AS dashboard_builder
+FROM docker.io/library/node:22-alpine AS dashboard_builder
 
 WORKDIR /app/webui
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends protobuf-compiler libprotobuf-dev \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache protobuf
 COPY webui/package.json webui/package-lock.json ./
 RUN npm ci
 COPY proto /app/proto
