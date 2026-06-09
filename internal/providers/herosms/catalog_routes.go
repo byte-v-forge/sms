@@ -8,15 +8,14 @@ import (
 )
 
 func (c *Client) ListRouteOffers(ctx context.Context, query core.RouteOfferQuery) ([]core.RouteOffer, error) {
-	services, err := c.ListServices(ctx)
+	service, err := c.routeService(ctx, query.ApplicationKey)
 	if err != nil {
 		return nil, err
 	}
-	service := heroSMSServiceForQuery(query.ApplicationKey, services)
-	if query.ApplicationKey != "" && service == "" {
+	if service.Key == "" {
 		return nil, nil
 	}
-	countries, err := c.listRouteCountries(ctx, service)
+	countries, err := c.listRouteCountries(ctx, service.Key)
 	if err != nil {
 		return nil, err
 	}
@@ -24,13 +23,13 @@ func (c *Client) ListRouteOffers(ctx context.Context, query core.RouteOfferQuery
 	if (query.CountryISO2 != "" || query.CountryCallingCode != "") && country.ID == "" {
 		return nil, nil
 	}
-	priceOffers, err := c.listRoutePriceOffers(ctx, service, country.ID)
+	priceOffers, err := c.listRoutePriceOffers(ctx, service.Key, country.ID)
 	if err != nil {
 		return nil, err
 	}
 	routeQuery := query
-	if service != "" {
-		routeQuery.ApplicationKey = service
+	if service.Key != "" {
+		routeQuery.ApplicationKey = service.Key
 	}
-	return heroSMSRouteOffersFromPrices(routeQuery, priceOffers, countries, country, heroSMSServiceNameIndex(services), time.Now().UTC()), nil
+	return heroSMSRouteOffersFromPrices(routeQuery, priceOffers, countries, country, service.NameByID, time.Now().UTC()), nil
 }

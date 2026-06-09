@@ -18,6 +18,8 @@ func publicOfferID(route core.Route) string {
 		routeText(route.UpstreamServiceKey),
 		routeText(route.ProviderCountryID),
 		routeText(route.UpstreamProviderID),
+		routeText(route.MaxPrice.CurrencyCode),
+		routeText(route.MaxPrice.AmountDecimal),
 	}
 	if strings.Join(values, "") == "" {
 		return ""

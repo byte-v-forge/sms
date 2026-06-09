@@ -11,5 +11,7 @@ func routeCandidateKey(candidate routeCandidate) string {
 		routeCallingCode(offer.CountryCallingCode),
 		routeText(offer.UpstreamProviderID),
 		routeText(offer.UpstreamProviderName),
+		routeText(offer.Price.CurrencyCode),
+		routeText(offer.Price.AmountDecimal),
 	}, "\x00")
 }
