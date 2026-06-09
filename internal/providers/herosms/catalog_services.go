@@ -82,7 +82,7 @@ func heroSMSServiceSearchText(value string) string {
 		switch {
 		case r >= 'a' && r <= 'z', r >= 'A' && r <= 'Z', r >= '0' && r <= '9':
 			out.WriteRune(r)
-		case r == ' ' || r == '-' || r == '_' || r == '.':
+		default:
 			out.WriteRune(' ')
 		}
 	}
