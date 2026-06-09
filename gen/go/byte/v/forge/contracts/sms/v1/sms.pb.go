@@ -2378,6 +2378,7 @@ func (x *ListSmsProvidersResponse) GetError() *SmsError {
 type ListSmsApplicationsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ProviderKeys  []string               `protobuf:"bytes,1,rep,name=provider_keys,json=providerKeys,proto3" json:"provider_keys,omitempty"`
+	SearchText    string                 `protobuf:"bytes,2,opt,name=search_text,json=searchText,proto3" json:"search_text,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2417,6 +2418,13 @@ func (x *ListSmsApplicationsRequest) GetProviderKeys() []string {
 		return x.ProviderKeys
 	}
 	return nil
+}
+
+func (x *ListSmsApplicationsRequest) GetSearchText() string {
+	if x != nil {
+		return x.SearchText
+	}
+	return ""
 }
 
 type ListSmsApplicationsResponse struct {
@@ -3124,9 +3132,11 @@ const file_byte_v_forge_contracts_sms_v1_sms_proto_rawDesc = "" +
 	"\x17ListSmsProvidersRequest\"\xa7\x01\n" +
 	"\x18ListSmsProvidersResponse\x12L\n" +
 	"\tproviders\x18\x01 \x03(\v2..byte.v.forge.contracts.sms.v1.SmsProviderInfoR\tproviders\x12=\n" +
-	"\x05error\x18\x02 \x01(\v2'.byte.v.forge.contracts.sms.v1.SmsErrorR\x05error\"A\n" +
+	"\x05error\x18\x02 \x01(\v2'.byte.v.forge.contracts.sms.v1.SmsErrorR\x05error\"b\n" +
 	"\x1aListSmsApplicationsRequest\x12#\n" +
-	"\rprovider_keys\x18\x01 \x03(\tR\fproviderKeys\"\xb3\x01\n" +
+	"\rprovider_keys\x18\x01 \x03(\tR\fproviderKeys\x12\x1f\n" +
+	"\vsearch_text\x18\x02 \x01(\tR\n" +
+	"searchText\"\xb3\x01\n" +
 	"\x1bListSmsApplicationsResponse\x12U\n" +
 	"\fapplications\x18\x01 \x03(\v21.byte.v.forge.contracts.sms.v1.SmsApplicationInfoR\fapplications\x12=\n" +
 	"\x05error\x18\x02 \x01(\v2'.byte.v.forge.contracts.sms.v1.SmsErrorR\x05error\"g\n" +

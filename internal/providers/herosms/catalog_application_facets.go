@@ -2,12 +2,16 @@ package herosms
 
 import (
 	"context"
+	"strings"
 
 	"github.com/byte-v-forge/sms/internal/core"
 )
 
-func (c *Client) ListCatalogApplications(ctx context.Context) ([]core.CatalogApplication, error) {
-	services, err := c.ListServices(ctx)
+func (c *Client) ListCatalogApplications(ctx context.Context, query core.CatalogApplicationQuery) ([]core.CatalogApplication, error) {
+	if strings.TrimSpace(query.SearchText) == "" {
+		return nil, nil
+	}
+	services, err := c.SearchServices(ctx, query.SearchText)
 	if err != nil {
 		return nil, err
 	}

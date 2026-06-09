@@ -20,7 +20,7 @@ func (s *CatalogService) ListApplications(ctx context.Context, query core.Catalo
 		index := index
 		config := config
 		group.Go(func() error {
-			results[index].applications, results[index].err = s.listProviderCatalogApplications(groupCtx, config)
+			results[index].applications, results[index].err = s.listProviderCatalogApplications(groupCtx, config, query)
 			return nil
 		})
 	}

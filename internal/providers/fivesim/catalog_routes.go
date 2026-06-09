@@ -7,7 +7,7 @@ import (
 )
 
 func (c *Client) ListRouteOffers(ctx context.Context, query core.RouteOfferQuery) ([]core.RouteOffer, error) {
-	applications, err := c.ListCatalogApplications(ctx)
+	applications, err := c.ListCatalogApplications(ctx, core.CatalogApplicationQuery{})
 	if err != nil {
 		return nil, err
 	}

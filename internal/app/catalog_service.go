@@ -15,7 +15,7 @@ type routeOfferProvider interface {
 }
 
 type applicationCatalogProvider interface {
-	ListCatalogApplications(context.Context) ([]core.CatalogApplication, error)
+	ListCatalogApplications(context.Context, core.CatalogApplicationQuery) ([]core.CatalogApplication, error)
 }
 
 type countryCatalogProvider interface {

@@ -14,6 +14,7 @@ type CatalogCountry struct {
 
 type CatalogApplicationQuery struct {
 	ProviderKeys []string
+	SearchText   string
 }
 
 type CatalogCountryQuery struct {

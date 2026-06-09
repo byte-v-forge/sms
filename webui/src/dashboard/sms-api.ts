@@ -30,6 +30,7 @@ export type SmsPriceOfferQuery = {
 export type SmsCatalogQuery = {
   providerKeys: string[];
   applicationKey?: string;
+  searchText?: string;
 };
 
 export const smsKeys = {
@@ -88,7 +89,9 @@ export function listSmsPriceOffers(query: SmsPriceOfferQuery) {
 }
 
 export function listSmsApplications(query: SmsCatalogQuery) {
-  return api<ListSmsApplicationsResponse>(`/api/sms/applications?${smsQueryParams(query).toString()}`);
+  const params = smsQueryParams(query);
+  if (query.searchText) params.set('search_text', query.searchText);
+  return api<ListSmsApplicationsResponse>(`/api/sms/applications?${params.toString()}`);
 }
 
 export function listSmsCountries(query: SmsCatalogQuery) {

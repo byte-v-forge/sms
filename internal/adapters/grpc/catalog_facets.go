@@ -8,7 +8,7 @@ import (
 )
 
 func (s *CatalogServer) ListSmsApplications(ctx context.Context, request *smsv1.ListSmsApplicationsRequest) (*smsv1.ListSmsApplicationsResponse, error) {
-	applications, err := s.service.ListApplications(ctx, core.CatalogApplicationQuery{ProviderKeys: request.GetProviderKeys()})
+	applications, err := s.service.ListApplications(ctx, core.CatalogApplicationQuery{ProviderKeys: request.GetProviderKeys(), SearchText: request.GetSearchText()})
 	if err != nil {
 		return &smsv1.ListSmsApplicationsResponse{Error: toProtoError(err)}, nil
 	}

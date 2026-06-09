@@ -28,8 +28,10 @@ func smsPriceOffersRequest(r *http.Request) *smsv1.ListSmsPriceOffersRequest {
 }
 
 func smsApplicationsRequest(r *http.Request) *smsv1.ListSmsApplicationsRequest {
+	query := r.URL.Query()
 	return &smsv1.ListSmsApplicationsRequest{
-		ProviderKeys: smsProviderKeysFromQuery(r.URL.Query()),
+		ProviderKeys: smsProviderKeysFromQuery(query),
+		SearchText:   strings.TrimSpace(query.Get("search_text")),
 	}
 }
 

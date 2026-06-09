@@ -7,7 +7,7 @@ import (
 	"github.com/byte-v-forge/sms/internal/core"
 )
 
-func (s *CatalogService) listProviderCatalogApplications(ctx context.Context, config *smsinternalv1.SmsProviderConfig) ([]core.CatalogApplication, error) {
+func (s *CatalogService) listProviderCatalogApplications(ctx context.Context, config *smsinternalv1.SmsProviderConfig, query core.CatalogApplicationQuery) ([]core.CatalogApplication, error) {
 	if !config.GetEnabled() {
 		return nil, nil
 	}
@@ -19,5 +19,5 @@ func (s *CatalogService) listProviderCatalogApplications(ctx context.Context, co
 	if !ok {
 		return nil, nil
 	}
-	return catalogProvider.ListCatalogApplications(ctx)
+	return catalogProvider.ListCatalogApplications(ctx, query)
 }

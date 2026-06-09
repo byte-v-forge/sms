@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 
 	"github.com/byte-v-forge/sms/internal/core"
+	"github.com/byte-v-forge/sms/internal/platform/searchx"
 	"github.com/byte-v-forge/sms/internal/platform/stringx"
 )
 
-func (c *Client) ListCatalogApplications(ctx context.Context) ([]core.CatalogApplication, error) {
+func (c *Client) ListCatalogApplications(ctx context.Context, query core.CatalogApplicationQuery) ([]core.CatalogApplication, error) {
 	var raw map[string]struct {
 		Category string          `json:"Category"`
 		Name     string          `json:"Name"`
@@ -20,11 +21,27 @@ func (c *Client) ListCatalogApplications(ctx context.Context) ([]core.CatalogApp
 	}
 	applications := make([]core.CatalogApplication, 0, len(raw))
 	for product, item := range raw {
-		applications = append(applications, core.CatalogApplication{
+		application := core.CatalogApplication{
 			ApplicationKey: product,
 			DisplayName:    stringx.FirstNonEmpty(item.Name, fiveSimApplicationName(product)),
 			Aliases:        []string{product, item.Name},
-		})
+		}
+		if !catalogApplicationMatches(application, query.SearchText) {
+			continue
+		}
+		applications = append(applications, application)
 	}
 	return applications, nil
+}
+
+func catalogApplicationMatches(application core.CatalogApplication, searchText string) bool {
+	if searchx.Token(searchText) == "" {
+		return true
+	}
+	for _, value := range append([]string{application.ApplicationKey, application.DisplayName}, application.Aliases...) {
+		if searchx.ContainsToken(value, searchText) {
+			return true
+		}
+	}
+	return false
 }

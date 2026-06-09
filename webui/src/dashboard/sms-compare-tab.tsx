@@ -49,10 +49,12 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
   const activeKeys = (selectedKeys || enabledKeys).filter((key) => enabledKeys.includes(key));
   const currentQuery: CompareQuery = { searchText: searchText.trim(), applicationKey, countryISO2, countryCallingCode, providerKeys: activeKeys, minAvailable: Math.max(0, minAvailable), sort };
   const serverQuery = smsPriceOfferQuery(currentQuery);
+  const serverApplicationKey = serverQuery.applicationKey || '';
   const queried = canSearch(serverQuery.providerKeys);
-  const applicationsQuery = useQuery({ queryKey: smsKeys.applications({ providerKeys: activeKeys }), queryFn: () => listSmsApplications({ providerKeys: activeKeys }), enabled: queried });
-  const countriesQuery = useQuery({ queryKey: smsKeys.countries({ providerKeys: activeKeys, applicationKey: applicationKey || undefined }), queryFn: () => listSmsCountries({ providerKeys: activeKeys, applicationKey: applicationKey || undefined }), enabled: queried });
-  const offersQuery = useQuery({ queryKey: smsKeys.priceOffers(serverQuery), queryFn: () => listSmsPriceOffers(serverQuery), enabled: queried });
+  const applicationLookupText = searchText.trim() || applicationKey;
+  const applicationsQuery = useQuery({ queryKey: smsKeys.applications({ providerKeys: activeKeys, searchText: applicationLookupText }), queryFn: () => listSmsApplications({ providerKeys: activeKeys, searchText: applicationLookupText }), enabled: queried && applicationLookupText.length > 0 });
+  const countriesQuery = useQuery({ queryKey: smsKeys.countries({ providerKeys: activeKeys, applicationKey: applicationKey || undefined }), queryFn: () => listSmsCountries({ providerKeys: activeKeys, applicationKey: applicationKey || undefined }), enabled: queried && applicationKey.length > 0 });
+  const offersQuery = useQuery({ queryKey: smsKeys.priceOffers(serverQuery), queryFn: () => listSmsPriceOffers(serverQuery), enabled: queried && serverApplicationKey.length > 0 });
   const allOffers = offersQuery.data?.offers || [];
   const applicationOptions = applicationChoices(applicationsQuery.data?.applications || [], allOffers);
   const countryOptions = countryChoices(countriesQuery.data?.countries || [], allOffers);

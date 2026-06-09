@@ -290,6 +290,7 @@ message ListSmsProvidersResponse {
 
 message ListSmsApplicationsRequest {
   repeated string provider_keys = 1;
+  string search_text = 2;
 }
 
 message ListSmsApplicationsResponse {
