@@ -5,8 +5,12 @@ import type {
   ListSmsApplicationsResponse,
   ListSmsCountriesResponse,
   ListSmsPriceOffersResponse,
-  SmsPriceOffer
+  SmsApplicationInfo,
+  SmsError,
+  SmsPriceOffer,
+  SmsProviderLookupError
 } from '../proto/byte/v/forge/contracts/sms/v1/sms';
+import { SmsErrorCode } from '../proto/byte/v/forge/contracts/sms/v1/sms';
 import type {
   CancelProviderOrderResponse,
   DeleteProviderConfigResponse,
@@ -27,10 +31,20 @@ export type SmsPriceOfferQuery = {
   countryCallingCode?: string;
 };
 
+export type SmsProviderPriceOfferQuery = Omit<SmsPriceOfferQuery, 'providerKeys'> & {
+  providerKey: string;
+};
+
 export type SmsCatalogQuery = {
   providerKeys: string[];
   applicationKey?: string;
   searchText?: string;
+};
+
+export type SmsProviderApplications = {
+  providerKey: string;
+  applications: SmsApplicationInfo[];
+  error?: SmsError;
 };
 
 export const smsKeys = {
@@ -41,8 +55,10 @@ export const smsKeys = {
   orderCodes: (orderIds: string[]) => ['sms', 'order-codes', orderIds.join(',')] as const,
   balance: (providerKey: string) => ['sms', 'balance', providerKey] as const,
   applications: (query?: SmsCatalogQuery) => ['sms', 'applications', query] as const,
+  providerApplications: (query?: SmsCatalogQuery) => ['sms', 'provider-applications', query] as const,
   countries: (query?: SmsCatalogQuery) => ['sms', 'countries', query] as const,
-  priceOffers: (query?: SmsPriceOfferQuery) => ['sms', 'price-offers', query] as const
+  priceOffers: (query?: SmsPriceOfferQuery) => ['sms', 'price-offers', query] as const,
+  providerPriceOffers: (query?: SmsProviderPriceOfferQuery[]) => ['sms', 'provider-price-offers', query] as const
 };
 
 export function listSmsProviderPlugins() {
@@ -88,10 +104,19 @@ export function listSmsPriceOffers(query: SmsPriceOfferQuery) {
   return api<ListSmsPriceOffersResponse>(`/api/sms/price-offers?${params.toString()}`);
 }
 
+export async function listSmsPriceOffersByProvider(queries: SmsProviderPriceOfferQuery[]) {
+  const responses = await Promise.all(queries.map(listSmsProviderPriceOffers));
+  return mergeSmsPriceOfferResponses(responses);
+}
+
 export function listSmsApplications(query: SmsCatalogQuery) {
   const params = smsQueryParams(query);
   if (query.searchText) params.set('search_text', query.searchText);
   return api<ListSmsApplicationsResponse>(`/api/sms/applications?${params.toString()}`);
+}
+
+export function listSmsApplicationsByProvider(query: SmsCatalogQuery) {
+  return Promise.all(query.providerKeys.map((providerKey) => listSmsProviderApplications(providerKey, query.searchText)));
 }
 
 export function listSmsCountries(query: SmsCatalogQuery) {
@@ -119,6 +144,38 @@ export function acquireSmsFromOffer(offer: SmsPriceOffer) {
     method: 'POST',
     body: JSON.stringify(request)
   });
+}
+
+async function listSmsProviderPriceOffers(query: SmsProviderPriceOfferQuery) {
+  try {
+    return await listSmsPriceOffers({ ...query, providerKeys: [query.providerKey] });
+  } catch (error) {
+    return { offers: [], provider_errors: [providerLookupError(query.providerKey, error)], error: undefined };
+  }
+}
+
+async function listSmsProviderApplications(providerKey: string, searchText?: string): Promise<SmsProviderApplications> {
+  try {
+    const response = await listSmsApplications({ providerKeys: [providerKey], searchText });
+    return { providerKey, applications: response.applications || [], error: response.error };
+  } catch (error) {
+    return { providerKey, applications: [], error: internalSmsError(error) };
+  }
+}
+
+function mergeSmsPriceOfferResponses(responses: ListSmsPriceOffersResponse[]): ListSmsPriceOffersResponse {
+  const offers = responses.flatMap((response) => response.offers || []);
+  const providerErrors = responses.flatMap((response) => response.provider_errors || []);
+  const error = offers.length === 0 ? responses.find((response) => response.error)?.error : undefined;
+  return { offers, provider_errors: providerErrors, error };
+}
+
+function providerLookupError(providerKey: string, error: unknown): SmsProviderLookupError {
+  return { provider_key: providerKey, provider_display_name: providerKey, error: internalSmsError(error) };
+}
+
+function internalSmsError(error: unknown): SmsError {
+  return { code: SmsErrorCode.SMS_ERROR_CODE_INTERNAL, message: error instanceof Error ? error.message : String(error), retryable: true };
 }
 
 function randomRequestID() {

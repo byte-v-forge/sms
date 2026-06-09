@@ -18,6 +18,8 @@ type SearchSelectProps = {
   value: string;
   searchValue?: string;
   options: SearchSelectOption[];
+  contentClassName?: string;
+  shouldFilter?: boolean;
   onSearchChange?: (value: string) => void;
   onValueChange: (value: string) => void;
 };
@@ -50,13 +52,13 @@ export function SearchSelect(props: SearchSelectProps) {
       <div className="flex gap-1">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="h-9 min-w-0 flex-1 justify-between px-3 font-normal text-foreground">
+            <Button variant="outline" className="h-9 min-w-0 flex-1 justify-between bg-background px-3 font-normal text-foreground">
               <span className={cn('truncate', !selected && !props.searchValue && 'text-muted-foreground')}>{selectedLabel}</span>
               <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[min(28rem,calc(100vw-2rem))]">
-            <Command shouldFilter loop>
+          <PopoverContent className={cn('w-[min(28rem,calc(100vw-2rem))] bg-white', props.contentClassName)}>
+            <Command shouldFilter={props.shouldFilter ?? true} loop className="bg-white">
               <CommandInput value={searchValue} onValueChange={changeSearch} placeholder={props.placeholder} />
               <CommandList>
                 <CommandEmpty>{props.emptyText}</CommandEmpty>

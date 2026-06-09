@@ -1,6 +1,10 @@
 package app
 
-import "github.com/byte-v-forge/sms/internal/core"
+import (
+	"strings"
+
+	"github.com/byte-v-forge/sms/internal/core"
+)
 
 func normalizedCatalogApplication(app core.CatalogApplication) core.CatalogApplication {
 	key := routeText(app.ApplicationKey)
@@ -13,10 +17,22 @@ func normalizedCatalogApplication(app core.CatalogApplication) core.CatalogAppli
 }
 
 func catalogApplicationIdentity(app core.CatalogApplication) string {
+	if token := normalizeCatalogToken(catalogApplicationPrimaryName(app.DisplayName)); token != "" {
+		return token
+	}
 	if token := normalizeCatalogToken(app.DisplayName); token != "" {
 		return token
 	}
 	return normalizeCatalogToken(app.ApplicationKey)
+}
+
+func catalogApplicationPrimaryName(value string) string {
+	for _, separator := range []string{",", "/", "|", ";"} {
+		if index := strings.Index(value, separator); index >= 0 {
+			return routeText(value[:index])
+		}
+	}
+	return routeText(value)
 }
 
 func catalogApplicationQueryKey(key string, display string) string {

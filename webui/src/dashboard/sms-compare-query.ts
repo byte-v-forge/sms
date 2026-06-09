@@ -2,8 +2,7 @@ import type { SmsPriceOfferQuery } from './sms-api';
 import type { OfferSort } from './sms-compare-data';
 
 export type CompareQuery = {
-  searchText: string;
-  applicationKey: string;
+  serviceText: string;
   countryISO2: string;
   countryCallingCode: string;
   providerKeys: string[];
@@ -11,14 +10,17 @@ export type CompareQuery = {
   sort: OfferSort;
 };
 
-export function canSearch(providerKeys: string[]) {
+export function canUseCatalog(providerKeys: string[]) {
   return providerKeys.length > 0;
+}
+
+export function canSearch(providerKeys: string[], serviceText: string) {
+  return canUseCatalog(providerKeys) && serviceText.trim().length > 0;
 }
 
 export function compareQueryFromSearch(params: URLSearchParams): CompareQuery {
   return {
-    searchText: params.get('q') || '',
-    applicationKey: params.get('application_key') || '',
+    serviceText: params.get('q') || params.get('application_key') || '',
     countryISO2: params.get('country_iso2') || '',
     countryCallingCode: params.get('country_calling_code') || '',
     providerKeys: params.getAll('provider_key').filter(Boolean),
@@ -29,8 +31,7 @@ export function compareQueryFromSearch(params: URLSearchParams): CompareQuery {
 
 export function compareQuerySearchParams(query: CompareQuery) {
   const params = new URLSearchParams();
-  if (query.searchText) params.set('q', query.searchText);
-  if (query.applicationKey) params.set('application_key', query.applicationKey);
+  if (query.serviceText) params.set('q', query.serviceText);
   if (query.countryISO2) params.set('country_iso2', query.countryISO2);
   if (query.countryCallingCode) params.set('country_calling_code', query.countryCallingCode);
   for (const providerKey of query.providerKeys) params.append('provider_key', providerKey);
@@ -42,7 +43,7 @@ export function compareQuerySearchParams(query: CompareQuery) {
 export function smsPriceOfferQuery(query: CompareQuery): SmsPriceOfferQuery {
   return {
     providerKeys: query.providerKeys,
-    applicationKey: query.applicationKey || undefined,
+    applicationKey: query.serviceText || undefined,
     countryISO2: query.countryISO2 || undefined,
     countryCallingCode: query.countryCallingCode || undefined
   };

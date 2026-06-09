@@ -1,11 +1,14 @@
-import type { SmsApplicationInfo, SmsCountry, SmsPriceOffer } from '../proto/byte/v/forge/contracts/sms/v1/sms';
+import type { SmsCountry, SmsPriceOffer } from '../proto/byte/v/forge/contracts/sms/v1/sms';
+import type { SmsProviderApplications } from './sms-api';
+import { normalizeChoiceToken, normalizeDisplayName, searchTerms, termsContain, titleSlug } from './sms-compare-text';
 import type { SearchSelectOption } from './sms-search-select';
 
 export type ApplicationChoice = {
-  applicationKey: string;
+  id: string;
   displayName: string;
   aliases: string[];
   offerCount: number;
+  providerApplicationKeys: Record<string, string>;
 };
 
 export type CountryChoice = {
@@ -15,13 +18,16 @@ export type CountryChoice = {
   offerCount: number;
 };
 
-export function applicationChoices(applications: SmsApplicationInfo[], offers: SmsPriceOffer[]) {
+export function applicationChoices(results: SmsProviderApplications[], offers: SmsPriceOffer[]) {
   const items = new Map<string, ApplicationChoice>();
-  for (const app of applications) {
-    upsertApplication(items, app.application_key, app.display_name, 0, app.aliases || []);
+  for (const result of results) {
+    for (const app of result.applications) {
+      upsertApplication(items, result.providerKey, app.application_key, app.display_name, 0, app.aliases || []);
+    }
   }
   for (const offer of offers) {
-    upsertApplication(items, offer.application_key, offer.application_name, 1, [offer.offer_ref?.route_ref?.upstream_service_key || '']);
+    const routeKey = offer.offer_ref?.route_ref?.upstream_service_key || offer.application_key;
+    upsertApplication(items, offer.provider_key, routeKey, offer.application_name, 1, [offer.application_key]);
   }
   return [...items.values()].sort((left, right) => applicationChoiceLabel(left).localeCompare(applicationChoiceLabel(right)));
 }
@@ -38,7 +44,7 @@ export function countryChoices(countries: SmsCountry[], offers: SmsPriceOffer[])
 }
 
 export function applicationChoiceLabel(choice: ApplicationChoice) {
-  return choice.displayName || choice.applicationKey;
+  return choice.displayName || '未命名服务';
 }
 
 export function matchApplicationChoice(value: string, choices: ApplicationChoice[]) {
@@ -46,8 +52,12 @@ export function matchApplicationChoice(value: string, choices: ApplicationChoice
   if (!normalized) return undefined;
   const exact = choices.find((choice) => applicationSearchTokens(choice).some((item) => item === normalized));
   if (exact) return exact;
-  const partial = choices.filter((choice) => applicationSearchTokens(choice).some((item) => item.includes(normalized)));
+  const partial = choices.filter((choice) => applicationChoiceMatches(choice, value));
   return partial.length === 1 ? partial[0] : undefined;
+}
+
+export function providerApplicationKey(choice: ApplicationChoice | undefined, providerKey: string, fallback: string) {
+  return choice?.providerApplicationKeys[providerKey] || choice?.displayName || fallback.trim();
 }
 
 export function countryChoiceValue(choice: CountryChoice) {
@@ -70,9 +80,9 @@ export function parseCountryValue(value: string) {
 
 export function applicationSelectOptions(choices: ApplicationChoice[]): SearchSelectOption[] {
   return choices.map((choice) => ({
-    value: choice.applicationKey,
+    value: choice.id,
     label: applicationChoiceLabel(choice),
-    description: applicationDescription(choice),
+    description: providerCountDescription(choice),
     badge: choice.offerCount > 0 ? String(choice.offerCount) : undefined,
     keywords: applicationSearchTokens(choice)
   }));
@@ -88,66 +98,86 @@ export function countrySelectOptions(choices: CountryChoice[]): SearchSelectOpti
   }));
 }
 
-function upsertApplication(items: Map<string, ApplicationChoice>, key: string, name: string, offerCount: number, aliases: string[]) {
-  key = key.trim();
-  if (!key) return;
-  const displayName = name.trim() || key;
-  const identity = normalizeChoiceToken(displayName) || normalizeChoiceToken(key);
+function upsertApplication(items: Map<string, ApplicationChoice>, providerKey: string, key: string, name: string, offerCount: number, aliases: string[]) {
+  const displayName = applicationDisplayName(key, name);
+  if (!displayName) return;
+  const identity = applicationIdentity(displayName, key);
   const current = items.get(identity);
   items.set(identity, {
-    applicationKey: bestApplicationKey(identity, current?.applicationKey, key, displayName),
-    displayName: bestDisplayName(current?.displayName, displayName, key),
-    aliases: uniqueTexts([...(current?.aliases || []), key, name, ...aliases]),
-    offerCount: (current?.offerCount || 0) + offerCount
+    id: identity,
+    displayName: bestDisplayName(current?.displayName, displayName),
+    aliases: uniqueTexts([...(current?.aliases || []), key, displayName, ...aliases]),
+    offerCount: (current?.offerCount || 0) + offerCount,
+    providerApplicationKeys: providerApplicationKeys(current, providerKey, key)
   });
 }
 
 function upsertCountry(items: Map<string, CountryChoice>, iso2: string, name: string, callingCode: string, offerCount: number) {
+  iso2 = iso2.trim().toUpperCase();
+  callingCode = callingCode.trim().replace(/^\+/, '');
   const item = { countryISO2: iso2, countryName: name, countryCallingCode: callingCode, offerCount: 0 };
   const key = countryChoiceValue(item);
   if (!key) return;
   const current = items.get(key);
   items.set(key, {
     countryISO2: current?.countryISO2 || iso2,
-    countryName: bestDisplayName(current?.countryName, name, iso2 || callingCode),
+    countryName: bestDisplayName(current?.countryName, name || iso2 || callingCode),
     countryCallingCode: current?.countryCallingCode || callingCode,
     offerCount: (current?.offerCount || 0) + offerCount
   });
 }
 
-function bestDisplayName(current = '', candidate = '', fallback = '') {
-  const name = candidate.trim() || fallback.trim();
+function applicationDisplayName(key: string, name: string) {
+  const display = normalizeDisplayName(name);
+  if (display && !looksLikeShortCode(display, key)) return display;
+  const fromKey = titleSlug(key);
+  return fromKey.length > 3 ? fromKey : '';
+}
+
+function applicationIdentity(displayName: string, key: string) {
+  return normalizeChoiceToken(primaryApplicationName(displayName)) || normalizeChoiceToken(displayName) || normalizeChoiceToken(key);
+}
+
+function primaryApplicationName(value: string) {
+  return value.split(/[,/|;]+/)[0]?.trim() || value.trim();
+}
+
+function bestDisplayName(current = '', candidate = '') {
+  const name = normalizeDisplayName(candidate);
   if (!current || (name && name.length > current.length)) return name;
   return current;
 }
 
+function providerApplicationKeys(current: ApplicationChoice | undefined, providerKey: string, key: string) {
+  const values = { ...(current?.providerApplicationKeys || {}) };
+  if (providerKey && key && !values[providerKey]) values[providerKey] = key.trim();
+  return values;
+}
+
+function applicationChoiceMatches(choice: ApplicationChoice, value: string) {
+  const queryTerms = searchTerms(value);
+  if (queryTerms.length === 0) return false;
+  return [choice.displayName, ...choice.aliases].some((candidate) => termsContain(searchTerms(candidate), queryTerms));
+}
+
 function applicationSearchTokens(choice: ApplicationChoice) {
-  return [choice.applicationKey, choice.displayName, applicationChoiceLabel(choice), ...choice.aliases].map(normalizeChoiceToken).filter(Boolean);
+  return [choice.displayName, ...choice.aliases].map(normalizeChoiceToken).filter(Boolean);
 }
 
-function normalizeChoiceToken(value: string) {
-  return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+function providerCountDescription(choice: ApplicationChoice) {
+  const count = Object.keys(choice.providerApplicationKeys).length;
+  return count > 1 ? `${count} 个平台` : undefined;
 }
 
-function applicationDescription(choice: ApplicationChoice) {
-  const baseTokens = new Set([choice.applicationKey, choice.displayName].map(normalizeChoiceToken));
-  const aliases = choice.aliases.filter((alias) => !baseTokens.has(normalizeChoiceToken(alias))).slice(0, 3);
-  return aliases.length > 0 ? aliases.join(' / ') : undefined;
-}
-
-function bestApplicationKey(identity: string, current = '', candidate = '', displayName = '') {
-  if (candidate.trim() === identity) return candidate;
-  if (current.trim() === identity) return current;
-  if (normalizeChoiceToken(current) === identity) return current;
-  if (normalizeChoiceToken(candidate) === identity) return candidate;
-  return displayName || current || candidate;
+function looksLikeShortCode(displayName: string, key: string) {
+  return displayName.length <= 3 && displayName === displayName.toLowerCase() && normalizeChoiceToken(displayName) === normalizeChoiceToken(key);
 }
 
 function uniqueTexts(values: string[]) {
   const seen = new Set<string>();
   const out: string[] = [];
   for (const value of values) {
-    const text = value.trim();
+    const text = normalizeDisplayName(value);
     const token = normalizeChoiceToken(text);
     if (!text || !token || seen.has(token)) continue;
     seen.add(token);

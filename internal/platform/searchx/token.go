@@ -10,17 +10,47 @@ type Candidate struct {
 func Token(value string) string {
 	var out strings.Builder
 	for _, r := range strings.ToLower(strings.TrimSpace(value)) {
-		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+		if isSearchRune(r) {
 			out.WriteRune(r)
 		}
 	}
 	return out.String()
 }
 
+func Terms(value string) []string {
+	var terms []string
+	var current strings.Builder
+	for _, r := range strings.ToLower(strings.TrimSpace(value)) {
+		if isSearchRune(r) {
+			current.WriteRune(r)
+			continue
+		}
+		terms = appendSearchTerm(terms, &current)
+	}
+	return appendSearchTerm(terms, &current)
+}
+
 func ContainsToken(candidate string, query string) bool {
 	candidateToken := Token(candidate)
 	queryToken := Token(query)
-	return candidateToken != "" && queryToken != "" && (candidateToken == queryToken || strings.Contains(candidateToken, queryToken))
+	if candidateToken != "" && queryToken != "" && (candidateToken == queryToken || strings.Contains(candidateToken, queryToken)) {
+		return true
+	}
+	return ContainsTerms(candidate, query)
+}
+
+func ContainsTerms(candidate string, query string) bool {
+	candidateTerms := Terms(candidate)
+	queryTerms := Terms(query)
+	if len(candidateTerms) == 0 || len(queryTerms) == 0 {
+		return false
+	}
+	for _, queryTerm := range queryTerms {
+		if !termContained(candidateTerms, queryTerm) {
+			return false
+		}
+	}
+	return true
 }
 
 func MatchKey(query string, candidates []Candidate) string {
@@ -34,7 +64,7 @@ func MatchKey(query string, candidates []Candidate) string {
 	if key := exactNameMatch(queryToken, candidates); key != "" {
 		return key
 	}
-	return uniquePartialMatch(queryToken, candidates)
+	return uniquePartialMatch(query, candidates)
 }
 
 func exactKeyMatch(queryToken string, candidates []Candidate) string {
@@ -55,10 +85,10 @@ func exactNameMatch(queryToken string, candidates []Candidate) string {
 	return ""
 }
 
-func uniquePartialMatch(queryToken string, candidates []Candidate) string {
+func uniquePartialMatch(query string, candidates []Candidate) string {
 	matched := ""
 	for _, candidate := range candidates {
-		if !candidateMatches(queryToken, candidate) {
+		if !candidateMatches(query, candidate) {
 			continue
 		}
 		key := strings.TrimSpace(candidate.Key)
@@ -73,12 +103,33 @@ func uniquePartialMatch(queryToken string, candidates []Candidate) string {
 	return matched
 }
 
-func candidateMatches(queryToken string, candidate Candidate) bool {
+func candidateMatches(query string, candidate Candidate) bool {
 	for _, value := range []string{candidate.Key, candidate.Name} {
-		token := Token(value)
-		if token != "" && strings.Contains(token, queryToken) {
+		if ContainsToken(value, query) {
 			return true
 		}
 	}
 	return false
+}
+
+func appendSearchTerm(terms []string, current *strings.Builder) []string {
+	if current.Len() == 0 {
+		return terms
+	}
+	terms = append(terms, current.String())
+	current.Reset()
+	return terms
+}
+
+func termContained(candidateTerms []string, queryTerm string) bool {
+	for _, candidateTerm := range candidateTerms {
+		if strings.Contains(candidateTerm, queryTerm) {
+			return true
+		}
+	}
+	return false
+}
+
+func isSearchRune(r rune) bool {
+	return (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9')
 }
