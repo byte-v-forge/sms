@@ -23,28 +23,3 @@ func New(provider string, purpose string, secretID string, expiresAt time.Time) 
 	}
 	return ref
 }
-
-func Clone(ref *commonv1.SecretRef, defaultProvider string, defaultPurpose string) *commonv1.SecretRef {
-	if !Configured(ref) {
-		return nil
-	}
-	return &commonv1.SecretRef{
-		SecretId:  strings.TrimSpace(ref.GetSecretId()),
-		Provider:  firstNonEmpty(ref.GetProvider(), defaultProvider),
-		Purpose:   firstNonEmpty(ref.GetPurpose(), defaultPurpose),
-		ExpiresAt: ref.GetExpiresAt(),
-	}
-}
-
-func Configured(ref *commonv1.SecretRef) bool {
-	return strings.TrimSpace(ref.GetSecretId()) != ""
-}
-
-func firstNonEmpty(values ...string) string {
-	for _, value := range values {
-		if value = strings.TrimSpace(value); value != "" {
-			return value
-		}
-	}
-	return ""
-}
