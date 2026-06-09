@@ -6,19 +6,24 @@ import (
 	"github.com/byte-v-forge/sms/internal/core"
 )
 
-func (s *OrderService) applyReceivedCode(ctx context.Context, order core.Order, previousStatus core.OrderStatus, result core.ProviderCodeResult) (core.Order, *core.SMSCode, error) {
+func (s *OrderService) applySyncedProviderCode(
+	ctx context.Context,
+	order core.Order,
+	previousStatus core.OrderStatus,
+	result core.ProviderCodeResult,
+) (core.Order, error) {
 	code := codeFromProviderResult(result, order.UpdatedAt)
 	code, err := s.prepareCodeSecret(ctx, order, code)
 	if err != nil {
-		return core.Order{}, nil, err
+		return order, err
 	}
 	order.Status = core.StatusCodeReceived
 	records, err := s.statusAndCodeRecords(ctx, order, previousStatus, code)
 	if err != nil {
-		return core.Order{}, nil, err
+		return order, err
 	}
 	if err := s.recordCode(ctx, order, code, records...); err != nil {
-		return core.Order{}, nil, err
+		return core.Order{}, err
 	}
-	return order, &code, nil
+	return order, nil
 }

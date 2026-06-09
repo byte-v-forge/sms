@@ -27,41 +27,22 @@ func (s *OrderService) syncTerminalOrChargedProviderState(ctx context.Context, o
 		return order, false, err
 	}
 	previousStatus := order.Status
-	now := s.clock.Now()
-	order.UpdatedAt = now
-	order.LastError = nil
-	order.CancelAllowedAt = time.Time{}
+	order = prepareSyncedProviderOrder(order, s.clock.Now())
 	switch result.Status {
 	case core.StatusCodeReceived:
-		receivedAt := result.ReceivedAt
-		if receivedAt.IsZero() {
-			receivedAt = now
-		}
-		code := core.SMSCode{Value: result.Code, MessageText: result.MessageText, ReceivedAt: receivedAt}
-		code, err := s.prepareCodeSecret(ctx, order, code)
-		if err != nil {
-			return order, true, err
-		}
-		order.Status = core.StatusCodeReceived
-		records, err := s.statusAndCodeRecords(ctx, order, previousStatus, code)
-		if err != nil {
-			return order, true, err
-		}
-		if err := s.recordCode(ctx, order, code, records...); err != nil {
-			return core.Order{}, true, err
-		}
-		return order, true, nil
+		order, err = s.applySyncedProviderCode(ctx, order, previousStatus, result)
+		return order, true, err
 	case core.StatusCompleted, core.StatusCanceled, core.StatusExpired, core.StatusFailed:
-		order.Status = result.Status
-		records, err := s.statusChangedRecords(ctx, order, previousStatus)
-		if err != nil {
-			return order, true, err
-		}
-		if err := s.updateOrder(ctx, order, records...); err != nil {
-			return core.Order{}, true, err
-		}
-		return order, true, nil
+		order, err = s.applySyncedProviderTerminalStatus(ctx, order, previousStatus, result.Status)
+		return order, true, err
 	default:
 		return order, false, nil
 	}
+}
+
+func prepareSyncedProviderOrder(order core.Order, now time.Time) core.Order {
+	order.UpdatedAt = now
+	order.LastError = nil
+	order.CancelAllowedAt = time.Time{}
+	return order
 }
