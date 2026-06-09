@@ -4,6 +4,9 @@ import "strings"
 
 func matchService(candidate string, applications []ApplicationOffer) string {
 	normalized := normalizeApplicationAlias(candidate)
+	if normalized == "" {
+		return ""
+	}
 	for _, app := range applications {
 		if normalizeApplicationAlias(app.UpstreamServiceKey) == normalized || normalizeApplicationAlias(app.ApplicationKey) == normalized {
 			return app.UpstreamServiceKey

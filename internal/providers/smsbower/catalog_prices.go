@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/url"
+	"strings"
 
 	"github.com/byte-v-forge/sms/internal/core"
 	"github.com/byte-v-forge/sms/internal/platform/jsonx"
@@ -12,8 +13,12 @@ import (
 
 func (c *Client) ListPriceOffers(ctx context.Context, serviceKey, countryID string) ([]PriceOffer, error) {
 	params := url.Values{}
-	params.Set("service", serviceKey)
-	params.Set("country", countryID)
+	if strings.TrimSpace(serviceKey) != "" {
+		params.Set("service", strings.TrimSpace(serviceKey))
+	}
+	if strings.TrimSpace(countryID) != "" {
+		params.Set("country", strings.TrimSpace(countryID))
+	}
 	result, err := c.api.Do(ctx, "getPricesV3", params)
 	if err != nil {
 		return nil, err
