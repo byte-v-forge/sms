@@ -7,7 +7,10 @@ import (
 )
 
 func (s *OrderService) newAcquireRequestOrder(ctx context.Context, cmd core.AcquireNumberCommand, route core.Route) core.Order {
-	requestID := firstNonEmpty(cmd.RequestID, s.ids.NewID("req_"))
+	requestID := cmd.RequestID
+	if requestID == "" {
+		requestID = s.ids.NewID("req_")
+	}
 	now := s.clock.Now()
 	return core.Order{
 		ID:          s.ids.NewID("ord_"),
