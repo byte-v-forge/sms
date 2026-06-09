@@ -73,8 +73,8 @@ export function OffersTable({ offers, top, loading, queried, error, acquiringOff
           <TableBody>
             {offers.map((offer) => <OfferRow key={offerRowKey(offer)} offer={offer} bestKey={bestKey} acquiringOfferId={acquiringOfferId} onAcquire={onAcquire} />)}
             {loading && <TableRow><TableCell colSpan={8}><EmptyBlock text={<span className="inline-flex items-center gap-2"><LoaderCircle className="size-4 animate-spin" />查询中</span>} /></TableCell></TableRow>}
-            {!loading && queried && offers.length === 0 && <TableRow><TableCell colSpan={8}><EmptyBlock text={error || '暂无可用报价，请调整平台、应用或国家条件'} /></TableCell></TableRow>}
-            {!queried && <TableRow><TableCell colSpan={8}><EmptyBlock text="输入应用和国家后查询多个接码平台报价" /></TableCell></TableRow>}
+            {!loading && queried && offers.length === 0 && <TableRow><TableCell colSpan={8}><EmptyBlock text={error || '没有匹配报价，请换个关键词或放宽库存/平台筛选'} /></TableCell></TableRow>}
+            {!queried && <TableRow><TableCell colSpan={8}><EmptyBlock text="启用接码平台后会自动加载报价，可直接搜索过滤" /></TableCell></TableRow>}
           </TableBody>
         </Table>
       </div>

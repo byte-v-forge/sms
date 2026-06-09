@@ -19,11 +19,7 @@ import type {
 } from '../proto/byte/v/forge/sms/internal/v1/sms_internal';
 
 export type SmsPriceOfferQuery = {
-  applicationKey: string;
-  countryISO2: string;
-  countryCallingCode: string;
   providerKeys: string[];
-  minAvailable: number;
 };
 
 export const smsKeys = {
@@ -73,9 +69,6 @@ export function cancelSmsOrder(id: string) {
 
 export function listSmsPriceOffers(query: SmsPriceOfferQuery) {
   const params = new URLSearchParams();
-  params.set('application_key', query.applicationKey);
-  if (query.countryISO2) params.set('country_iso2', query.countryISO2);
-  if (query.countryCallingCode) params.set('country_calling_code', query.countryCallingCode);
   query.providerKeys.forEach((providerKey) => params.append('provider_key', providerKey));
   return api<ListSmsPriceOffersResponse>(`/api/sms/price-offers?${params.toString()}`);
 }

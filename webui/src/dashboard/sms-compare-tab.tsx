@@ -22,18 +22,14 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
   const choices = useMemo(() => providerChoices(providerOptions, configs), [configs, providerOptions]);
   const enabledKeys = useMemo(() => enabledProviderKeys(choices), [choices]);
   const [selectedKeys, setSelectedKeys] = useState<string[]>();
-  const [applicationKey, setApplicationKey] = useState('');
-  const [countryISO2, setCountryISO2] = useState('');
-  const [countryCallingCode, setCountryCallingCode] = useState('');
+  const [searchText, setSearchText] = useState('');
   const [minAvailable, setMinAvailable] = useState(1);
   const [sort, setSort] = useState<OfferSort>('price');
   const searchKey = searchParams.toString();
   const routeQuery = useMemo(() => compareQueryFromSearch(new URLSearchParams(searchKey)), [searchKey]);
 
   useEffect(() => {
-    setApplicationKey(routeQuery.applicationKey);
-    setCountryISO2(routeQuery.countryISO2);
-    setCountryCallingCode(routeQuery.countryCallingCode);
+    setSearchText(routeQuery.searchText);
     setMinAvailable(routeQuery.minAvailable);
     setSort(routeQuery.sort);
     setSelectedKeys(routeQuery.providerKeys.length > 0 ? routeQuery.providerKeys : undefined);
@@ -44,11 +40,11 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
   }, [enabledKeys, routeQuery.providerKeys.length]);
 
   const activeKeys = (selectedKeys || enabledKeys).filter((key) => enabledKeys.includes(key));
-  const compareQuery = useMemo(() => activeCompareQuery(routeQuery, enabledKeys), [enabledKeys, routeQuery]);
-  const serverQuery = useMemo(() => smsPriceOfferQuery(compareQuery), [compareQuery]);
-  const queried = canSearch(serverQuery.applicationKey, serverQuery.countryISO2, serverQuery.countryCallingCode, serverQuery.providerKeys);
+  const currentQuery: CompareQuery = { searchText: searchText.trim(), providerKeys: activeKeys, minAvailable: Math.max(0, minAvailable), sort };
+  const serverQuery = smsPriceOfferQuery(currentQuery);
+  const queried = canSearch(serverQuery.providerKeys);
   const offersQuery = useQuery({ queryKey: smsKeys.priceOffers(serverQuery), queryFn: () => listSmsPriceOffers(serverQuery), enabled: queried });
-  const offers = filterAndSortOffers(offersQuery.data?.offers || [], serverQuery.providerKeys, serverQuery.minAvailable, compareQuery.sort);
+  const offers = filterAndSortOffers(offersQuery.data?.offers || [], serverQuery.providerKeys, currentQuery.searchText, currentQuery.minAvailable, currentQuery.sort);
   const top = bestOffer(offers);
   const error = offersQuery.data?.error?.message;
 
@@ -60,18 +56,16 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
   function changeSort(next: OfferSort) {
     setSort(next);
     const draft = draftQuery(next, activeKeys);
-    if (canSearch(draft.applicationKey, draft.countryISO2, draft.countryCallingCode, draft.providerKeys)) setSearchParams(compareQuerySearchParams(draft));
+    if (canSearch(draft.providerKeys)) setSearchParams(compareQuerySearchParams(draft));
   }
 
   function draftQuery(nextSort: OfferSort, providerKeys: string[]): CompareQuery {
-    return { applicationKey: applicationKey.trim(), countryISO2: countryISO2.trim().toUpperCase(), countryCallingCode: countryCallingCode.trim().replace(/^\+/, ''), providerKeys: [...providerKeys], minAvailable: Math.max(0, minAvailable), sort: nextSort };
+    return { searchText: searchText.trim(), providerKeys: [...providerKeys], minAvailable: Math.max(0, minAvailable), sort: nextSort };
   }
 
   function resetFilters() {
     setSearchParams(new URLSearchParams());
-    setApplicationKey('');
-    setCountryISO2('');
-    setCountryCallingCode('');
+    setSearchText('');
     setMinAvailable(1);
     setSort('price');
     setSelectedKeys(enabledKeys);
@@ -81,16 +75,12 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
     <div className="flex min-h-0 flex-1 flex-col bg-muted/20">
       <SmsCompareForm
         choices={choices}
-        applicationKey={applicationKey}
-        countryISO2={countryISO2}
-        countryCallingCode={countryCallingCode}
+        searchText={searchText}
         providerKeys={activeKeys}
         minAvailable={minAvailable}
         sort={sort}
-        canSubmit={canSearch(applicationKey, countryISO2, countryCallingCode, activeKeys)}
-        onApplicationKeyChange={setApplicationKey}
-        onCountryISO2Change={setCountryISO2}
-        onCountryCallingCodeChange={setCountryCallingCode}
+        canSubmit={canSearch(activeKeys)}
+        onSearchTextChange={setSearchText}
         onProviderKeysChange={setSelectedKeys}
         onMinAvailableChange={setMinAvailable}
         onSortChange={changeSort}
@@ -101,11 +91,4 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
       <OffersTable offers={offers} top={top} loading={offersQuery.isLoading} queried={queried} error={error} acquiringOfferId={acquiringOfferId} onAcquire={onAcquire} />
     </div>
   );
-}
-
-function activeCompareQuery(routeQuery: CompareQuery, enabledKeys: string[]): CompareQuery {
-  return {
-    ...routeQuery,
-    providerKeys: routeQuery.providerKeys.length > 0 ? routeQuery.providerKeys.filter((key) => enabledKeys.includes(key)) : enabledKeys
-  };
 }

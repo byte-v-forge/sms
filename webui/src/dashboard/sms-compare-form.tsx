@@ -7,16 +7,12 @@ import { ProviderPicker } from './sms-provider-picker';
 
 type SmsCompareFormProps = {
   choices: ProviderChoice[];
-  applicationKey: string;
-  countryISO2: string;
-  countryCallingCode: string;
+  searchText: string;
   providerKeys: string[];
   minAvailable: number;
   sort: OfferSort;
   canSubmit: boolean;
-  onApplicationKeyChange: (value: string) => void;
-  onCountryISO2Change: (value: string) => void;
-  onCountryCallingCodeChange: (value: string) => void;
+  onSearchTextChange: (value: string) => void;
   onProviderKeysChange: (keys: string[]) => void;
   onMinAvailableChange: (value: number) => void;
   onSortChange: (value: OfferSort) => void;
@@ -29,9 +25,7 @@ export function SmsCompareForm(props: SmsCompareFormProps) {
     <Card className="m-4 mb-0 p-3">
       <form className="grid gap-3" onSubmit={props.onSubmit}>
         <div className="grid gap-2 md:grid-cols-6">
-          <Field label="应用" className="md:col-span-2"><Input placeholder="whatsapp/gojek" value={props.applicationKey} onChange={(event) => props.onApplicationKeyChange(event.target.value)} /></Field>
-          <Field label="国家 ISO2"><Input placeholder="ID" value={props.countryISO2} onChange={(event) => props.onCountryISO2Change(event.target.value)} /></Field>
-          <Field label="国家区号"><Input placeholder="62" value={props.countryCallingCode} onChange={(event) => props.onCountryCallingCodeChange(event.target.value)} /></Field>
+          <Field label="搜索报价" className="md:col-span-4"><Input placeholder="搜索应用、国家、区号或平台，例如 whatsapp id 62" value={props.searchText} onChange={(event) => props.onSearchTextChange(event.target.value)} /></Field>
           <Field label="最低库存"><Input min={0} type="number" value={props.minAvailable} onChange={(event) => props.onMinAvailableChange(numberInputValue(event.target.value))} /></Field>
           <Field label="排序"><Select value={props.sort} onChange={(event) => props.onSortChange(event.target.value as OfferSort)}><option value="price">按低价</option><option value="available">按库存</option><option value="provider">按平台</option></Select></Field>
         </div>
@@ -39,10 +33,10 @@ export function SmsCompareForm(props: SmsCompareFormProps) {
           <ProviderPicker choices={props.choices} selectedKeys={props.providerKeys} onChange={props.onProviderKeysChange} />
           <div className="flex items-center gap-2">
             <Button aria-label="重置查询条件" title="重置查询条件" size="icon-sm" variant="outline" onClick={props.onReset}><RotateCcw className="size-4" /></Button>
-            <Button disabled={!props.canSubmit} type="submit"><Search className="size-4" />查询比对</Button>
+            <Button disabled={!props.canSubmit} type="submit"><Search className="size-4" />搜索</Button>
           </div>
         </div>
-        <SearchHint applicationKey={props.applicationKey} countryISO2={props.countryISO2} countryCallingCode={props.countryCallingCode} providerKeys={props.providerKeys} />
+        <SearchHint providerKeys={props.providerKeys} />
       </form>
     </Card>
   );
@@ -52,11 +46,7 @@ function Field({ label, className, children }: { label: string; className?: stri
   return <label className={`grid gap-1 text-xs font-medium text-muted-foreground ${className || ''}`}><span>{label}</span>{children}</label>;
 }
 
-function SearchHint({ applicationKey, countryISO2, countryCallingCode, providerKeys }: { applicationKey: string; countryISO2: string; countryCallingCode: string; providerKeys: string[] }) {
-  const hints = [];
-  if (!applicationKey.trim()) hints.push('填写应用');
-  if (!countryISO2.trim() && !countryCallingCode.trim()) hints.push('填写国家 ISO2 或区号');
-  if (providerKeys.length === 0) hints.push('至少选择一个启用平台');
-  if (hints.length === 0) return <p className="text-xs text-muted-foreground">支持刷新和分享当前查询链接；后端只查询当前选中的接码平台。</p>;
-  return <p className="text-xs text-muted-foreground">还需要：{hints.join('、')}</p>;
+function SearchHint({ providerKeys }: { providerKeys: string[] }) {
+  if (providerKeys.length === 0) return <p className="text-xs text-muted-foreground">至少启用并选择一个接码平台后才会加载报价。</p>;
+  return <p className="text-xs text-muted-foreground">默认展示已启用平台的报价；搜索框只做过滤，不需要先填写应用或国家。</p>;
 }

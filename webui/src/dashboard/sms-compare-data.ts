@@ -34,10 +34,12 @@ export function enabledProviderKeys(choices: ProviderChoice[]) {
   return choices.filter((choice) => choice.enabled).map((choice) => choice.providerKey);
 }
 
-export function filterAndSortOffers(offers: SmsPriceOffer[], providerKeys: string[], minAvailable: number, sort: OfferSort) {
+export function filterAndSortOffers(offers: SmsPriceOffer[], providerKeys: string[], searchText: string, minAvailable: number, sort: OfferSort) {
   const providerFilter = new Set(providerKeys);
+  const tokens = searchTokens(searchText);
   return offers
     .filter((offer) => providerFilter.size === 0 || providerFilter.has(offer.provider_key))
+    .filter((offer) => offerMatchesSearch(offer, tokens))
     .filter((offer) => offer.available_count >= minAvailable)
     .sort((left, right) => compareOffers(left, right, sort));
 }
@@ -63,4 +65,26 @@ function compareMoney(left: SmsPriceOffer, right: SmsPriceOffer) {
 function moneyAmount(offer: SmsPriceOffer) {
   const amount = Number(offer.price?.amount_decimal || Number.POSITIVE_INFINITY);
   return Number.isFinite(amount) ? amount : Number.POSITIVE_INFINITY;
+}
+
+function searchTokens(text: string) {
+  return text.toLowerCase().split(/\s+/).map((token) => token.trim()).filter(Boolean);
+}
+
+function offerMatchesSearch(offer: SmsPriceOffer, tokens: string[]) {
+  if (tokens.length === 0) return true;
+  const haystack = [
+    offer.provider_key,
+    offer.provider_display_name,
+    offer.application_key,
+    offer.application_name,
+    offer.country_iso2,
+    offer.country_name,
+    offer.country_calling_code && `+${offer.country_calling_code}`,
+    offer.offer_ref?.offer_id,
+    offer.offer_ref?.route_ref?.upstream_service_key,
+    offer.offer_ref?.route_ref?.provider_country_id,
+    offer.offer_ref?.route_ref?.upstream_provider_id
+  ].filter(Boolean).join(' ').toLowerCase();
+  return tokens.every((token) => haystack.includes(token));
 }
