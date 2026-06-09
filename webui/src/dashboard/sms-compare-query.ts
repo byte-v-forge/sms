@@ -23,7 +23,7 @@ export function compareQueryFromSearch(params: URLSearchParams): CompareQuery {
     serviceText: params.get('q') || params.get('application_key') || '',
     countryISO2: params.get('country_iso2') || '',
     countryCallingCode: params.get('country_calling_code') || '',
-    providerKeys: params.getAll('provider_key').filter(Boolean),
+    providerKeys: [],
     minAvailable: Math.max(0, numberInputValue(params.get('min_available') || '1')),
     sort: offerSort(params.get('sort'))
   };
@@ -34,7 +34,6 @@ export function compareQuerySearchParams(query: CompareQuery) {
   if (query.serviceText) params.set('q', query.serviceText);
   if (query.countryISO2) params.set('country_iso2', query.countryISO2);
   if (query.countryCallingCode) params.set('country_calling_code', query.countryCallingCode);
-  for (const providerKey of query.providerKeys) params.append('provider_key', providerKey);
   params.set('min_available', String(query.minAvailable));
   params.set('sort', query.sort);
   return params;

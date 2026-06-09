@@ -42,7 +42,6 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
     setCountryCallingCode(routeQuery.countryCallingCode);
     setMinAvailable(routeQuery.minAvailable);
     setSort(routeQuery.sort);
-    setSelectedKeys(routeQuery.providerKeys.length > 0 ? routeQuery.providerKeys : undefined);
   }, [routeQuery]);
 
   useEffect(() => {
@@ -58,7 +57,8 @@ export function SmsCompareTab({ providerOptions, configs, acquiringOfferId, onAc
   const optionApplication = applicationOptions.find((item) => item.id === applicationId) || matchApplicationChoice(currentQuery.serviceText, applicationOptions);
   const selectedApplication = selectedApplicationChoice(optionApplication, applicationSnapshot, applicationId);
   const offerRequests = providerOfferQueries(currentQuery, selectedApplication);
-  const offersQuery = useQuery({ queryKey: smsKeys.providerPriceOffers(offerRequests), queryFn: () => listSmsPriceOffersByProvider(offerRequests), enabled: canSearch(activeKeys, currentQuery.serviceText) && offerRequests.length > 0 });
+  const applicationCatalogReady = !applicationsQuery.isLoading && !applicationsQuery.isFetching;
+  const offersQuery = useQuery({ queryKey: smsKeys.providerPriceOffers(offerRequests), queryFn: () => listSmsPriceOffersByProvider(offerRequests), enabled: applicationCatalogReady && canSearch(activeKeys, currentQuery.serviceText) && offerRequests.length > 0 });
   const allOffers = offersQuery.data?.offers || [];
   const mergedApplicationOptions = applicationChoices(applicationsQuery.data || [], allOffers);
   const countryOptions = countryChoices(countriesQuery.data?.countries || [], allOffers);
