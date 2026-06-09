@@ -26,5 +26,13 @@ func (c *Client) listCatalogCountryMetadata(ctx context.Context, applicationKey 
 	if normalizeHeroSMSServiceKey(applicationKey) == "" {
 		return c.ListCountries(ctx)
 	}
-	return c.ListServiceCountries(ctx, applicationKey)
+	services, err := c.ListServices(ctx)
+	if err != nil {
+		return nil, err
+	}
+	service := heroSMSServiceForQuery(applicationKey, services)
+	if service == "" {
+		return nil, nil
+	}
+	return c.ListServiceCountries(ctx, service)
 }

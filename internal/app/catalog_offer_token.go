@@ -1,6 +1,10 @@
 package app
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/byte-v-forge/sms/internal/platform/searchx"
+)
 
 func catalogTokenMatches(candidate string, query string) bool {
 	normalized := normalizeCatalogToken(candidate)
@@ -8,11 +12,5 @@ func catalogTokenMatches(candidate string, query string) bool {
 }
 
 func normalizeCatalogToken(value string) string {
-	var out strings.Builder
-	for _, r := range strings.ToLower(strings.TrimSpace(value)) {
-		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
-			out.WriteRune(r)
-		}
-	}
-	return out.String()
+	return searchx.Token(value)
 }

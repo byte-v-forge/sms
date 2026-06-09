@@ -1,32 +1,18 @@
 package smsbower
 
-import "strings"
+import "github.com/byte-v-forge/sms/internal/platform/searchx"
 
 func matchService(candidate string, applications []ApplicationOffer) string {
-	normalized := normalizeApplicationAlias(candidate)
-	if normalized == "" {
-		return ""
-	}
-	for _, app := range applications {
-		if normalizeApplicationAlias(app.UpstreamServiceKey) == normalized || normalizeApplicationAlias(app.ApplicationKey) == normalized {
-			return app.UpstreamServiceKey
-		}
-	}
-	for _, app := range applications {
-		display := normalizeApplicationAlias(app.DisplayName)
-		if display != "" && (display == normalized || strings.Contains(display, normalized)) {
-			return app.UpstreamServiceKey
-		}
-	}
-	return ""
+	return searchx.MatchKey(candidate, smsbowerServiceCandidates(applications))
 }
 
-func normalizeApplicationAlias(value string) string {
-	var out strings.Builder
-	for _, r := range strings.ToLower(strings.TrimSpace(value)) {
-		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
-			out.WriteRune(r)
-		}
+func smsbowerServiceCandidates(applications []ApplicationOffer) []searchx.Candidate {
+	candidates := make([]searchx.Candidate, 0, len(applications))
+	for _, app := range applications {
+		candidates = append(candidates, searchx.Candidate{
+			Key:  app.UpstreamServiceKey,
+			Name: app.DisplayName,
+		})
 	}
-	return out.String()
+	return candidates
 }

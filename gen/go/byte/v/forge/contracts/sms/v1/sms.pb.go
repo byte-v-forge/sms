@@ -1623,6 +1623,7 @@ type SmsApplicationInfo struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	ApplicationKey string                 `protobuf:"bytes,1,opt,name=application_key,json=applicationKey,proto3" json:"application_key,omitempty"`
 	DisplayName    string                 `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	Aliases        []string               `protobuf:"bytes,3,rep,name=aliases,proto3" json:"aliases,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -1669,6 +1670,13 @@ func (x *SmsApplicationInfo) GetDisplayName() string {
 		return x.DisplayName
 	}
 	return ""
+}
+
+func (x *SmsApplicationInfo) GetAliases() []string {
+	if x != nil {
+		return x.Aliases
+	}
+	return nil
 }
 
 type SmsCountry struct {
@@ -3057,10 +3065,11 @@ const file_byte_v_forge_contracts_sms_v1_sms_proto_rawDesc = "" +
 	"\x05error\x18\x02 \x01(\v2'.byte.v.forge.contracts.sms.v1.SmsErrorR\x05error\"\x93\x01\n" +
 	"\x13CancelOrderResponse\x12=\n" +
 	"\x05order\x18\x01 \x01(\v2'.byte.v.forge.contracts.sms.v1.SmsOrderR\x05order\x12=\n" +
-	"\x05error\x18\x02 \x01(\v2'.byte.v.forge.contracts.sms.v1.SmsErrorR\x05error\"`\n" +
+	"\x05error\x18\x02 \x01(\v2'.byte.v.forge.contracts.sms.v1.SmsErrorR\x05error\"z\n" +
 	"\x12SmsApplicationInfo\x12'\n" +
 	"\x0fapplication_key\x18\x01 \x01(\tR\x0eapplicationKey\x12!\n" +
-	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\"u\n" +
+	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12\x18\n" +
+	"\aaliases\x18\x03 \x03(\tR\aaliases\"u\n" +
 	"\n" +
 	"SmsCountry\x12!\n" +
 	"\fcountry_iso2\x18\x01 \x01(\tR\vcountryIso2\x12\x12\n" +

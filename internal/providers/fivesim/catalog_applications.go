@@ -23,6 +23,7 @@ func (c *Client) ListCatalogApplications(ctx context.Context) ([]core.CatalogApp
 		applications = append(applications, core.CatalogApplication{
 			ApplicationKey: product,
 			DisplayName:    stringx.FirstNonEmpty(item.Name, fiveSimApplicationName(product)),
+			Aliases:        []string{product, item.Name},
 		})
 	}
 	return applications, nil

@@ -16,6 +16,7 @@ func (c *Client) ListCatalogApplications(ctx context.Context) ([]core.CatalogApp
 		out = append(out, core.CatalogApplication{
 			ApplicationKey: app.ApplicationKey,
 			DisplayName:    app.DisplayName,
+			Aliases:        []string{app.ApplicationKey, app.UpstreamServiceKey, app.DisplayName},
 		})
 	}
 	return out, nil

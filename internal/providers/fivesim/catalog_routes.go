@@ -7,6 +7,14 @@ import (
 )
 
 func (c *Client) ListRouteOffers(ctx context.Context, query core.RouteOfferQuery) ([]core.RouteOffer, error) {
+	applications, err := c.ListCatalogApplications(ctx)
+	if err != nil {
+		return nil, err
+	}
+	product := fiveSimProductForQuery(query.ApplicationKey, applications)
+	if query.ApplicationKey != "" && product == "" {
+		return nil, nil
+	}
 	countries, err := c.ListCountries(ctx)
 	if err != nil {
 		return nil, err
@@ -15,9 +23,9 @@ func (c *Client) ListRouteOffers(ctx context.Context, query core.RouteOfferQuery
 	if (query.CountryISO2 != "" || query.CountryCallingCode != "") && countryID == "" {
 		return nil, nil
 	}
-	priceOffers, err := c.ListPriceOffers(ctx, query.ApplicationKey, countryID)
+	priceOffers, err := c.ListPriceOffers(ctx, product, countryID)
 	if err != nil {
 		return nil, err
 	}
-	return fiveSimRouteOffers(priceOffers, fiveSimCountriesByID(countries), c.catalogApplicationNames(ctx)), nil
+	return fiveSimRouteOffers(priceOffers, fiveSimCountriesByID(countries), fiveSimApplicationNameIndex(applications)), nil
 }

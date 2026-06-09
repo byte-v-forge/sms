@@ -11,6 +11,7 @@ func toProtoCatalogApplications(applications []core.CatalogApplication) []*smsv1
 		out = append(out, &smsv1.SmsApplicationInfo{
 			ApplicationKey: item.ApplicationKey,
 			DisplayName:    item.DisplayName,
+			Aliases:        item.Aliases,
 		})
 	}
 	return out

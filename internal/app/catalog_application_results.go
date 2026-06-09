@@ -11,14 +11,12 @@ func collectCatalogProviderApplications(results []catalogProviderApplicationsRes
 	lastErr := applicationProviderError(results)
 	for _, result := range results {
 		for _, app := range result.applications {
-			key := routeText(app.ApplicationKey)
-			if key == "" {
+			normalized := normalizedCatalogApplication(app)
+			identity := catalogApplicationIdentity(normalized)
+			if identity == "" {
 				continue
 			}
-			items[key] = bestCatalogApplication(items[key], core.CatalogApplication{
-				ApplicationKey: key,
-				DisplayName:    firstNonEmpty(routeText(app.DisplayName), key),
-			})
+			items[identity] = bestCatalogApplication(identity, items[identity], normalized)
 		}
 	}
 	applications := catalogApplicationValues(items)
@@ -39,11 +37,35 @@ func applicationProviderError(results []catalogProviderApplicationsResult) error
 	return lastErr
 }
 
-func bestCatalogApplication(left core.CatalogApplication, right core.CatalogApplication) core.CatalogApplication {
-	if left.ApplicationKey == "" || len(right.DisplayName) > len(left.DisplayName) {
+func bestCatalogApplication(identity string, left core.CatalogApplication, right core.CatalogApplication) core.CatalogApplication {
+	if left.ApplicationKey == "" {
 		return right
 	}
-	return left
+	display := left.DisplayName
+	if len(right.DisplayName) > len(display) {
+		display = right.DisplayName
+	}
+	return core.CatalogApplication{
+		ApplicationKey: bestCatalogApplicationKey(identity, left.ApplicationKey, right.ApplicationKey, display),
+		DisplayName:    display,
+		Aliases:        uniqueCatalogValues(append(left.Aliases, right.Aliases...)),
+	}
+}
+
+func bestCatalogApplicationKey(identity string, left string, right string, display string) string {
+	if routeText(right) == identity {
+		return right
+	}
+	if routeText(left) == identity {
+		return left
+	}
+	if normalizeCatalogToken(left) == identity {
+		return left
+	}
+	if normalizeCatalogToken(right) == identity {
+		return right
+	}
+	return firstNonEmpty(display, left, right)
 }
 
 func catalogApplicationValues(items map[string]core.CatalogApplication) []core.CatalogApplication {

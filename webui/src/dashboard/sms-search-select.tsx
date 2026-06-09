@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Check, ChevronsUpDown, X } from 'lucide-react';
 import { Button, Command, CommandEmpty, CommandInput, CommandItem, CommandList, Popover, PopoverContent, PopoverTrigger } from '../ui';
 import { cn } from '../ui/utils';
@@ -28,8 +28,6 @@ export function SearchSelect(props: SearchSelectProps) {
   const selected = props.options.find((item) => item.value === props.value);
   const searchValue = props.searchValue ?? draftSearch;
   const selectedLabel = selected?.label || props.searchValue || props.placeholder;
-  const options = useMemo(() => props.options.slice(0, 500), [props.options]);
-
   function changeSearch(value: string) {
     if (props.onSearchChange) props.onSearchChange(value);
     else setDraftSearch(value);
@@ -62,7 +60,7 @@ export function SearchSelect(props: SearchSelectProps) {
               <CommandInput value={searchValue} onValueChange={changeSearch} placeholder={props.placeholder} />
               <CommandList>
                 <CommandEmpty>{props.emptyText}</CommandEmpty>
-                {options.map((item) => <SearchSelectItem key={item.value} option={item} selected={item.value === props.value} onSelect={selectValue} />)}
+                {props.options.map((item) => <SearchSelectItem key={item.value} option={item} selected={item.value === props.value} onSelect={selectValue} />)}
               </CommandList>
             </Command>
           </PopoverContent>

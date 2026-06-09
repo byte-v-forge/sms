@@ -4,6 +4,7 @@ import type { SearchSelectOption } from './sms-search-select';
 export type ApplicationChoice = {
   applicationKey: string;
   displayName: string;
+  aliases: string[];
   offerCount: number;
 };
 
@@ -17,10 +18,10 @@ export type CountryChoice = {
 export function applicationChoices(applications: SmsApplicationInfo[], offers: SmsPriceOffer[]) {
   const items = new Map<string, ApplicationChoice>();
   for (const app of applications) {
-    upsertApplication(items, app.application_key, app.display_name, 0);
+    upsertApplication(items, app.application_key, app.display_name, 0, app.aliases || []);
   }
   for (const offer of offers) {
-    upsertApplication(items, offer.application_key, offer.application_name, 1);
+    upsertApplication(items, offer.application_key, offer.application_name, 1, [offer.offer_ref?.route_ref?.upstream_service_key || '']);
   }
   return [...items.values()].sort((left, right) => applicationChoiceLabel(left).localeCompare(applicationChoiceLabel(right)));
 }
@@ -71,7 +72,7 @@ export function applicationSelectOptions(choices: ApplicationChoice[]): SearchSe
   return choices.map((choice) => ({
     value: choice.applicationKey,
     label: applicationChoiceLabel(choice),
-    description: choice.applicationKey !== choice.displayName ? choice.applicationKey : undefined,
+    description: applicationDescription(choice),
     badge: choice.offerCount > 0 ? String(choice.offerCount) : undefined,
     keywords: applicationSearchTokens(choice)
   }));
@@ -87,13 +88,16 @@ export function countrySelectOptions(choices: CountryChoice[]): SearchSelectOpti
   }));
 }
 
-function upsertApplication(items: Map<string, ApplicationChoice>, key: string, name: string, offerCount: number) {
+function upsertApplication(items: Map<string, ApplicationChoice>, key: string, name: string, offerCount: number, aliases: string[]) {
   key = key.trim();
   if (!key) return;
-  const current = items.get(key);
-  items.set(key, {
-    applicationKey: key,
-    displayName: bestDisplayName(current?.displayName, name, key),
+  const displayName = name.trim() || key;
+  const identity = normalizeChoiceToken(displayName) || normalizeChoiceToken(key);
+  const current = items.get(identity);
+  items.set(identity, {
+    applicationKey: bestApplicationKey(identity, current?.applicationKey, key, displayName),
+    displayName: bestDisplayName(current?.displayName, displayName, key),
+    aliases: uniqueTexts([...(current?.aliases || []), key, name, ...aliases]),
     offerCount: (current?.offerCount || 0) + offerCount
   });
 }
@@ -118,9 +122,36 @@ function bestDisplayName(current = '', candidate = '', fallback = '') {
 }
 
 function applicationSearchTokens(choice: ApplicationChoice) {
-  return [choice.applicationKey, choice.displayName, applicationChoiceLabel(choice)].map(normalizeChoiceToken).filter(Boolean);
+  return [choice.applicationKey, choice.displayName, applicationChoiceLabel(choice), ...choice.aliases].map(normalizeChoiceToken).filter(Boolean);
 }
 
 function normalizeChoiceToken(value: string) {
   return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+function applicationDescription(choice: ApplicationChoice) {
+  const baseTokens = new Set([choice.applicationKey, choice.displayName].map(normalizeChoiceToken));
+  const aliases = choice.aliases.filter((alias) => !baseTokens.has(normalizeChoiceToken(alias))).slice(0, 3);
+  return aliases.length > 0 ? aliases.join(' / ') : undefined;
+}
+
+function bestApplicationKey(identity: string, current = '', candidate = '', displayName = '') {
+  if (candidate.trim() === identity) return candidate;
+  if (current.trim() === identity) return current;
+  if (normalizeChoiceToken(current) === identity) return current;
+  if (normalizeChoiceToken(candidate) === identity) return candidate;
+  return displayName || current || candidate;
+}
+
+function uniqueTexts(values: string[]) {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const value of values) {
+    const text = value.trim();
+    const token = normalizeChoiceToken(text);
+    if (!text || !token || seen.has(token)) continue;
+    seen.add(token);
+    out.push(text);
+  }
+  return out;
 }

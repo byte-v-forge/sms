@@ -3,6 +3,7 @@ package core
 type CatalogApplication struct {
 	ApplicationKey string
 	DisplayName    string
+	Aliases        []string
 }
 
 type CatalogCountry struct {
