@@ -8,7 +8,7 @@ import (
 	"github.com/byte-v-forge/sms/internal/core"
 )
 
-const heroSMSActivationTypeSMS = 1
+const heroSMSActivationTypeSMS = 0
 
 type activationPurchaseRequest struct {
 	Owner          int             `json:"owner"`
