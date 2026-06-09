@@ -1,18 +1,22 @@
 import type { FormEvent, ReactNode } from 'react';
 import { RotateCcw, Search } from 'lucide-react';
 import { Button, Card, Input, Select } from '../ui';
-import type { OfferSort, ProviderChoice } from './sms-compare-data';
+import { applicationChoiceLabel, countryChoiceLabel, countryChoiceValue, type ApplicationChoice, type CountryChoice, type OfferSort, type ProviderChoice } from './sms-compare-data';
 import { numberInputValue } from './sms-compare-query';
 import { ProviderPicker } from './sms-provider-picker';
 
 type SmsCompareFormProps = {
   choices: ProviderChoice[];
+  applications: ApplicationChoice[];
+  countries: CountryChoice[];
   searchText: string;
+  countryValue: string;
   providerKeys: string[];
   minAvailable: number;
   sort: OfferSort;
   canSubmit: boolean;
   onSearchTextChange: (value: string) => void;
+  onCountryChange: (value: string) => void;
   onProviderKeysChange: (keys: string[]) => void;
   onMinAvailableChange: (value: number) => void;
   onSortChange: (value: OfferSort) => void;
@@ -25,7 +29,18 @@ export function SmsCompareForm(props: SmsCompareFormProps) {
     <Card className="m-4 mb-0 p-3">
       <form className="grid gap-3" onSubmit={props.onSubmit}>
         <div className="grid gap-2 md:grid-cols-6">
-          <Field label="搜索报价" className="md:col-span-4"><Input placeholder="搜索应用、国家、区号或平台，例如 whatsapp id 62" value={props.searchText} onChange={(event) => props.onSearchTextChange(event.target.value)} /></Field>
+          <Field label="应用服务" className="md:col-span-3">
+            <Input list="sms-application-options" placeholder="搜索/选择服务，例如 WhatsApp" value={props.searchText} onChange={(event) => props.onSearchTextChange(event.target.value)} />
+            <datalist id="sms-application-options">
+              {props.applications.map((item) => <option key={item.applicationKey} value={applicationChoiceLabel(item)} />)}
+            </datalist>
+          </Field>
+          <Field label="国家">
+            <Select value={props.countryValue} onChange={(event) => props.onCountryChange(event.target.value)}>
+              <option value="">全部国家</option>
+              {props.countries.map((item) => <option key={countryChoiceValue(item)} value={countryChoiceValue(item)}>{countryChoiceLabel(item)}</option>)}
+            </Select>
+          </Field>
           <Field label="最低库存"><Input min={0} type="number" value={props.minAvailable} onChange={(event) => props.onMinAvailableChange(numberInputValue(event.target.value))} /></Field>
           <Field label="排序"><Select value={props.sort} onChange={(event) => props.onSortChange(event.target.value as OfferSort)}><option value="price">按低价</option><option value="available">按库存</option><option value="provider">按平台</option></Select></Field>
         </div>
@@ -48,5 +63,5 @@ function Field({ label, className, children }: { label: string; className?: stri
 
 function SearchHint({ providerKeys }: { providerKeys: string[] }) {
   if (providerKeys.length === 0) return <p className="text-xs text-muted-foreground">至少启用并选择一个接码平台后才会加载报价。</p>;
-  return <p className="text-xs text-muted-foreground">默认展示已启用平台的报价；搜索框只做过滤，不需要先填写应用或国家。</p>;
+  return <p className="text-xs text-muted-foreground">先从下拉里搜服务，再选国家；默认展示已启用平台的可用报价。</p>;
 }
