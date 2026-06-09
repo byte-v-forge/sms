@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Ban, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Badge, Button, EmptyBlock, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui';
+import { Ban, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { Badge, Button, EmptyBlock, Input, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui';
 import type { SmsOrderCodeView, SmsOrderView } from '../proto/byte/v/forge/sms/internal/v1/sms_internal';
 import { canCancelStatus, dateTimeText, moneyText, remainingText, statusText } from './sms-format';
 
@@ -15,10 +15,11 @@ type OrdersTabProps = {
 
 export function OrdersTab({ orders, codes, cancelingId, onCancel }: OrdersTabProps) {
   const [mode, setMode] = useState<OrderMode>('active');
+  const [searchText, setSearchText] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const codesByOrder = useMemo(() => groupCodes(codes), [codes]);
-  const rows = useMemo(() => orders.filter((item) => mode === 'active' ? canCancelStatus(item.order?.status) : !canCancelStatus(item.order?.status)), [mode, orders]);
+  const rows = useMemo(() => orderRows(orders, mode, searchText), [mode, orders, searchText]);
   const activeCount = orders.filter((item) => canCancelStatus(item.order?.status)).length;
   const historyCount = orders.length - activeCount;
   const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
@@ -37,9 +38,13 @@ export function OrdersTab({ orders, codes, cancelingId, onCancel }: OrdersTabPro
         <OrderStat label="验证码记录" value={codes.length} />
       </div>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button size="sm" variant={mode === 'active' ? 'default' : 'outline'} onClick={() => changeMode('active')}>进行中</Button>
           <Button size="sm" variant={mode === 'history' ? 'default' : 'outline'} onClick={() => changeMode('history')}>历史订单</Button>
+          <label className="relative block w-72 max-w-full">
+            <Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+            <Input className="pl-8" placeholder="搜索号码、订单、应用、国家或接码源" value={searchText} onChange={(event) => { setSearchText(event.target.value); setPage(0); }} />
+          </label>
         </div>
         <OrderPager page={page} pageCount={pageCount} pageSize={pageSize} total={rows.length} onPage={setPage} onPageSize={(size) => { setPageSize(size); setPage(0); }} />
       </div>
@@ -48,12 +53,38 @@ export function OrdersTab({ orders, codes, cancelingId, onCancel }: OrdersTabPro
           <TableHeader><TableRow><TableHead>号码</TableHead><TableHead>接码源</TableHead><TableHead>状态</TableHead><TableHead>剩余</TableHead><TableHead>最新 OTP</TableHead><TableHead>价格</TableHead><TableHead /></TableRow></TableHeader>
           <TableBody>
             {visible.map((item) => <OrderRow key={item.order?.order_id || item.provider_key} item={item} codes={codesByOrder.get(item.order?.order_id || '') || []} cancelingId={cancelingId} onCancel={onCancel} />)}
-            {visible.length === 0 && <TableRow><TableCell colSpan={7}><EmptyBlock text="暂无订单" /></TableCell></TableRow>}
+            {visible.length === 0 && <TableRow><TableCell colSpan={7}><EmptyBlock text={searchText.trim() ? '没有匹配订单' : '暂无订单'} /></TableCell></TableRow>}
           </TableBody>
         </Table>
       </div>
     </div>
   );
+}
+
+function orderRows(orders: SmsOrderView[], mode: OrderMode, searchText: string) {
+  return orders
+    .filter((item) => mode === 'active' ? canCancelStatus(item.order?.status) : !canCancelStatus(item.order?.status))
+    .filter((item) => orderMatchesSearch(item, searchText));
+}
+
+function orderMatchesSearch(item: SmsOrderView, searchText: string) {
+  const tokens = searchText.toLowerCase().split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return true;
+  const order = item.order;
+  const target = order?.target;
+  const phone = order?.phone_number;
+  const haystack = [
+    item.provider_key,
+    order?.order_id,
+    order?.request_id,
+    phone?.e164_number,
+    phone?.national_number,
+    statusText(order?.status),
+    target?.application_key,
+    target?.country_iso2,
+    target?.country_calling_code && `+${target.country_calling_code}`
+  ].filter(Boolean).join(' ').toLowerCase();
+  return tokens.every((token) => haystack.includes(token));
 }
 
 function OrderStat({ label, value, active }: { label: string; value: number; active?: boolean }) {
